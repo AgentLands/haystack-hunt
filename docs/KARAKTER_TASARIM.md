@@ -17,7 +17,10 @@ güncelle.
 - Boşluk en az 50 ms basılı sayılır (çok kısa dokunuş da bir karede görülsün; girdi.js).
 - Oyun `kontrol.binIste`'yi tüketir (false yapar) ve tıkla-yürü bitince `kontrol.hedef`'i
   null'a çeker.
-- Dokunmatik sanal kol `yonAyarla()` ile yazar; "Kullan" ve "Bin/İn" düğmeleri `kullan` ve
+- Dokunmatik sanal kol `yonAyarla()` ile yazar ve ayrıca `ekranYonAyarla()` ile
+  `kontrol.ekranYon`'u doldurur: makinedeyken kol **ekran yönlüdür** (kol yukarı = araç ekranda
+  yukarı gider; araç o yöne döner, ±90° ötesinde yerinde döner, `kural/kol.js` `kolSurus`);
+  klavye W/S/A/D tank gibi gaz/dönüş verir; "Kullan" ve "Bin/İn" düğmeleri `kullan` ve
   `binIste` alanlarını kullanır.
 
 ## Koordinatlar
@@ -41,10 +44,13 @@ güncelle.
   Tırmanma: bir sonraki hücre ile yükseklik farkı `TIRMANMA` (3) katını aşıyorsa o eksende
   ilerlenmez (duvar boyunca kayabilir). Yığın kayması yamaçları ≤ 3'te tuttuğundan oturmuş
   samanda hep tırmanılır; yalnız taze kazılmış çukur duvarları durdurur.
-- Karakter garajın önünde (içeri ~8 hücre), çevresindeki en alçak boş hücrede başlar.
+- Karakter garajın önünde başlar: garaj noktası kenardan 4 hücre içeride, karakter ondan 8
+  hücre daha içeride (kenardan ≈ 12 hücre); o noktanın ±6 hücre çevresindeki en alçak boş
+  hücreyi seçer.
 - Araçlar karakterin **önünde** (yon yönünde ~1.5 hücre) ya da fare/dokunmayla seçilen
   erişimdeki hücrede çalışır. Dedektör ve mıknatıs karakterin bulunduğu hücreyi okur
-  (Boşluğa her basışta bir kez). El Boşluk basılıyken her kare kazar; tırmık Boşluk
+  (Boşluğa her basışta bir kez). El Boşluk basılıyken saniyede 60 kat kazar (EL_HIZI; kare
+  hızından bağımsız); tırmık Boşluk
   basılıyken 0.2 sn'de bir karakterin yönünde (yürürken hareket yönünde) iter.
 - `durum.imlec` geriye uyum için karakterin araç noktasını gösterir (yarış imleci vb.);
   fare basılıysa fare noktasını, makinedeyken iş aygıtının noktasını. `durum.aracYaricap`
@@ -107,7 +113,8 @@ güncelle.
   için ayrı dal (`giyilenKare`) işletir.
 - Boşluk basılıyken (yakıt harcar: `isYakit` = 1/120 sn; yürürken harcamaz) namlu
   noktasından (karakterin 1.8 hücre önü) başlayan koni (menzil 9 hücre, ±25°) içindeki her
-  hücreden kare başına en çok 1 kat alır; yakın hücre 48 kat/sn, menzil sonu 12 kat/sn;
+  hücreden saniyede kat alır (karede birden çok olabilir, kare hızından bağımsız); yakın
+  hücre 48 kat/sn, menzil sonu 12 kat/sn;
   yüksekliği 24'ü aşan hücrede hız `24 / yükseklik` ile çarpılır (yalnız yüzey).
   Alınan kat, hücrenin namluya göre yönünde 10–13 hücre ötesine (koninin dışına) bırakılır;
   tarla dışına düşen `kaldirilan`'a eklenir. İğne ve çiviler uçmaz; üstlerindeki saman
@@ -148,8 +155,8 @@ güncelle.
 - Karakter ve makineler `katmanEkle(..., 'ust')` ile, piksel uzayında (hücre * OLCEK) çizilir.
   Çizim modülü yalnız yukarıdaki verileri okur; kural koduna dokunmaz.
 - Makinedeyken (`karakter.makine !== null`) karakterin x, y, yon'u makineninkidir; karakter
-  ayrıca çizilmez. Geçici yer tutucu çizim `js/ozellik/karakter-yer-tutucu.js` (birleştirmede
-  kaldırılır).
+  ayrıca çizilmez. Çizim `js/ozellik/gorsel/` altındadır (`karakter-cizim.js`, `makine-cizim.js`
+  ve türe özgü çizimler); yer tutucu çizim kaldırıldı.
 - Kamera varsayılan olarak karakteri (bindiyse makineyi) 3.5× yumuşak takip eder; **0** / ⤢
   tüm tarlayı gösterip takibi bırakır (orta tuşla kaydırma ve mini harita da bırakır); yeni
   bir hareket isteği (yön ya da yeni tıkla-yürü hedefi) takibi geri getirir. Tekerlek ve

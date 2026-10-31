@@ -8,6 +8,9 @@ export const ANAHTAR = 'haystack-hunt:istatistik';
 export const SON_SAYISI = 10;
 export const TOHUM_SINIRI = 300;
 
+/** Rekorlar zorluğa göre ayrı tutulur; zorluğu olmayan (eski) kayıtlar normal sayılır. */
+export const VARSAYILAN_ZORLUK = 'normal';
+
 const OKUMA_EMOJI = { 'Soğuk': '🟦', 'Ilık': '🟨', 'Sıcak': '🟧', 'Yanıyor!': '🟥' };
 
 export function bosIstatistik() {
@@ -15,11 +18,20 @@ export function bosIstatistik() {
     surum: 1,
     oynanan: 0, bulunan: 0, pesEdilen: 0,
     enIyiMs: null, toplamSureMs: 0, toplamSaman: 0,
-    tohumEnIyi: Object.create(null), // etiket → en iyi süre (ms)
+    zorlukEnIyi: Object.create(null), // zorluk → en iyi süre (ms): rekor zorluğa göre
+    tohumEnIyi: Object.create(null), // tarlaAnahtari(etiket, zorluk) → en iyi süre (ms)
     sonSureler: [],                  // son bulunan tarlalar: { etiket, sureMs }
     seri: 0, enUzunSeri: 0, gunlukSon: null, // günün tarlası serisi
     dondurmaSon: null,               // seri dondurmanın en son kullanıldığı gün (etiket)
   };
+}
+
+/**
+ * Tarla rekorunun anahtarı: aynı etiket farklı zorlukta başka tarladır. Normal zorluk (ve
+ * zorluğu kayıtlı olmayan eski kayıtlar) düz etiketle tutulur, böylece eski veri geçerli kalır.
+ */
+export function tarlaAnahtari(etiket, zorluk) {
+  return zorluk && zorluk !== VARSAYILAN_ZORLUK ? `${etiket}|${zorluk}` : etiket;
 }
 
 /** Bellekte duran, localStorage arayüzünü taklit eden depo (erişim yoksa yedek). */
@@ -44,6 +56,13 @@ export function temizle(ham) {
   ist.enIyiMs = sayiMi(ham.enIyiMs) ? ham.enIyiMs : null;
   ist.gunlukSon = etiketMi(ham.gunlukSon) ? ham.gunlukSon : null;
   ist.dondurmaSon = etiketMi(ham.dondurmaSon) ? ham.dondurmaSon : null;
+  if (ham.zorlukEnIyi && typeof ham.zorlukEnIyi === 'object') {
+    for (const [zorluk, ms] of Object.entries(ham.zorlukEnIyi)) {
+      if (sayiMi(ms)) ist.zorlukEnIyi[zorluk] = ms;
+    }
+  } else if (ist.enIyiMs !== null) {
+    ist.zorlukEnIyi[VARSAYILAN_ZORLUK] = ist.enIyiMs; // eski kayıt: zorluk yoktu, normal say
+  }
   if (ham.tohumEnIyi && typeof ham.tohumEnIyi === 'object') {
     for (const [etiket, ms] of Object.entries(ham.tohumEnIyi)) {
       if (sayiMi(ms)) ist.tohumEnIyi[etiket] = ms;
@@ -82,6 +101,7 @@ export function kaydet(depo, ist) {
 function kopya(ist) {
   return {
     ...ist,
+    zorlukEnIyi: Object.assign(Object.create(null), ist.zorlukEnIyi),
     tohumEnIyi: Object.assign(Object.create(null), ist.tohumEnIyi),
     sonSureler: ist.sonSureler.map((s) => ({ ...s })),
   };
@@ -149,22 +169,25 @@ export function pesKaydet(ist) {
 export function bulunduKaydet(ist, sonuc, bugun = gununEtiketi()) {
   const yeni = kopya(ist);
   const ms = sayiMi(sonuc.sureMs) ? sonuc.sureMs : null;
-  const oncekiEnIyiMs = ist.enIyiMs;
-  const oncekiTohumMs = Object.hasOwn(ist.tohumEnIyi, sonuc.etiket)
-    ? ist.tohumEnIyi[sonuc.etiket] : null;
+  const zorluk = sonuc.zorluk || VARSAYILAN_ZORLUK;
+  const anahtar = tarlaAnahtari(sonuc.etiket, zorluk);
+  const oncekiEnIyiMs = Object.hasOwn(ist.zorlukEnIyi, zorluk) ? ist.zorlukEnIyi[zorluk] : null;
+  const oncekiTohumMs = Object.hasOwn(ist.tohumEnIyi, anahtar) ? ist.tohumEnIyi[anahtar] : null;
   const rapor = {
-    rekor: false, tohumRekoru: false, oncekiEnIyiMs, gunluk: false, seri: 0, dondurma: false,
+    rekor: false, tohumRekoru: false, oncekiEnIyiMs, gunluk: false, seri: 0,
+    dondurma: false,
   };
   yeni.bulunan += 1;
   yeni.toplamSaman += sayi(sonuc.kaldirilan);
   if (ms !== null) {
     yeni.toplamSureMs += ms;
     rapor.rekor = oncekiEnIyiMs !== null && ms < oncekiEnIyiMs;
-    if (oncekiEnIyiMs === null || ms < oncekiEnIyiMs) yeni.enIyiMs = ms;
+    if (oncekiEnIyiMs === null || ms < oncekiEnIyiMs) yeni.zorlukEnIyi[zorluk] = ms;
+    if (yeni.enIyiMs === null || ms < yeni.enIyiMs) yeni.enIyiMs = ms;
     rapor.tohumRekoru = oncekiTohumMs !== null && ms < oncekiTohumMs;
     if (oncekiTohumMs === null || ms < oncekiTohumMs) {
-      delete yeni.tohumEnIyi[sonuc.etiket]; // yeniden eklenince en yeni sona geçer
-      yeni.tohumEnIyi[sonuc.etiket] = ms;
+      delete yeni.tohumEnIyi[anahtar]; // yeniden eklenince en yeni sona geçer
+      yeni.tohumEnIyi[anahtar] = ms;
       const anahtarlar = Object.keys(yeni.tohumEnIyi);
       for (const eski of anahtarlar.slice(0, Math.max(0, anahtarlar.length - TOHUM_SINIRI))) {
         delete yeni.tohumEnIyi[eski];
@@ -213,11 +236,16 @@ export function okumalarEmoji(okumalar = []) {
   return okumalar.map((ad) => OKUMA_EMOJI[ad] ?? '⬜').join('');
 }
 
-/** Paylaşım metnine eklenecek satırlar: okuma emojileri ve oyun bağlantısı. */
+/**
+ * Paylaşım metnine eklenecek satırlar: okuma emojileri ve oyun bağlantısı. Zorluk normal
+ * değilse bağlantıya `&zorluk=` eklenir (aynı etiket başka zorlukta başka tarladır).
+ */
 export function paylasimEki(sonuc, adres) {
   const satirlar = [];
   const emoji = okumalarEmoji(sonuc.okumalar);
   if (emoji) satirlar.push(emoji);
-  satirlar.push(`${adres}?tohum=${encodeURIComponent(sonuc.etiket)}`);
+  const zorluk = sonuc.zorluk && sonuc.zorluk !== VARSAYILAN_ZORLUK
+    ? `&zorluk=${encodeURIComponent(sonuc.zorluk)}` : '';
+  satirlar.push(`${adres}?tohum=${encodeURIComponent(sonuc.etiket)}${zorluk}`);
   return satirlar.join('\n');
 }

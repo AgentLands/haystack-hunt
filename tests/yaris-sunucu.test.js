@@ -12,7 +12,9 @@ import { cerceveCoz, kabulAnahtari, MAKS_ILETI } from '../sunucu/websocket.js';
 let s;
 let adres;
 before(async () => {
-  s = await sunucuAc({ port: 0, host: '127.0.0.1', geriSayimMs: 20 });
+  s = await sunucuAc({
+    port: 0, host: '127.0.0.1', geriSayimMs: 20, ipBaglanti: 1000, ipOda: 1000,
+  });
   adres = `127.0.0.1:${s.port}`;
 });
 after(() => s.kapat());

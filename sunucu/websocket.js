@@ -6,12 +6,16 @@
 import { createHash } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { isUtf8 } from 'node:buffer';
+import { HizSiniri } from './dogrulama.js';
 
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 /** Bir iletinin (parçaları birleşmiş hâliyle) en büyük boyu. */
 export const MAKS_ILETI = 64 * 1024;
 /** Okumayan istemci: gönderim kuyruğu bunu aşarsa bağlantı kesilir. */
 const MAKS_KUYRUK = 1024 * 1024;
+/** Ping'e pong yanıtı: kapasite 10, saniyede 2 dolum; fazlası yanıtsız atılır. */
+const PING_KAPASITE = 10;
+const PING_DOLUM = 2;
 export const OLAGAN_KOPMA = new Set(['ECONNRESET', 'EPIPE', 'ETIMEDOUT']);
 
 export function kabulAnahtari(anahtar) {
@@ -96,6 +100,7 @@ export class Baglanti extends EventEmitter {
   #parcaBoyu = 0;
   #parcaKod = 0;
   #bitti = false;
+  #pingSiniri = new HizSiniri(PING_KAPASITE, PING_DOLUM);
 
   constructor(soket) {
     super();
@@ -109,6 +114,11 @@ export class Baglanti extends EventEmitter {
       if (!OLAGAN_KOPMA.has(hata.code)) console.error('WebSocket soket hatası:', hata);
       this.#bitir();
     });
+  }
+
+  /** Okunmayı bekleyen (çözülmemiş) bayt sayısı; kapanıştan sonra hep 0 olmalı. */
+  get tamponBoyu() {
+    return this.#tampon.length;
   }
 
   /** Metin iletisi gönderir; bağlantı kapalıysa false. */
@@ -127,6 +137,8 @@ export class Baglanti extends EventEmitter {
     metin.copy(yuk, 2);
     this.#yaz(0x8, yuk);
     this.kapali = true;
+    this.#tampon = Buffer.alloc(0); // yarı açık soketten gelenler biriktirilmez
+    this.soket.pause(); // kapanıştan sonra okumayı bırak: yarı açık istemci bellek şişiremez
     this.soket.end();
     setTimeout(() => this.soket.destroy(), 2000).unref();
     this.#bitir();
@@ -164,6 +176,7 @@ export class Baglanti extends EventEmitter {
   }
 
   #al(veri) {
+    if (this.kapali) return; // kapat() sonrası gelen veri tampona hiç eklenmez
     this.#tampon = this.#tampon.length ? Buffer.concat([this.#tampon, veri]) : veri;
     while (!this.kapali) {
       const cerceve = cerceveCoz(this.#tampon);
@@ -180,7 +193,7 @@ export class Baglanti extends EventEmitter {
   #isle({ fin, kod, yuk }) {
     this.canli = true;
     if (kod === 0x8) return this.kapat(1000);
-    if (kod === 0x9) return this.#yaz(0xa, yuk);
+    if (kod === 0x9) return this.#pingSiniri.izinVer() ? this.#yaz(0xa, yuk) : undefined;
     if (kod === 0xa) return undefined;
     if (kod === 0x1 || kod === 0x2) {
       if (this.#parcaKod) return this.kapat(1002, 'parçalı ileti bitmeden yeni ileti');

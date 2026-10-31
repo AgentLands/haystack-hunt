@@ -7,9 +7,12 @@ import { GENISLIK, icinde } from './boyut.js';
 import { igneAcikMi, igneDerinligi, igneKonumu } from './igne.js';
 
 export const EL_YARICAP = 2.5;
+/** El kazısı: fırça altındaki her hücreden saniyede alınan kat (60 Hz'de karede 1 kat). */
+export const EL_HIZI = 60;
+/** Bir karede en çok bu kadar kat birikir (uzun karede ışınlanır gibi kazmasın). */
+const EL_BIRIKIM_TAVAN = 4;
 export const TIRMIK_YARICAP = 4;
 export const TIRMIK_ADIM = 5;
-export const DEDEKTOR_HAKKI = 3;
 export const MIKNATIS_MENZIL = 10;
 export const MIKNATIS_CEKIS = 15;
 
@@ -29,6 +32,16 @@ function hucrelerde(cx, cy, r, islev) {
       if (dx * dx + dy * dy <= r2 && icinde(x, y)) islev(y * GENISLIK + x, x, y);
     }
   }
+}
+
+/**
+ * El kazısının kare hızından bağımsız adımı: birikim + EL_HIZI * dt içindeki tam kat sayısı n
+ * alınır, kesir sonraki kareye kalır. Dönüş: { n, birikim }.
+ */
+export function elAdimi(birikim, dt) {
+  const toplam = Math.min(EL_BIRIKIM_TAVAN, birikim + EL_HIZI * Math.max(0, dt));
+  const n = Math.floor(toplam + 1e-6); // 60 * (1/60) kayan nokta kaybı bir kat yutmasın
+  return { n, birikim: Math.max(0, toplam - n) };
 }
 
 /** Fırça altındaki her hücreden en çok `miktar` kat alır; alınan toplamı döndürür. */

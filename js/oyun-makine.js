@@ -1,5 +1,6 @@
 /**
- * Makine karesi: binme/inme (E), sürüş (W/S gaz-geri, A/D dönüş; kontrol.yon'dan), iş
+ * Makine karesi: binme/inme (E), sürüş (W/S gaz-geri, A/D dönüş; kontrol.yon'dan; sanal kol
+ * ekran yönlüdür: kontrol.ekranYon yönüne döner ve ilerler), iş
  * aygıtı (Boşluk basılıyken tanımın calis işlevi), yakıt ve makine olayları. Her kare
  * her makinenin kare kancası (ör. kepçedeki iğneyi taşıma) çağrılır. Giyilen makineler
  * (tanımda giyilir: sırt üfleyicisi) sürülmez: çiftçi normal yürür (yuruHizi kadar yavaş),
@@ -12,6 +13,7 @@ import { makineTanimi } from './kural/makineler/kayit.js';
 import { surusAdim, yakitHarca, makineEngeli } from './kural/makineler/surus.js';
 import { binilebilir, inmeYeri } from './kural/makineler/binme.js';
 import { balyaEngelleri } from './kural/balyalar.js';
+import { kolSurus } from './kural/kol.js';
 import { baslat } from './oyun-arac.js';
 import { yay } from './olaylar.js';
 
@@ -68,6 +70,13 @@ export function binIn(durum, zaman) {
   yay('makine-bin', { makine: aday });
 }
 
+/** Sürüş girdisi: kol varsa ekran yönlü (araç o yöne döner), yoksa klavye gaz/dönüşü. */
+function surusGirdisi(m) {
+  const { x, y } = kontrol.ekranYon;
+  if (x || y) return kolSurus(m.yon, x, y);
+  return { gaz: -kontrol.yon.y, donus: kontrol.yon.x };
+}
+
 /** Bir kare: kare kancaları, sürüş ve iş. */
 export function makineKaresi(durum, dt, zaman) {
   for (const m of durum.makineler) makineTanimi(m.tur).kare(durum.tarla, m);
@@ -79,7 +88,7 @@ export function makineKaresi(durum, dt, zaman) {
     giyilenKare(durum, m, dt, zaman);
     return;
   }
-  const girdi = { gaz: -kontrol.yon.y, donus: kontrol.yon.x };
+  const girdi = surusGirdisi(m);
   if (girdi.gaz || girdi.donus) baslat(durum, zaman);
   const s = surusAdim(durum.tarla, m, girdi, dt, engeller(durum, m));
   if (s.takildi) yay('makine-takildi', { makine: m });

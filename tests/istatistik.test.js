@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ANAHTAR, SON_SAYISI, TOHUM_SINIRI, bosIstatistik, bellekDeposu, temizle, yukle, kaydet,
   dunEtiketi, gecerliSeri, oynandiKaydet, pesKaydet, bulunduKaydet, ozet,
-  okumalarEmoji, paylasimEki, gunFarki, dondurmaVar, dondurmaKurtarir,
+  okumalarEmoji, paylasimEki, gunFarki, dondurmaVar, dondurmaKurtarir, tarlaAnahtari,
 } from '../js/kural/istatistik.js';
 
 const sonuc = (etiket, sureMs, ek = {}) => ({
@@ -231,4 +231,42 @@ test('dondurma: rahat modda süresiz kayıt rekora girmez, seri sayılır', () =
   assert.equal(ist.enIyiMs, null);
   assert.equal(rapor.rekor, false);
   assert.equal(ist.seri, 3);
+});
+
+test('rekor zorluğa göre ayrılır: aynı etiket Zor ve Kolay farklı tarladır', () => {
+  let ist = bosIstatistik();
+  let r;
+  ({ ist } = bulunduKaydet(ist, sonuc('abc', 300000, { zorluk: 'zor' }), '2026-10-31'));
+  ({ ist, rapor: r } = bulunduKaydet(ist, sonuc('abc', 60000, { zorluk: 'kolay' }), '2026-10-31'));
+  assert.equal(r.tohumRekoru, false, 'Kolay tarla Zor tarlanın rekoruyla karşılaşmaz');
+  assert.equal(r.rekor, false, 'Kolay için ilk bulma rekor sayılmaz');
+  assert.equal(ist.tohumEnIyi['abc|zor'], 300000);
+  assert.equal(ist.tohumEnIyi['abc|kolay'], 60000);
+  ({ ist, rapor: r } = bulunduKaydet(ist, sonuc('abc', 250000, { zorluk: 'zor' }), '2026-10-31'));
+  assert.equal(r.tohumRekoru, true);
+  assert.equal(r.rekor, true);
+  assert.equal(r.oncekiEnIyiMs, 300000, 'önceki en iyi o zorluğun en iyisi');
+  assert.equal(ist.enIyiMs, 60000, 'genel en iyi süre hepsinin en kısası');
+});
+
+test('zorluğu olmayan eski kayıt normal sayılır (geriye uyum)', () => {
+  assert.equal(tarlaAnahtari('x', undefined), 'x');
+  assert.equal(tarlaAnahtari('x', 'normal'), 'x');
+  assert.equal(tarlaAnahtari('x', 'zor'), 'x|zor');
+  const eski = temizle({ enIyiMs: 40000, tohumEnIyi: { x: 40000 } });
+  assert.equal(eski.zorlukEnIyi.normal, 40000);
+  const { rapor } = bulunduKaydet(eski, sonuc('x', 30000, { zorluk: 'normal' }), '2026-10-31');
+  assert.equal(rapor.tohumRekoru, true);
+  assert.equal(rapor.rekor, true);
+  const zor = bulunduKaydet(eski, sonuc('x', 30000, { zorluk: 'zor' }), '2026-10-31').rapor;
+  assert.equal(zor.rekor, false, 'eski kayıt Zor rekoru sayılmaz');
+  assert.equal(zor.tohumRekoru, false);
+});
+
+test('paylaşım bağlantısı: zorluk normal değilse &zorluk= eklenir', () => {
+  const ek = (zorluk) => paylasimEki({ etiket: 'abc', zorluk, okumalar: [] }, 'https://o/');
+  assert.equal(ek('zor'), 'https://o/?tohum=abc&zorluk=zor');
+  assert.equal(ek('kolay'), 'https://o/?tohum=abc&zorluk=kolay');
+  assert.equal(ek('normal'), 'https://o/?tohum=abc');
+  assert.equal(ek(undefined), 'https://o/?tohum=abc');
 });

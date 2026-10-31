@@ -2,10 +2,11 @@
  * Sırt üfleyicisi (saf tanım): giyilen makine. E ile takılınca çiftçi yürümeye devam eder
  * (biraz yavaş: ağırlık), makine karakteri izler. Boşluk basılıyken baktığı yönde bir
  * koni (MENZIL hücre, ±KONI_ACI) içindeki hücrelerin YÜZEY samanını ileri savurur: her
- * hücreden kare başına en çok 1 kat alınır, koninin ötesine (UCUS_ASGARI..UCUS_ASGARI + 3
- * hücre) bırakılır; tarla dışına düşen saman gider (kaldirilan artar). Yakın hücreler
- * daha güçlü etkilenir; yüksekliği DERIN_ESIK'i aşan hücrelerde etki yükseklikle ters
- * orantılı azalır (derin yığını tek başına bitiremez, yalnız yüzeyi inceltir).
+ * hücreden saniyede YAKIN_HIZ'a kadar kat alınır (karede birden çok olabilir), koninin
+ * ötesine (UCUS_ASGARI..UCUS_ASGARI + 3 hücre) bırakılır; tarla dışına düşen saman gider
+ * (kaldirilan artar). Yakın hücreler daha güçlü etkilenir; yüksekliği DERIN_ESIK'i aşan
+ * hücrelerde etki yükseklikle ters orantılı azalır (derin yığını tek başına bitiremez,
+ * yalnız yüzeyi inceltir).
  * İğne ve çivilere dokunulmaz (ağırdır, uçmaz): üstündeki saman uçarsa açıkta kalırlar,
  * üzerlerine saman yağarsa gömülürler. Kural saf ve deterministik: hücrelerin "kat al"
  * kararı çalışma süresi ile hücreye özgü sabit bir fazdan türer (rastgelelik yok).
@@ -45,10 +46,10 @@ function hucreHizi(d, h) {
   return h > DERIN_ESIK ? hiz * (DERIN_ESIK / h) : hiz;
 }
 
-/** Bu karede (sure - dt, sure] aralığında hücrenin faz sayacı bir tam sayı geçti mi? */
-function katAlinir(i, hiz, sure, dt) {
+/** Bu karede (sure - dt, sure] aralığında hücrenin faz sayacı kaç tam sayı geçti? */
+export function katSayisi(i, hiz, sure, dt) {
   const faz = (i * ALTIN) % 1;
-  return Math.floor(sure * hiz + faz) > Math.floor((sure - dt) * hiz + faz);
+  return Math.floor(sure * hiz + faz) - Math.floor((sure - dt) * hiz + faz);
 }
 
 /** Hücreden (dx, dy) yönünde, namludan `uzak` hücre ötedeki hedef hücre. */
@@ -76,17 +77,23 @@ function savur(tarla, m, dt) {
   m.ufleSure += dt;
   const alinan = [];
   koniyiGez(o, m.yon, (i, dx, dy, d) => {
-    if (tarla.h[i] <= 0 || !katAlinir(i, hucreHizi(d, tarla.h[i]), m.ufleSure, dt)) return;
-    tarla.h[i] -= 1;
-    alinan.push(ucusYeri(o, dx, dy, d, UCUS_ASGARI + UCUS_EK * (1 - d / MENZIL)));
+    if (tarla.h[i] <= 0) return;
+    // Karede birden çok kat geçebilir (48 Hz altı): hepsi alınır, hız kare hızına bağlı olmaz.
+    const kat = Math.min(tarla.h[i], katSayisi(i, hucreHizi(d, tarla.h[i]), m.ufleSure, dt));
+    if (kat <= 0) return;
+    tarla.h[i] -= kat;
+    const yer = ucusYeri(o, dx, dy, d, UCUS_ASGARI + UCUS_EK * (1 - d / MENZIL));
+    alinan.push([yer[0], yer[1], kat]);
   });
   let disari = 0;
-  for (const [x, y] of alinan) {
-    if (icinde(x, y)) tarla.h[y * GENISLIK + x] += 1;
-    else disari += 1;
+  let toplam = 0;
+  for (const [x, y, kat] of alinan) {
+    toplam += kat;
+    if (icinde(x, y)) tarla.h[y * GENISLIK + x] += kat;
+    else disari += kat;
   }
   tarla.kaldirilan += disari;
-  return alinan.length;
+  return toplam;
 }
 
 export const UFLEYICI = makineTanimla('ufleyici', {

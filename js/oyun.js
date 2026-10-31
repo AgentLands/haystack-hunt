@@ -9,6 +9,7 @@ import { tarlaKur, cokert } from './kural/tarla.js';
 import { igneDerinligi } from './kural/igne.js';
 import { EL_YARICAP, TIRMIK_YARICAP, MIKNATIS_MENZIL } from './kural/araclar.js';
 import { zorlukAdi, zorlukAl, zorlukTohumu, VARSAYILAN_ZORLUK } from './kural/zorluk.js';
+import { kaymaKos } from './kural/kayma.js';
 import { karakterKur } from './kural/karakter.js';
 import './kural/makineler/hepsi.js';
 import { garajKur } from './kural/makineler/garaj.js';
@@ -21,10 +22,7 @@ import { karakterKaresi, fareBas, fareSurukle } from './oyun-karakter.js';
 import { binIn, makineKaresi, makineImleci } from './oyun-makine.js';
 import { yay } from './olaylar.js';
 
-/** Normal zorluğun parıltı değerleri; oyundaki geçerli değerler durum.parilti* alanlarında. */
-export const PARILTI_ARALIK = 12000;
 export { PARILTI_SURE };
-export const PARILTI_DERINLIK = 8;
 export const YARICAP = {
   el: EL_YARICAP, tirmik: TIRMIK_YARICAP, dedektor: 1.5, miknatis: MIKNATIS_MENZIL,
 };
@@ -72,6 +70,7 @@ export function yeniOyun(etiket, zorluk, secenek = {}) {
     arac, aracYaricap: YARICAP[arac], rahat: secenek.rahat ?? varsayilanRahat,
     basili: false, fare: null, imlec: null, son: null,
     oncekiKullan: false, elKilitli: false, tirmikSayac: 0, sonZaman: null,
+    elBirikim: 0, elAktif: false, kaymaBirikim: 0,
     halkalar: [], dedektor: ayar.dedektor, dedektorHakki: ayar.dedektor,
     miknatis: ayar.miknatis, miknatisHakki: ayar.miknatis,
     pariltiAralik: ayar.pariltiAralik, pariltiDerinlik: ayar.pariltiDerinlik,
@@ -137,7 +136,7 @@ export function adim(zaman) {
     durum.aracYaricap = YARICAP[durum.arac];
     if (karakterKaresi(durum, dt, zaman) && !durum.bitti) kazan(zaman);
   }
-  if (cokert(tarla)) cokert(tarla);
+  durum.kaymaBirikim = kaymaKos(() => cokert(tarla), durum.kaymaBirikim, dt);
   if (!durum.bitti) {
     const derinlik = igneDerinligi(tarla);
     if (derinlik === 0 && !durum.gorundu) {

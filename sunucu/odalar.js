@@ -8,6 +8,8 @@ import { randomInt } from 'node:crypto';
 
 export const MAKS_OYUNCU = 8;
 export const MAKS_ODA = 500;
+/** Aynı uzak adresin aynı anda kurucusu olabileceği oda sayısı. */
+export const MAKS_IP_ODA = 3;
 /** Karışmayan harfler (I, O, Q, W, X yok). */
 const HARFLER = 'ABCDEFGHJKLMNPRSTUVYZ';
 const GERI_SAYIM = 3;
@@ -43,9 +45,21 @@ export function odaDurumu(oda) {
     tur: oda.tur,
     oyuncular: [...oda.kayitlar.values()].map((k) => ({
       id: k.id, ad: k.ad, renk: k.renk, durum: k.durum,
-      sira: k.sira, sureMs: k.sureMs, saman: k.saman, bagli: Boolean(k.oyuncu),
+      sira: k.sira, sureMs: k.sureMs, cezaMs: k.cezaMs, saman: k.saman,
+      bagli: Boolean(k.oyuncu),
     })),
   };
+}
+
+/**
+ * İğneyi bulanları ceza dahil süreye göre sıralar (eşitlikte varış sırası); `sira` 1'den
+ * başlar. Sonradan bulan, çivi cezası daha büyük olan öncekini geçebilir; sıra her bulundu'da
+ * yeniden hesaplanır, yarış bitince kesinleşir.
+ */
+function siraVer(oda) {
+  const bulanlar = [...oda.kayitlar.values()].filter((k) => k.durum === 'buldu');
+  bulanlar.sort((a, b) => (a.sureMs - b.sureMs) || (a.varis - b.varis));
+  bulanlar.forEach((k, i) => { k.sira = i + 1; });
 }
 
 function hata(oyuncu, kod, mesaj) {
@@ -53,7 +67,8 @@ function hata(oyuncu, kod, mesaj) {
 }
 
 export class Odalar {
-  constructor({ geriSayimMs = 1000, yarisMs = 20 * 60 * 1000 } = {}) {
+  constructor({ geriSayimMs = 1000, yarisMs = 20 * 60 * 1000, ipOda = MAKS_IP_ODA } = {}) {
+    this.ipOda = ipOda;
     this.geriSayimMs = geriSayimMs;
     this.yarisMs = yarisMs;
     this.odalar = new Map();
@@ -77,10 +92,13 @@ export class Odalar {
   kur(oyuncu, ad) {
     if (this.uyelik.has(oyuncu.id)) return hata(oyuncu, 'zaten-odada', 'Zaten bir odadasın');
     if (this.odalar.size >= MAKS_ODA) return hata(oyuncu, 'sunucu-dolu', 'Sunucu dolu');
+    if (oyuncu.ip && this.#ipOdalari(oyuncu.ip) >= this.ipOda) {
+      return hata(oyuncu, 'oda-siniri', `Bu adresten en çok ${this.ipOda} oda kurulabilir`);
+    }
     let kod = yeniKod();
     while (this.odalar.has(kod)) kod = yeniKod();
     const oda = {
-      kod, kurucu: oyuncu.id, durum: 'lobi', tur: 0, etiket: null, sira: 0,
+      kod, kurucu: oyuncu.id, ip: oyuncu.ip, durum: 'lobi', tur: 0, etiket: null, sira: 0,
       kayitlar: new Map(), zamanlayici: null,
     };
     this.odalar.set(kod, oda);
@@ -107,7 +125,7 @@ export class Odalar {
     }
     for (const [id, k] of oda.kayitlar) if (!k.oyuncu) oda.kayitlar.delete(id);
     for (const k of oda.kayitlar.values()) {
-      Object.assign(k, { durum: 'bekliyor', sira: null, sureMs: null, saman: 0 });
+      Object.assign(k, { durum: 'bekliyor', sira: null, sureMs: null, cezaMs: 0, saman: 0 });
     }
     Object.assign(oda, {
       durum: 'geri-sayim', tur: oda.tur + 1, sira: 0, etiket: yeniEtiket(), zorluk,
@@ -127,8 +145,12 @@ export class Odalar {
     const { oda, kayit } = this.#oynayan(oyuncu);
     if (!kayit) return hata(oyuncu, 'yaris-yok', 'Sürmekte olan bir yarışın yok');
     oda.sira += 1;
-    Object.assign(kayit, { durum: 'buldu', sira: oda.sira, sureMs: m.sureMs, saman: m.saman });
-    if (kayit.sira === 1) {
+    Object.assign(kayit, {
+      durum: 'buldu', varis: oda.sira, sureMs: m.sureMs, cezaMs: m.cezaMs, saman: m.saman,
+    });
+    siraVer(oda);
+    // İlk bulan anında duyurulur (kesin kazanan yarış bitince sira 1: ceza dahil en kısa süre).
+    if (oda.sira === 1) {
       this.#yay(oda, { t: 'kazanan', id: kayit.id, ad: kayit.ad, sureMs: m.sureMs });
     }
     return this.#guncelle(oda);
@@ -170,10 +192,16 @@ export class Odalar {
     this.uyelik.clear();
   }
 
+  #ipOdalari(ip) {
+    let n = 0;
+    for (const oda of this.odalar.values()) if (oda.ip === ip) n += 1;
+    return n;
+  }
+
   #ekle(oda, oyuncu, ad) {
     oda.kayitlar.set(oyuncu.id, {
       id: oyuncu.id, ad, renk: bosRenk(oda), oyuncu,
-      durum: 'bekliyor', sira: null, sureMs: null, saman: 0,
+      durum: 'bekliyor', sira: null, varis: null, sureMs: null, cezaMs: 0, saman: 0,
     });
     this.uyelik.set(oyuncu.id, oda);
     this.#yay(oda, odaDurumu(oda));

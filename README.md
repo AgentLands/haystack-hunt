@@ -67,9 +67,10 @@ npm run denetim          # CLAUDE.md kurallarının kod denetimi (satır uzunlu�
 npm run duman            # Chromium'da uçtan uca duman testi (bkz. aşağı)
 ```
 
-`npm run denetim` satır > 100 karakter, kod dosyası > 300 / test dosyası > 400 satır,
-belge yorumu eksik modül, `js/kural/` içinde `Math.random` ve boş `catch` bloklarını
-`dosya:satır: açıklama` biçiminde listeler; bulgu varsa çıkış kodu 1 olur.
+`npm run denetim` (`js/`, `tests/`, `sunucu/`, `araclar/`, `dev/`) satır > 100 karakter,
+kod dosyası > 300 / test dosyası > 400 satır, belge yorumu eksik modül, `js/kural/` içinde
+`Math.random` ve boş `catch` bloklarını `dosya:satır: açıklama` biçiminde listeler; bulgu
+varsa çıkış kodu 1 olur.
 
 `npm run duman` için Playwright ve Chromium gerekir:
 
@@ -88,11 +89,23 @@ npx playwright@1.48.2 install chromium
 
 | Dosya | Sorumluluk |
 | --- | --- |
-| `js/boyut.js` | ızgara boyutları |
-| `js/rastgele.js` | tohumlu rastgelelik, günün etiketi |
-| `js/tarla.js` | tarla üretimi, yığın kayması |
-| `js/igne.js` | iğneyi saklama, derinlik |
-| `js/araclar.js` | el, tırmık, dedektör |
-| `js/cizim.js` | tuvale çizim |
-| `js/cizim/` | tarla boyası: uzak (1 px/hücre) ve yakın görünüm (saman çöpü dokulu alt piksel atlası) |
-| `js/oyun.js` | döngü, girdi, arayüz |
+| `js/kural/boyut.js` | ızgara boyutları |
+| `js/kural/rastgele.js` | tohumlu rastgelelik, günün etiketi |
+| `js/kural/tarla.js` | tarla üretimi, yığın kayması (`cokert`) |
+| `js/kural/kayma.js` | yığın kaymasının kare hızından bağımsız zamanlaması |
+| `js/kural/igne.js` | iğneyi saklama, derinlik |
+| `js/kural/araclar.js` | el, tırmık, dedektör, mıknatıs (el kazısı saniyede sabit hızla) |
+| `js/kural/civi.js`, `balyalar.js` | paslı çiviler, saman balyaları |
+| `js/kural/karakter.js` | çiftçinin yürüyüşü, erişim çemberi |
+| `js/kural/makineler/` | traktör, üfleyici, balya makinesi, garaj, sürüş fiziği |
+| `js/kural/zorluk.js`, `istatistik.js` | zorluk ayarları ve puan; istatistik ve paylaşım |
+| `js/kural/kol.js` | sanal kolun matematiği ve ekran yönlü sürüş |
+| `js/oyun.js` | oyun durumu ve kare döngüsü (yeni tarla, kare adımı, bitiş) |
+| `js/oyun-karakter.js`, `oyun-arac.js`, `oyun-makine.js` | karakter karesi, araç eylemleri, makine karesi |
+| `js/kontrol.js`, `js/girdi.js` | kontrol durumu; klavye, fare ve dokunma girdisi |
+| `js/olaylar.js` | olay yolu ve olay kataloğu |
+| `js/cizim.js`, `js/cizim/` | tuvale çizim; tarla boyası: uzak (1 px/hücre) ve yakın görünüm (saman çöpü dokulu alt piksel atlası) |
+| `js/arayuz.js`, `js/ana.js` | DOM arayüzü ve paylaşım; giriş (özellik modülleri burada bağlanır) |
+| `js/ozellik/` | ses, kamera, istatistik, yarış, dokunmatik, efekt, karakter ve makine çizimi gibi özellikler |
+| `sunucu/` | yarış sunucusu ve WebSocket katmanı (`sunucu/PROTOKOL.md`) |
+| `araclar/denetim.mjs`, `dev/` | kod denetimi; elle bakılan önizleme sayfaları |

@@ -14,6 +14,7 @@ import { balyaEngelleri, acilacakBalya, balyaAcIlerlet } from './kural/balyalar.
 import {
   baslat, elKullan, tirmikKullan, dedektorKullan, miknatisKullan,
 } from './oyun-arac.js';
+import { elAdimi } from './kural/araclar.js';
 import { yay } from './olaylar.js';
 
 /** Boşluk basılı tutulurken tırmık itişleri arası (sn). */
@@ -55,21 +56,36 @@ export function karakterKaresi(durum, dt, zaman) {
   return aracKaresi(durum, dt, zaman);
 }
 
+/** Bu karede elin kazacağı kat: basış anında en az 1, sonra saniyede EL_HIZI (elAdimi). */
+function elKati(durum, dt) {
+  const a = elAdimi(durum.elBirikim, dt);
+  durum.elBirikim = a.birikim;
+  const ilk = !durum.elAktif;
+  durum.elAktif = true;
+  return ilk ? Math.max(1, a.n) : a.n;
+}
+
 function aracKaresi(durum, dt, zaman) {
   const k = durum.karakter;
   const kullan = kontrol.kullan && !durum.bitti;
   const yeni = kullan && !durum.oncekiKullan;
   durum.oncekiKullan = kontrol.kullan;
   if (!kontrol.kullan) durum.elKilitli = false;
-  const fare = durum.basili && !durum.bitti ? durum.fare : null;
+  let fare = durum.basili && !durum.bitti ? durum.fare : null;
+  if (fare) durum.fare = fare = erisimeCek(k, fare); // yürüyerek uzaklaşılınca erişime çekilir
   const nokta = aracYeri(durum);
   durum.imlec = fare || nokta;
   k.kullaniyor = kullan || fare !== null;
-  if (!k.kullaniyor) return false;
+  if (!k.kullaniyor) {
+    durum.elBirikim = 0;
+    durum.elAktif = false;
+    return false;
+  }
   baslat(durum, zaman);
   if (durum.arac === 'el') {
     if (kullan && balyaAcKaresi(durum, dt)) return false;
-    return (kullan && elKullan(durum, nokta)) || (fare !== null && elKullan(durum, fare));
+    const kat = elKati(durum, dt);
+    return (kullan && elKullan(durum, nokta, kat)) || (fare !== null && elKullan(durum, fare, kat));
   }
   if (durum.arac === 'tirmik') {
     if (!kullan) return false; // fareyle tırmık sürüklemede (fareSurukle)
