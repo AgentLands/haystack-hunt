@@ -126,3 +126,19 @@ export function bisel(ctx, x, y, w, h, r, isik, koyu, acik, sonuk) {
     Math.max(r - k, 0.02));
   doldur(ctx, renk(acik, sonuk));
 }
+
+/** Yerel uzayda 1 ekran pikselinin boyu (dış hat kalınlığı için). */
+export function ekranBirim(ctx) {
+  const t = ctx.getTransform();
+  return 1 / Math.hypot(t.a, t.b);
+}
+
+/** Yolu önce dış hat rengiyle kalın çizer, sonra doldurur (boyalı oyuncak görünümü). */
+export function disHat(ctx, yol, dolgu, kalinlik = 1.2) {
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#2a1a0d';
+  ctx.lineWidth = 2 * kalinlik * ekranBirim(ctx);
+  ctx.stroke(yol);
+  ctx.fillStyle = dolgu;
+  ctx.fill(yol);
+}
