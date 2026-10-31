@@ -37,6 +37,19 @@ export function samanCarpani(z) {
   return 1 / (1 + z / MAKINE_SAMAN);
 }
 
+/** İş aygıtı çalışıp hiçbir şey almadığı/itmediği karede iş yakıtının harcanan kesri. */
+export const BOSTA_IS_ORANI = 0.1;
+
+/**
+ * Bir karede iş aygıtının harcadığı yakıt: tanımın isYakit'i × dt; aygıt bu karede saman
+ * almadıysa (sonuc.miktar 0: dolu kepçe, boş zemin, hareketsiz bekleme) yalnız
+ * BOSTA_IS_ORANI kadarı. Boşluğu basılı tutup beklemek depoyu boşa bitirmesin.
+ */
+export function isYakiti(t, sonuc, dt) {
+  const oran = sonuc.miktar > 0 ? 1 : BOSTA_IS_ORANI;
+  return t.isYakit * dt * oran;
+}
+
 /** Yakıt harcar; depo bu harcamayla boşaldıysa true. */
 export function yakitHarca(m, miktar) {
   if (m.yakit <= 0 || !(miktar > 0)) return false;

@@ -30,6 +30,9 @@
  *   makine-calisti   { makine, miktar }            iş aygıtı bu karede miktar saman aldı/itti
  *   makine-takildi   { makine }                    yükseklik farkı tırmanma eşiğini aştı
  *   yakit-bitti      { makine }                    depo boşaldı (makine artık kımıldamaz)
+ *   yakit-ikmal      { makine, onceki }            garajdaki park yerine dönüp durdu: depo
+ *                                                  %100'e doldu (makine başına tur başına
+ *                                                  bir kez; onceki: ikmalden önceki yakıt)
  * Kepçeli traktör (x, y hücre birimi):
  *   kepce-doldu      { makine }                    kepçe kapasiteye ulaştı
  *   kepce-bosaltildi { makine, miktar, igne, civi, x, y }  kenarda boşaltıldı (miktar saman
