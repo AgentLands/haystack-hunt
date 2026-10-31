@@ -38,7 +38,7 @@ function surDur(t, m, girdi, sn, engeller) {
 test('kayıt: tanım eksiksiz olmalı, bilinmeyen tür hata verir, traktör kayıtlı', () => {
   assert.throws(() => makineTanimla('eksik', { ad: 'Eksik' }), /eksik alan/);
   assert.throws(() => makineTanimi('yok'), /Bilinmeyen/);
-  assert.deepEqual(makineTurleri(), ['traktor']);
+  assert.deepEqual(makineTurleri(), ['traktor', 'balya']);
   const t = makineTanimi('traktor');
   assert.equal(t.tur, 'traktor');
   assert.equal(typeof t.calis, 'function');

@@ -4,7 +4,7 @@
  * mıknatıs (sınırlı hak; yakındaki iğneyi yüzeye doğru çeker). İkisi de yalnız iğneyi görür.
  */
 import { GENISLIK, icinde } from './boyut.js';
-import { igneAcikMi, igneDerinligi } from './igne.js';
+import { igneAcikMi, igneDerinligi, igneKonumu } from './igne.js';
 
 export const EL_YARICAP = 2.5;
 export const TIRMIK_YARICAP = 4;
@@ -67,9 +67,10 @@ export function tirmikla(tarla, cx, cy, yx, yy) {
   return disari;
 }
 
-/** Noktanın iğneye uzaklığına göre sıcaklık seviyesi. */
+/** Noktanın iğneye (etkin konumuna: balyadaysa balyaya) uzaklığına göre sıcaklık seviyesi. */
 export function dedektorOku(tarla, cx, cy) {
-  const mesafe = Math.hypot(cx - tarla.igne.x, cy - tarla.igne.y);
+  const p = igneKonumu(tarla);
+  const mesafe = Math.hypot(cx - p.x, cy - p.y);
   return SEVIYELER.find((s) => mesafe <= s.mesafe);
 }
 
@@ -82,10 +83,12 @@ export function igneyiAlabilirMi(tarla, cx, cy) {
 /**
  * Mıknatıs: iğne (cx, cy)'ye MIKNATIS_MENZIL hücreden yakınsa onu MIKNATIS_CEKIS kat yukarı
  * çeker (en çok yüzeye kadar). Menzildeyse true (açıktaki iğne yerinde kalır), değilse false.
+ * Balyadaki iğneyi çekemez (false); kepçedeki menzilde sayılır ama çekilmez.
  */
 export function miknatisCek(tarla, cx, cy) {
   const { igne } = tarla;
-  if (Math.hypot(cx - igne.x, cy - igne.y) > MIKNATIS_MENZIL) return false;
+  const p = igneKonumu(tarla);
+  if (igne.balyada || Math.hypot(cx - p.x, cy - p.y) > MIKNATIS_MENZIL) return false;
   if (igne.kepcede) return true; // kepçedeki iğne zaten tarlada değil
   igne.z += Math.min(MIKNATIS_CEKIS, igneDerinligi(tarla));
   return true;

@@ -52,10 +52,10 @@ export function yeniOyun(etiket, zorluk) {
   const { garaj, makineler } = garajKur(tarla, ad);
   const karakter = karakterKur(tarla, garaj, makineler.map(makineEngeli));
   durum = {
-    etiket, zorluk: ad, tarla, garaj, makineler, karakter,
+    etiket, zorluk: ad, tarla, garaj, makineler, karakter, balyalar: tarla.balyalar,
     arac, aracYaricap: YARICAP[arac],
     basili: false, fare: null, imlec: null, son: null,
-    oncekiKullan: false, tirmikSayac: 0, sonZaman: null,
+    oncekiKullan: false, elKilitli: false, tirmikSayac: 0, sonZaman: null,
     halkalar: [], dedektor: ayar.dedektor, dedektorHakki: ayar.dedektor,
     miknatis: ayar.miknatis, miknatisHakki: ayar.miknatis,
     pariltiAralik: ayar.pariltiAralik, pariltiDerinlik: ayar.pariltiDerinlik,

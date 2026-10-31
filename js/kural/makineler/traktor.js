@@ -7,7 +7,7 @@
  * Kepçenin içi: makine.icerik = { saman, igne: bool, civiler: [çivi] }.
  */
 import { GENISLIK, YUKSEKLIK, icinde } from '../boyut.js';
-import { igneHucreleri } from '../igne.js';
+import { igneHucreleri, tarlada } from '../igne.js';
 import { makineTanimla } from './kayit.js';
 
 export const KEPCE_KAPASITE = 6000;
@@ -67,13 +67,13 @@ function kepcele(tarla, m, p, dt) {
   m.yuk = ic.saman / KEPCE_KAPASITE;
   const kume = new Set(hucreler);
   const { igne } = tarla;
-  if (!igne.kepcede && kepceyeGirer(tarla, igne, kume)) {
+  if (tarlada(igne) && kepceyeGirer(tarla, igne, kume)) {
     igne.kepcede = true;
     ic.igne = true;
     sonuc.olaylar.push(['igne-kepcede', { makine: m, x: igne.x, y: igne.y }]);
   }
   for (const civi of tarla.civiler) {
-    if (civi.alindi || civi.kepcede || !kepceyeGirer(tarla, civi, kume)) continue;
+    if (civi.alindi || !tarlada(civi) || !kepceyeGirer(tarla, civi, kume)) continue;
     civi.kepcede = true;
     ic.civiler.push(civi);
     sonuc.olaylar.push(['civi-kepcede', { makine: m, x: civi.x, y: civi.y }]);
