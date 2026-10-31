@@ -85,6 +85,7 @@ function savur(tarla, m, dt) {
     const yer = ucusYeri(o, dx, dy, d, UCUS_ASGARI + UCUS_EK * (1 - d / MENZIL));
     alinan.push([yer[0], yer[1], kat]);
   });
+  if (alinan.length) tarla.kirli = true; // yığın kayması yeniden taranır (kural/tarla.js)
   let disari = 0;
   let toplam = 0;
   for (const [x, y, kat] of alinan) {

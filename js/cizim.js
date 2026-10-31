@@ -8,8 +8,9 @@ import { igneDerinligi } from './kural/igne.js';
 import { gorunum } from './gorunum.js';
 import { boya } from './cizim/tarla-boya.js';
 import { yakinCiz, yakinSifirla, kanal, karolar } from './cizim/yakin.js';
+import { OLCEK, DUNYA_EN, DUNYA_BOY, ekran, tuvalOlcekKur } from './cizim/tuval-olcek.js';
 
-export const OLCEK = 4;
+export { OLCEK };
 /** Boyanmış çıplak tarla (GENISLIK×YUKSEKLIK, katmansız); mini harita bundan çizer. */
 export let tarlaResmi = null;
 /**
@@ -28,10 +29,13 @@ export function katmanEkle(islev, yer = 'ust') {
   katmanlar[yer].push(islev);
 }
 
+/**
+ * Ana tuvalin çizicisi. Arka bellek CSS boyutu × devicePixelRatio'dur (cizim/tuval-olcek.js);
+ * dünya hep DUNYA_EN×DUNYA_BOY piksel, dönüşüme taban çarpanı eklenir.
+ */
 export function cizici(tuval) {
   const ctx = tuval.getContext('2d');
-  tuval.width = GENISLIK * OLCEK;
-  tuval.height = YUKSEKLIK * OLCEK;
+  const olcekDenetle = tuvalOlcekKur(tuval);
   const ara = document.createElement('canvas');
   ara.width = GENISLIK;
   ara.height = YUKSEKLIK;
@@ -39,8 +43,10 @@ export function cizici(tuval) {
   const actx = ara.getContext('2d');
   const resim = actx.createImageData(GENISLIK, YUKSEKLIK);
   const golgeHucre = (i) => karolar.golgeHucre(kanal, i);
+  const tabanCiz = () => ctx.drawImage(ara, 0, 0, DUNYA_EN, DUNYA_BOY);
   return function ciz(durum, zaman) {
     const bas = performance.now();
+    olcekDenetle();
     const degisen = karolar.hDegisti(durum.tarla);
     if (degisen) {
       if (degisen.yeni) yakinSifirla();
@@ -49,10 +55,12 @@ export function cizici(tuval) {
     }
     // Kamera: tüm dünya çizimi (tarla, iğne, halkalar, imleç, katmanlar) tek dönüşümle sarılır.
     const { z, gx, gy } = gorunum;
-    ctx.setTransform(z, 0, 0, z, -gx * OLCEK * z, -gy * OLCEK * z);
+    const zx = z * ekran.tabanX;
+    const zy = z * ekran.tabanY;
+    ctx.setTransform(zx, 0, 0, zy, -gx * OLCEK * zx, -gy * OLCEK * zy);
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(ara, 0, 0, tuval.width, tuval.height);
-    cizimOlcum.karo = yakinCiz(ctx, gorunum, OLCEK);
+    // Atlas görünür alanı tam kaplıyorsa kaba taban çizilmez (çift doldurma olmasın).
+    cizimOlcum.karo = yakinCiz(ctx, gorunum, OLCEK, tabanCiz);
     cizimOlcum.tarlaMs = performance.now() - bas;
     cizimOlcum.ornekler?.push(cizimOlcum.tarlaMs);
     for (const k of katmanlar.alt) k(ctx, durum, zaman);

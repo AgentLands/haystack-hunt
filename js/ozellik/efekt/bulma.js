@@ -182,7 +182,7 @@ export function bulmaCiz(ctx, zaman, hareketli) {
   const olcek = 1 + 0.45 * kalk;
   igneModeli(ctx, mx, my - z, aci, olcek);
   const pir = (t % 1500) / 1500;
-  if (t > KALKIS * 0.6) {
+  if (t > KALKIS * 0.6 && hareketli) {
     const yari = igneYariBoyu(eb) * olcek;
     const ux = mx + Math.cos(aci) * yari * (pir * 2 - 1);
     const uy = my - z + Math.sin(aci) * yari * (pir * 2 - 1);

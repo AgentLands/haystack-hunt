@@ -6,12 +6,13 @@
  */
 import { katmanEkle, OLCEK, igneModeli } from '../cizim.js';
 import { igneKonumu, tarlada } from '../kural/igne.js';
+import { nabizSade } from './sade-hareket.js';
 
 /** Balyadaki iğne: nabız gibi atan ekran-sabit kalınlıkta beyaz halka ve gümüş iğne modeli. */
 function igneIsareti(ctx, x, y, aci, zaman) {
   const m = ctx.getTransform();
   const eb = 1 / Math.hypot(m.a, m.b);
-  const nabiz = 0.5 + 0.5 * Math.sin(zaman / 180);
+  const nabiz = nabizSade(0.5 + 0.5 * Math.sin(zaman / 180));
   ctx.strokeStyle = 'rgba(42, 26, 13, 0.55)';
   ctx.lineWidth = 4 * eb;
   ctx.beginPath();

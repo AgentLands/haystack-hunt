@@ -63,6 +63,7 @@ function kepcele(tarla, m, p, dt) {
     tarla.h[i] -= a;
     sonuc.miktar += a;
   }
+  if (sonuc.miktar) tarla.kirli = true; // yığın kayması yeniden taranır (kural/tarla.js)
   ic.saman += sonuc.miktar;
   m.yuk = ic.saman / KEPCE_KAPASITE;
   const kume = new Set(hucreler);
@@ -135,6 +136,7 @@ export const TRAKTOR = makineTanimla('traktor', {
       const pay = Math.floor(ic.saman / hucreler.length);
       const artan = ic.saman % hucreler.length;
       hucreler.forEach((i, k) => { tarla.h[i] += pay + (k === 0 ? artan : 0); });
+      tarla.kirli = true;
     }
     const { igne } = ic;
     const civi = ic.civiler.length;

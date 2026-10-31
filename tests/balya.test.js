@@ -204,6 +204,7 @@ test('oyunda: balya makinesine bin, balya bırak, in ve El ile Boşlukla aç', a
   assert.equal(d.karakter.makine, m);
   Object.assign(m, { x: 120.5, y: 80.5, yon: 0 });
   for (const i of seritHucreleri(m)) d.tarla.h[i] = 40;
+  d.tarla.kirli = true; // h'ye doğrudan yazıldı: yığın kayması yeniden tarasın
   m.icerik.saman = BALYA_KAPASITE - 20;
   kontrol.kullan = true;
   kare(30);

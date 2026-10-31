@@ -3,14 +3,15 @@
  * ALT×ALT alt piksellik dünya-sabit bir atlas tuvalinden çizilir. Atlas karolar hâlinde,
  * tembelce boyanır: yalnız görünür (ve süre kalırsa kenar payındaki) kirli karolar, kare
  * başına süre bütçesi içinde (görünürde hiç boyanmamış karo varken bütçe biraz büyür).
- * Uzak çizim altta kalır; YAKIN_BAS..YAKIN_TAM arası geçiş karışımla yapılır, böylece
- * sıçrama olmaz.
+ * Uzak çizim altta kalır (atlas görünür alanı tam kaplayınca atlanır); YAKIN_BAS..YAKIN_TAM
+ * arası geçiş karışımla yapılır, böylece sıçrama olmaz.
  */
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { KANAL } from './tarla-boya.js';
 import { samanDokusu, toprakDokusu } from './doku.js';
 import { bolgeBoya } from './alt-piksel.js';
 import { KARO, karoKaydi, gorunurKarolar, gecisAlfa, halkaHalka } from './karolar.js';
+import { ekran } from './tuval-olcek.js';
 
 /** Hücre başına alt piksel (atlas çözünürlüğü). */
 export const ALT = 12;
@@ -21,6 +22,8 @@ const DOKU_BOYU = 256;
 const BUTCE_MS = 1.6;
 /** Görünür alanda hiç boyanmamış (altta kaba çizimin göründüğü) karo varken bütçe. */
 const DOLUM_MS = 3.5;
+/** Yeni tarla ya da yeni atlas: görünür alan dolana dek kare başına bütçe (donma olmasın). */
+const ILK_DOLUM_MS = 8;
 /** Bu kadar karedir kirli bekleyen karo, merkeze yakınlardan önce boyanır. */
 const YASLI = 4;
 
@@ -34,21 +37,45 @@ let atlas = null;
 let actx = null;
 let karoResim = null;
 let dokular = null;
-/** Atlas yeni kuruldu ya da tarla değişti: görünür alan süre bütçesi gözetmeden boyanır. */
-let tamBoya = true;
+/**
+ * Atlas yeni kuruldu ya da tarla değişti: görünür alan dolana dek büyük bütçeyle, merkezden
+ * dışa boyanır (boyanmamış karoların altında kaba çizim görünür).
+ */
+let ilkDolum = true;
 
-function hazirla() {
-  if (atlas) return;
-  dokular = {
+/** Dokuların ölçüsü (T×T, hücre başına S alt piksel) ve tohumları. */
+export const DOKU = { T: DOKU_BOYU, S: ALT, saman: 1, toprak: 2 };
+
+/** Dokuları burada, eşzamanlı üretir (pahalı: ilk yakın karede ~150 ms). */
+export function yerelDokular() {
+  return {
     T: DOKU_BOYU,
-    ...samanDokusu(DOKU_BOYU, ALT, 1),
-    toprak: toprakDokusu(DOKU_BOYU, ALT, 2),
+    ...samanDokusu(DOKU_BOYU, ALT, DOKU.saman),
+    toprak: toprakDokusu(DOKU_BOYU, ALT, DOKU.toprak),
   };
+}
+
+let dokuKaynagi = yerelDokular;
+
+/**
+ * Doku kaynağını değiştirir: islev() → yerelDokular biçiminde dokular ya da null (henüz
+ * hazır değil; o karede kaba çizim kalır). ozellik/on-hazirlik.js işçide üretir.
+ */
+export function dokuKaynagiKur(islev) {
+  dokuKaynagi = islev;
+}
+
+/** Atlası kurar; dokular henüz hazır değilse false. */
+function hazirla() {
+  if (atlas) return true;
+  dokular ??= dokuKaynagi();
+  if (!dokular) return false;
   atlas = document.createElement('canvas');
   atlas.width = GENISLIK * ALT;
   atlas.height = YUKSEKLIK * ALT;
   actx = atlas.getContext('2d');
   karoResim = actx.createImageData(KARO * ALT, KARO * ALT);
+  return true;
 }
 
 function karoBoya(tx, ty) {
@@ -96,34 +123,42 @@ function araligiBoya(a, mx, my, bitis, enAzBir) {
 
 /** Yeni tarla: eski tarlanın atlası görünmesin; ilk yakın karede görünür alan tümden boyanır. */
 export function yakinSifirla() {
-  tamBoya = true;
+  ilkDolum = true;
   boyandi.fill(0);
   if (actx) actx.clearRect(0, 0, atlas.width, atlas.height);
 }
 
 /**
  * Yakın görünümü çizer (dünya dönüşümü kurulu ctx'e). gorunum {z, gx, gy}; olcek hücre
- * başına dünya pikseli. Bu karede boyanan karo sayısını döndürür; uzakken 0.
+ * başına dünya pikseli. tabanCiz() kaba (uzak) tarlayı çizer: uzakken, geçiş karışımında
+ * ya da görünürde hiç boyanmamış karo varken atlasın altına çağrılır; atlas görünür alanı
+ * tam kaplıyorsa atlanır (çift doldurma yok). Bu karede boyanan karo sayısını döndürür.
  */
-export function yakinCiz(ctx, gorunum, olcek) {
+export function yakinCiz(ctx, gorunum, olcek, tabanCiz) {
   const { z } = gorunum;
-  if (z <= YAKIN_BAS) return 0;
-  hazirla();
+  if (z <= YAKIN_BAS || !hazirla()) {
+    tabanCiz();
+    return 0;
+  }
   const alan = { x: gorunum.gx, y: gorunum.gy, en: GENISLIK / z, boy: YUKSEKLIK / z };
   const mx = Math.floor((alan.x + alan.en / 2) / KARO);
   const my = Math.floor((alan.y + alan.boy / 2) / KARO);
   const gorunur = gorunurKarolar(alan, 1, GENISLIK, YUKSEKLIK);
-  const sure = boslukVar(gorunur) ? DOLUM_MS : BUTCE_MS;
-  const bitis = tamBoya ? null : performance.now() + sure;
-  tamBoya = false;
+  const bosluk = boslukVar(gorunur);
+  if (!bosluk) ilkDolum = false;
+  const sure = bosluk ? (ilkDolum ? ILK_DOLUM_MS : DOLUM_MS) : BUTCE_MS;
+  const bitis = performance.now() + sure;
   let n = araligiBoya(gorunur, mx, my, bitis, true);
   // Süre kalırsa iki karoluk kenar payını önceden boya (kamera kayınca hazır olsun).
   const pay = gorunurKarolar(alan, 2 * KARO, GENISLIK, YUKSEKLIK);
-  n += araligiBoya(pay, mx, my, bitis ?? performance.now() + BUTCE_MS, false);
+  n += araligiBoya(pay, mx, my, bitis, false);
+  const alfa = gecisAlfa(z, YAKIN_BAS, YAKIN_TAM);
+  if (alfa < 1 || boslukVar(gorunur)) tabanCiz();
   const { x0, y0, x1, y1 } = gorunur;
   ctx.save();
-  ctx.globalAlpha = gecisAlfa(z, YAKIN_BAS, YAKIN_TAM);
-  ctx.imageSmoothingEnabled = true;
+  ctx.globalAlpha = alfa;
+  // Büyütürken en yakın komşu (piksel sanatı, ucuz); küçültürken yumuşatma (titreşmesin).
+  ctx.imageSmoothingEnabled = (olcek * z * ekran.tabanX) / ALT < 1;
   ctx.imageSmoothingQuality = 'low';
   ctx.drawImage(atlas, x0 * ALT, y0 * ALT, (x1 - x0) * ALT, (y1 - y0) * ALT,
     x0 * olcek, y0 * olcek, (x1 - x0) * olcek, (y1 - y0) * olcek);

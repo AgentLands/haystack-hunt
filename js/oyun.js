@@ -179,8 +179,20 @@ function kazan(zaman) {
   yay('bulundu', { sonuc: durum.sonuc });
 }
 
+let siradaki = null;
+
+/** Sıradaki rastgele etiket; önceden bakılabilir (ön hazırlık tarlasını arkada kurar). */
+export function siradakiEtiket() {
+  if (siradaki === null) {
+    const dizi = new Uint32Array(1);
+    crypto.getRandomValues(dizi);
+    siradaki = dizi[0].toString(36).slice(0, 6);
+  }
+  return siradaki;
+}
+
 export function rastgeleEtiket() {
-  const dizi = new Uint32Array(1);
-  crypto.getRandomValues(dizi);
-  return dizi[0].toString(36).slice(0, 6);
+  const etiket = siradakiEtiket();
+  siradaki = null;
+  return etiket;
 }

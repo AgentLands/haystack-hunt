@@ -46,8 +46,15 @@ function dugmeYap(ikonAdi, baslik, tikla) {
 function miniHaritaKur(kap, elleKaydirildi) {
   const harita = document.createElement('canvas');
   harita.className = 'minik-harita';
-  harita.width = EN;
-  harita.height = BOY;
+  // Arka bellek CSS boyutu × devicePixelRatio (keskin); çizim EN×BOY birimiyle yapılır.
+  const olcekle = () => {
+    const oran = Math.min(3, window.devicePixelRatio || 1);
+    const en = Math.round((harita.clientWidth || EN) * oran);
+    const boy = Math.round((harita.clientHeight || BOY) * oran);
+    if (harita.width !== en || harita.height !== boy) {
+      Object.assign(harita, { width: en, height: boy });
+    }
+  };
   harita.hidden = true;
   harita.setAttribute('aria-label', 'Mini harita');
   const ctx = harita.getContext('2d');
@@ -68,6 +75,8 @@ function miniHaritaKur(kap, elleKaydirildi) {
   return function ciz(durum) {
     harita.hidden = gorunum.z <= YAKIN_EN_AZ + 1e-6;
     if (harita.hidden || !tarlaResmi) return;
+    olcekle();
+    ctx.setTransform(harita.width / EN, 0, 0, harita.height / BOY, 0, 0);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(tarlaResmi, 0, 0, EN, BOY);
     const a = gorunurAlan(gorunum);

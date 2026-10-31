@@ -4,6 +4,7 @@
  * Her efekt { tur, x, y, bas, sure, ... } kaydıdır; süresi dolunca listeden düşer.
  */
 import { OLCEK } from '../../cizim.js';
+import { sadeHareket, nabizSade } from '../sade-hareket.js';
 
 const efektler = [];
 const TAM = Math.PI * 2;
@@ -81,7 +82,8 @@ function dalgaCiz(ctx, e, t) {
   isima(ctx, e.x, e.y, 18 + e.menzil * 0.6 * yumusak(Math.min(1, ilerleme * 2)), e.renk,
     0.4 * (1 - ilerleme));
   ctx.globalCompositeOperation = 'source-over';
-  for (let k = 0; k < e.halkaSayisi; k++) {
+  const halkaSayisi = sadeHareket() ? Math.min(1, e.halkaSayisi) : e.halkaSayisi;
+  for (let k = 0; k < halkaSayisi; k++) {
     const yerel = (t - k * 170) / (e.sure - 340);
     if (yerel <= 0 || yerel >= 1) continue;
     const r = 6 + e.menzil * yumusak(yerel);
@@ -96,11 +98,12 @@ function parlamaCiz(ctx, e, t) {
     ctx.globalCompositeOperation = 'lighter';
     halka(ctx, e.x, e.y, 4 + 46 * yumusak(u), '255, 236, 170', (1 - u) * 0.8, 1.6);
   }
-  yildizIsigi(ctx, e.x, e.y, e.boy * (0.55 + 0.45 * a), a, u * 0.9);
+  const sade = sadeHareket();
+  yildizIsigi(ctx, e.x, e.y, e.boy * (0.55 + 0.45 * a), sade ? a * 0.5 : a, sade ? 0 : u * 0.9);
 }
 
 function isaretCiz(ctx, e, t) {
-  const nabiz = (t % 800) / 800;
+  const nabiz = nabizSade((t % 800) / 800, 0.6);
   const a = Math.min(1, (e.sure - t) / 500);
   ctx.globalCompositeOperation = 'lighter';
   halka(ctx, e.x, e.y, 28 - 18 * yumusak(nabiz), '255, 230, 150', a * (0.4 + 0.6 * nabiz), 2.4);

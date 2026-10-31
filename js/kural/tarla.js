@@ -1,6 +1,11 @@
 /**
  * Tarla: her hücrede kaç kat saman olduğunu tutan ızgara, tohumdan üretimi ve
  * yığın kayması (dik yamaçtaki saman komşu hücreye dökülür).
+ *
+ * Kirli bayrağı: `tarla.kirli` true iken yığın kayması tarlayı tarar. Hiçbir şey kaymayan
+ * bir taramadan sonra tarla durgundur (her komşu çifti eşiğin içinde) ve bayrak iner;
+ * yüksekliği (tarla.h) değiştiren her kural yolu bayrağı yeniden kurmalıdır. Bayrak
+ * inikken cokert yalnız tarama yönünü ilerletir: sonuç bayraksız taramayla bit bit aynıdır.
  */
 import { uretec } from './rastgele.js';
 import { igneSakla } from './igne.js';
@@ -51,12 +56,52 @@ export function tarlaKur(tohum, zorluk) {
   }
   const tarla = {
     tohum, zorluk: ad, h, doku, igne: null, civiler: [], kaldirilan: 0, balyalar: [],
+    kirli: true,
   };
-  for (let k = 0; k < 600 && cokert(tarla); k++);
+  const hazir = hazirlar.get(hazirAnahtar(tohum, ad));
+  if (hazir) {
+    h.set(hazir.h);
+    tarla.adim = hazir.adim;
+  } else {
+    for (let k = 0; k < YERLESME_TURU && cokert(tarla); k++);
+  }
+  // İlk oyun karesi bir kez tam tarasın (kurulumdan sonra h'ye doğrudan yazılabilir).
+  tarla.kirli = true;
   tarla.igne = igneSakla(tarla, zar, ayar.igne);
   tarla.civiler = civileriSakla(tarla, ayar.civi);
   tarla.baslangicToplam = toplamSaman(tarla);
   return tarla;
+}
+
+/**
+ * Ön hazırlık: yerleşme (yığın kayması döngüsü) kurulumun en pahalı kısmıdır. Arka planda
+ * (Web Worker) aynı tarlaKur ile hesaplanan yerleşmiş yükseklik buraya konursa tarlaKur
+ * döngüyü atlayıp onu kullanır; sonuç bit bit aynıdır (aynı kod, aynı tohum). Önbellek
+ * küçük tutulur.
+ */
+const YERLESME_TURU = 600;
+const HAZIR_EN_COK = 4;
+const hazirlar = new Map();
+const hazirAnahtar = (tohum, ad) => `${tohum}|${ad}`;
+
+/** Arka planda kurulan tarlanın yerleşmiş yüksekliği: { h, adim } (işçi gönderir). */
+export function yerlesmisKur(tohum, zorluk) {
+  const t = tarlaKur(tohum, zorluk);
+  return { h: t.h, adim: t.adim };
+}
+
+/** yerlesmisKur sonucunu önbelleğe koyar; sonraki tarlaKur(tohum, zorluk) onu kullanır. */
+export function yerlesmisEkle(tohum, zorluk, { h, adim }) {
+  if (!(h instanceof Uint16Array) || h.length !== GENISLIK * YUKSEKLIK) return;
+  const anahtar = hazirAnahtar(tohum, zorlukAdi(zorluk));
+  hazirlar.delete(anahtar);
+  hazirlar.set(anahtar, { h, adim });
+  if (hazirlar.size > HAZIR_EN_COK) hazirlar.delete(hazirlar.keys().next().value);
+}
+
+/** Bu tohum ve zorluk için ön hazırlık var mı? */
+export function yerlesmisVar(tohum, zorluk) {
+  return hazirlar.has(hazirAnahtar(tohum, zorlukAdi(zorluk)));
 }
 
 /** Saman çöpü görünümü: her hücre bölgesine göre çapraz komşusunun tonunu sürdürür. */
@@ -69,12 +114,14 @@ function samanDokusu(doku, x, y, z) {
 
 /**
  * Tek bir kayma adımı (8 komşu, yerinde); bir şey kaydıysa true. Toplam saman korunur.
- * Tarama yönü her adımda değişir ki yığınlar bir yana doğru akmasın.
+ * Tarama yönü her adımda değişir ki yığınlar bir yana doğru akmasın. Tarla durgunsa
+ * (kirli değil) taramadan döner; yön sayacı yine ilerler ki sonraki taramalar aynı kalsın.
  */
 export function cokert(tarla) {
   const { h } = tarla;
   const W = GENISLIK;
   const ters = (tarla.adim = (tarla.adim || 0) + 1) % 2 === 0;
+  if (!tarla.kirli) return false;
   let oynadi = false;
   for (let s = 0; s < YUKSEKLIK; s++) {
     const y = ters ? YUKSEKLIK - 1 - s : s;
@@ -88,6 +135,7 @@ export function cokert(tarla) {
       if (altVar && x > 0 && akit(h, i, i + W - 1, CAPRAZ_ESIK)) oynadi = true;
     }
   }
+  if (!oynadi) tarla.kirli = false;
   return oynadi;
 }
 

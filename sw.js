@@ -1,9 +1,15 @@
 /**
- * Service worker: çevrimdışı açılış. Sürümlü önbellek; kurulumda kabuk (ana.js'ten
- * başlayarak içe aktarma zinciri) alınır, sonra her istek "ağ önce, önbellek yedek"
- * çalışır, yanıtlar önbelleğe yazılır; sonradan eklenen modüller de kendiliğinden gelir.
+ * Service worker: çevrimdışı ve hızlı açılış. Sürümlü önbellek; kurulumda kabuk (ana.js'ten
+ * başlayarak içe aktarma zinciri) ağdan taze alınır.
+ * - Gezinme (sayfa): ağ önce, önbellek yedek (çevrimdışı açılış).
+ * - Statik dosyalar (js, css, font, ikon): önbellek önce, arkada tazele
+ *   (stale-while-revalidate): tekrar ziyaret ağı beklemez; değişen dosya bir sonraki
+ *   yüklemede gelir. Önbellekte olmayan dosya ağdan alınıp yazılır.
+ * Yayın: SURUM artırılınca tarayıcı yeni işçiyi kurar (kabuk yeniden indirilir), eski
+ * önbellek silinir, yeni işçi hemen devralır; sayfa (ozellik/pwa.js) "Yeni sürüm hazır"
+ * der, yenileyince yeni sürüm açılır. Her yayında SURUM'u artır.
  */
-const SURUM = 'v1';
+const SURUM = 'v2';
 const ONBELLEK = `haystack-hunt-${SURUM}`;
 const KABUK = [
   './', './belirtec.css', './stil.css', './stil-hud.css', './stil-telefon.css', './js/ana.js',
@@ -39,19 +45,23 @@ self.addEventListener('install', (olay) => {
   olay.waitUntil(kabukuAl().then(() => self.skipWaiting()));
 });
 
+/** Eski sürüm önbelleklerini siler (eski işçinin geciken arka plan yazmaları da gider). */
+async function eskileriSil() {
+  for (const ad of await caches.keys()) {
+    if (ad.startsWith('haystack-hunt-') && ad !== ONBELLEK) await caches.delete(ad);
+  }
+}
+
 self.addEventListener('activate', (olay) => {
-  olay.waitUntil((async () => {
-    for (const ad of await caches.keys()) {
-      if (ad.startsWith('haystack-hunt-') && ad !== ONBELLEK) await caches.delete(ad);
-    }
-    await self.clients.claim();
-  })());
+  olay.waitUntil(eskileriSil().then(() => self.clients.claim()));
 });
 
+const kabukAnahtari = () => new URL('./', self.registration.scope).href;
+
+/** Gezinme: ağ önce (yanıt önbelleğe), ağ yoksa önbellekteki kabuk. */
 async function agOnce(istek) {
-  const gezinme = istek.mode === 'navigate';
   // Gezinmeler ?tohum= ile gelir; hepsi tek kabuk girdisini paylaşır.
-  const anahtar = gezinme ? new URL('./', self.registration.scope).href : istek;
+  const anahtar = kabukAnahtari();
   try {
     const yanit = await fetch(istek);
     if (yanit.ok && yanit.type === 'basic') {
@@ -61,7 +71,35 @@ async function agOnce(istek) {
     }
     return yanit;
   } catch (hata) {
-    const yedek = await caches.match(anahtar, { ignoreSearch: !gezinme });
+    const yedek = await caches.match(anahtar);
+    if (yedek) return yedek;
+    throw hata;
+  }
+}
+
+/** Ağdan alır ve başarılıysa önbelleğe yazar (yazma bitince çözülür). */
+async function agdanYaz(istek) {
+  const yanit = await fetch(istek);
+  if (yanit.ok && yanit.type === 'basic') {
+    const onbellek = await caches.open(ONBELLEK);
+    await onbellek.put(istek, yanit.clone());
+  }
+  return yanit;
+}
+
+/** Statik: önbellek önce, arkada tazele; önbellekte yoksa ağ (o da yoksa sorgusuz eşleşme). */
+async function onbellekOnce(olay, istek) {
+  const kayitli = await caches.match(istek);
+  if (kayitli) {
+    olay.waitUntil(agdanYaz(istek).catch((hata) => {
+      console.error('Arkada tazelenemedi (çevrimdışı olabilir):', istek.url, hata);
+    }));
+    return kayitli;
+  }
+  try {
+    return await agdanYaz(istek);
+  } catch (hata) {
+    const yedek = await caches.match(istek, { ignoreSearch: true });
     if (yedek) return yedek;
     throw hata;
   }
@@ -70,7 +108,13 @@ async function agOnce(istek) {
 self.addEventListener('fetch', (olay) => {
   const { request: istek } = olay;
   if (istek.method !== 'GET' || !istek.url.startsWith(self.location.origin)) return;
-  olay.respondWith(agOnce(istek));
+  if (istek.url.endsWith('/sw.js')) return;
+  if (istek.mode === 'navigate') {
+    olay.respondWith(agOnce(istek));
+    olay.waitUntil(eskileriSil());
+  } else {
+    olay.respondWith(onbellekOnce(olay, istek));
+  }
 });
 
 self.addEventListener('message', (olay) => {
@@ -80,8 +124,8 @@ self.addEventListener('message', (olay) => {
     const onbellek = await caches.open(ONBELLEK);
     for (const adres of veri.adresler) {
       if (!adres.startsWith(self.location.origin)) continue;
-      const anahtar = new URL(adres).pathname === new URL('./', self.registration.scope).pathname
-        ? new URL('./', self.registration.scope).href : adres;
+      const anahtar = new URL(adres).pathname === new URL(kabukAnahtari()).pathname
+        ? kabukAnahtari() : adres;
       if (await onbellek.match(anahtar)) continue;
       try {
         await onbellek.add(anahtar);

@@ -116,6 +116,7 @@ function samaniYay(tarla, cx, cy, saman) {
   hucreler.forEach((i, k) => {
     tarla.h[i] = Math.min(65535, tarla.h[i] + pay + (k < artan ? 1 : 0));
   });
+  tarla.kirli = true; // yükseklik değişti: yığın kayması yeniden taranır (kural/tarla.js)
 }
 
 /**
