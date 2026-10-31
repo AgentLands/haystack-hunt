@@ -187,34 +187,37 @@ function yildiz(ctx, x, y, boy, alfa) {
   cizgi(ctx, x - k, y + k, x + k, y - k);
 }
 
+/** Dedektör işaretleri: yakınlaştırmadan bağımsız, ekranda hep aynı boyutta. */
 function halkalariCiz(ctx, halkalar, zaman) {
+  const k = 1 / gorunum.z;
   ctx.font = 'bold 13px system-ui, sans-serif';
   ctx.textAlign = 'center';
   for (const halka of halkalar) {
-    const x = (halka.x + 0.5) * OLCEK;
-    const y = (halka.y + 0.5) * OLCEK;
     const gecen = zaman - halka.zaman;
+    ctx.save();
+    ctx.translate((halka.x + 0.5) * OLCEK, (halka.y + 0.5) * OLCEK);
+    ctx.scale(k, k);
     ctx.strokeStyle = halka.seviye.renk;
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.85;
     ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
     ctx.stroke();
     if (gecen < 1400) {
       ctx.globalAlpha = 1 - gecen / 1400;
       ctx.beginPath();
-      ctx.arc(x, y, 6 + gecen / 14, 0, Math.PI * 2);
+      ctx.arc(0, 0, 6 + gecen / 14, 0, Math.PI * 2);
       ctx.stroke();
     }
     if (gecen < 3500) {
       ctx.globalAlpha = Math.min(1, (3500 - gecen) / 600);
       ctx.fillStyle = 'rgba(20, 14, 8, 0.75)';
       const en = ctx.measureText(halka.seviye.ad).width + 12;
-      ctx.fillRect(x - en / 2, y - 32, en, 19);
+      ctx.fillRect(-en / 2, -32, en, 19);
       ctx.fillStyle = halka.seviye.renk;
-      ctx.fillText(halka.seviye.ad, x, y - 18);
+      ctx.fillText(halka.seviye.ad, 0, -18);
     }
-    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 }
 
