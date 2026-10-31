@@ -214,3 +214,28 @@ test('oyunda: garaja dönen makine yakit-ikmal yayar; iğneli balya parlar', asy
     [['balya-parladi', { x: 60, y: 70 }]]);
   assert.ok(d.balyaParilti && d.balyaParilti.bitis > zaman);
 });
+
+test('dedektör telafisi: hepsi Soğuk çıkıp hak bitince bir kez bir hak daha', async () => {
+  const { telafiHakki } = await import('../js/kural/dedektor.js');
+  const soguk = { seviye: { mesafe: Infinity } };
+  const ilik = { seviye: { mesafe: 35 } };
+  assert.equal(telafiHakki([soguk, soguk], 0), 1);
+  assert.equal(telafiHakki([soguk, soguk], 1), 0);
+  assert.equal(telafiHakki([soguk, ilik], 0), 0);
+  assert.equal(telafiHakki([soguk], 0, 1), 0);
+  assert.equal(telafiHakki([], 0), 0);
+  const { yeniOyun, durumAl, bas, birak, aracSec } = await import('../js/oyun.js');
+  yeniOyun('telafi', 'zor');
+  const d = durumAl();
+  const { igne } = d.tarla;
+  const uzak = { x: igne.x > 120 ? 2 : 237, y: igne.y > 80 ? 2 : 157 };
+  aracSec('dedektor');
+  Object.assign(d.karakter, { x: uzak.x + 0.5, y: uzak.y + 0.5 });
+  for (let i = 0; i < 4; i++) {
+    bas(uzak, 100 * i);
+    birak();
+  }
+  assert.equal(d.halkalar.length, 4);
+  assert.equal(d.dedektor, 0);
+  assert.equal(d.dedektorTelafi, 1);
+});

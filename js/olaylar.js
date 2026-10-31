@@ -9,7 +9,8 @@
  *   (Araç olaylarında x, y hücre birimidir: hücre i'nin merkezi i.)
  *   kazildi        { x, y, miktar }                el bu karede saman aldı (miktar > 0)
  *   tirmiklandi    { x, y, dx, dy, disari }        tırmık bir adım itti
- *   dedektor       { x, y, seviye, kalan }         dedektör okundu
+ *   dedektor       { x, y, seviye, kalan, telafi }  dedektör okundu (telafi: hepsi Soğuk
+ *                                                  çıkıp hak bitti, bir hak geri verildi)
  *   dedektor-bos   { x, y }                        hak kalmadan dedektör denendi
  *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
  *   balya-parladi  { x, y }                        iğne bir balyada: balya parıltı anında

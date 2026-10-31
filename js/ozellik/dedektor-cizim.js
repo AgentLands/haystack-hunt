@@ -5,9 +5,12 @@
  * dairesini mavi çizer ve içini hafifçe karartır (iğne burada değil). Okumada daire
  * merkezden büyüyerek açılır; etiket ("Sıcak ≤16") okuma noktasının epey üstünde (karakterin
  * üstüne binmeden) durur: ilk ETIKET_TAM ms belirgin, sonra soluk ama kalıcı.
- * Alt katmanda (iğne ve imleçten önce) çizilir; yalnız durum.halkalar'ı okur.
+ * Alt katmanda (iğne ve imleçten önce) çizilir; yalnız durum.halkalar'ı okur. Telafi hakkı
+ * verilince (kural/dedektor.js) kısa bir bildirim gösterir.
  */
 import { katmanEkle, OLCEK } from '../cizim.js';
+import { dinle } from '../olaylar.js';
+import { bildir } from '../arayuz.js';
 import { gorunum } from '../gorunum.js';
 import { SEVIYELER } from '../kural/araclar.js';
 
@@ -97,3 +100,7 @@ katmanEkle((ctx, durum, zaman) => {
   for (const halka of durum.halkalar) halkaCiz(ctx, halka, zaman, k);
   ctx.restore();
 }, 'alt');
+
+dinle('dedektor', ({ telafi }) => {
+  if (telafi) bildir('Hepsi Soğuk çıktı: şansına bir dedektör hakkı daha verildi.', 3600);
+});

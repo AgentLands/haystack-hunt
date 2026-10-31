@@ -10,6 +10,7 @@ import {
 import { alinabilirCivi, civiAl, parlayanCiviler } from './kural/civi.js';
 import { igneKonumu, tarlada } from './kural/igne.js';
 import { puanHesapla } from './kural/zorluk.js';
+import { telafiHakki } from './kural/dedektor.js';
 import { yay } from './olaylar.js';
 
 export const PARILTI_SURE = 1200;
@@ -49,7 +50,11 @@ export function dedektorKullan(durum, p, zaman) {
   durum.dedektor -= 1;
   const seviye = dedektorOku(durum.tarla, p.x, p.y);
   durum.halkalar.push({ x: p.x, y: p.y, seviye, zaman });
-  yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor });
+  // Şanssız tohum koruması: hepsi Soğuk okunup hak bittiyse bir kez ücretsiz hak.
+  const telafi = telafiHakki(durum.halkalar, durum.dedektor, durum.dedektorTelafi || 0);
+  durum.dedektor += telafi;
+  durum.dedektorTelafi = (durum.dedektorTelafi || 0) + telafi;
+  yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor, telafi: telafi > 0 });
 }
 
 export function miknatisKullan(durum, p, zaman) {
