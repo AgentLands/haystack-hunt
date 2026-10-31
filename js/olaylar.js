@@ -12,6 +12,8 @@
  *   dedektor       { x, y, seviye, kalan }         dedektör okundu
  *   dedektor-bos   { x, y }                        hak kalmadan dedektör denendi
  *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
+ *   balya-parladi  { x, y }                        iğne bir balyada: balya parıltı anında
+ *                                                  hafifçe parladı (x, y balyanın hücresi)
  *   civi-parladi   { x, y }                        yüzeye yakın paslı çivi parladı (turuncu)
  *   civi-alindi    { x, y, ceza }                  el paslı çivi aldı; ceza ms süreye eklendi
  *   miknatis       { x, y, cekti, kalan }          mıknatıs kullanıldı; cekti: iğne menzildeydi

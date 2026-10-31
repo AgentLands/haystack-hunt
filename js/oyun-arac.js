@@ -69,6 +69,13 @@ export function igneParlat(durum, zaman) {
   yay('parilti', igneKonumu(durum.tarla));
 }
 
+/** İğneyi içeren balya hafifçe parlar (durum.balyaParilti; çizimi ozellik/kenar-isaret.js). */
+export function balyaParlat(durum, zaman) {
+  const p = igneKonumu(durum.tarla);
+  durum.balyaParilti = { x: p.x, y: p.y, bitis: zaman + PARILTI_SURE * 2, sure: PARILTI_SURE * 2 };
+  yay('balya-parladi', { x: p.x, y: p.y });
+}
+
 export function civileriParlat(durum, zaman) {
   durum.civiPariltilar = parlayanCiviler(durum.tarla, durum.pariltiDerinlik).map((c) => ({
     x: c.x, y: c.y, bitis: zaman + PARILTI_SURE, sure: PARILTI_SURE,
