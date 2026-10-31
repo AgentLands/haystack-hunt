@@ -1,0 +1,47 @@
+# Yarış protokolü (sürüm 1)
+
+Bağlantı: sayfayı sunan sunucunun `/ws` yolu (`ws://` ya da `wss://`). Her ileti tek bir
+JSON nesnesidir (WebSocket metin çerçevesi); `t` alanı türünü söyler. Sunucu yalnız metin
+kabul eder: ikili çerçeve 1003, 64 KB üstü ileti 1009, geçersiz UTF-8 1007 ile kapatılır.
+Uygulama düzeyinde ileti ≤ 1024 karakter; bağlantı başına ~15 ileti/sn (30'luk patlama).
+Sınırı aşan ileti atılır ve arada bir `hata{kod:'hiz'}` gelir; ısrar 1008 ile kapatılır.
+Sunucu 15 sn'de bir ping atar; yanıt gelmeyen bağlantı düşer.
+
+## İstemci → sunucu
+
+| `t` | Alanlar | Ne zaman |
+| --- | --- | --- |
+| `kur` | `ad` | Yeni oda kurar; kuran kurucu olur. |
+| `katil` | `oda` (4 harf), `ad` | Odaya katılır (lobide ya da yarış bittikten sonra). |
+| `baslat` | — | Yalnız kurucu; oda `lobi` ya da `bitti` iken (rövanş). |
+| `imlec` | `x`, `y` (hücre, tam sayı ya da ikisi `null`), `saman` | Yarışta ~5 Hz. |
+| `bulundu` | `sureMs` (yarış başından), `saman` | İğne alındı. |
+| `pes` | — | Oyuncu pes etti. |
+| `ayril` | — | Odadan çık (bağlantıyı kapatmak da aynıdır). |
+
+`ad` temizlenir: denetim/biçim karakterleri ve `<>` atılır, boşluklar tekleşir, en çok 16
+karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'}` döner.
+
+## Sunucu → istemci
+
+| `t` | Alanlar | Anlamı |
+| --- | --- | --- |
+| `merhaba` | `id`, `surum` | Bağlanınca; `id` bu bağlantının oyuncu kimliği. |
+| `oda` | `kod`, `kurucu`, `durum`, `tur`, `oyuncular[]` | Odanın tam durumu; her değişiklikte. |
+| `geri-sayim` | `n` (3, 2, 1) | Başlat'tan sonra saniyede bir. |
+| `basla` | `etiket`, `tur` | Herkes aynı anda `yeniOyun(etiket)` açar. |
+| `imlec` | `id`, `x`, `y`, `saman` | Başka bir oyuncunun imleci (kendi imlecin gelmez). |
+| `kazanan` | `id`, `ad`, `sureMs` | İğneyi ilk bulan. |
+| `hata` | `kod`, `mesaj` | Reddedilen istek; `mesaj` Türkçe, gösterilebilir. |
+
+Hata kodları: `oda-yok`, `oda-dolu`, `yaris-suruyor`, `zaten-odada`, `kurucu-degil`,
+`odada-degil`, `yaris-yok`, `sunucu-dolu`, `gecersiz`, `hiz`.
+
+Oda `durum`u: `lobi` → `geri-sayim` → `yaris` → `bitti` (→ rövanşla yeniden `geri-sayim`).
+Oyuncu kaydı: `{ id, ad, renk (0-7), durum, sira, sureMs, saman, bagli }`; oyuncu `durum`u
+`bekliyor`, `oynuyor`, `buldu`, `pes`, `ayrildi`. `sira` sunucuya varış sırasıdır (ilk
+`bulundu` 1.). Oynayan kalmayınca (ya da 20 dakika dolunca) yarış `bitti` olur. Odada en çok
+8 bağlı oyuncu olur; kurucu ayrılırsa ilk bağlı oyuncu kurucu olur; boşalan oda silinir.
+
+Güven: sunucu istemcinin `bulundu`, `sureMs` ve `saman` değerlerine güvenir (yalnız tür ve
+aralık denetler); hile önleme yoktur.
