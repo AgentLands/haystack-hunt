@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Haystack Hunt</title>
-  <meta name="description" content="Kuş bakışı bir saman tarlasında tek bir iğneyi ara.">
+  <title>Haystack Hunt · samanlıkta iğne</title>
+  <meta name="description" content="Kuş bakışı bir saman tarlasında tek bir iğneyi ara: elinle
+    kaz, tırmıkla it, dedektörle yokla, traktörle, üfleyiciyle ve balya makinesiyle samanı kaldır.">
   <link rel="stylesheet" href="belirtec.css">
   <link rel="stylesheet" href="stil.css">
   <link rel="manifest" href="manifest.webmanifest">
@@ -47,33 +48,6 @@
     <button id="yeni">Yeni tarla</button>
     <button id="pes" class="ikincil">Pes et, iğneyi göster</button>
   </nav>
-
-  <details class="nasil">
-    <summary>Nasıl oynanır?</summary>
-    <ul>
-      <li>Sen bir <b>çiftçisin</b>: <b>WASD</b> ya da <b>oklarla</b> yürü (telefonda sanal kol ya da
-        gideceğin yere dokun). Samanın üstünde yavaşlarsın; çok dik yamaca tırmanamazsın.</li>
-      <li><b>Boşluk</b> seçili aracı kullanır (basılı tut). Yakınındaki bir yere tıklayıp basılı
-        tutarak da kullanabilirsin.</li>
-      <li><b>El</b> (1): önündeki samanı tarladan alırsın. Açılan çukura yamaçtan saman kayar.</li>
-      <li><b>Tırmık</b> (2): Boşluk basılıyken yürü, samanı o yöne itersin. Tarlanın dışına
-        ittiğin saman gider.</li>
-      <li><b>Dedektör</b> (3): sınırlı hakkın var (Kolay 5, Normal 3, Zor 2). Durduğun yerin iğneye
-        ne kadar yakın olduğunu yazar.</li>
-      <li><b>Mıknatıs</b> (4): iğne durduğun yerin 10 adım yakınındaysa onu yüzeye doğru çeker ve
-        iğne hemen parlar; değilse boşa gider (Kolay'da 2, diğerlerinde 1 hak).</li>
-      <li><b>Kepçeli traktör</b>: garajda bekler. Yaklaş, <b>E</b> ile bin/in. W/S gaz, A/D dön,
-        Boşluk kepçe. Dolu kepçeyi tarla kenarında Boşlukla boşalt. Kepçe iğneyi de alabilir:
-        boşaltınca iğne yere düşer, inip elle al. Yakıt sınırlı (Kolay bol, Zor az).</li>
-      <li>İğne yüzeye yakınsa güneşte arada bir parlar; gözünü tarladan ayırma.</li>
-      <li>İğne açığa çıkınca yanına git, elle (Boşluk) al.</li>
-      <li><b>0</b> ya da ⤢ tüm tarlayı gösterir; yürüyünce kamera seni yeniden izler.</li>
-      <li>Tarlada <b>paslı çiviler</b> de var: onlar turuncu-kızıl parlar. Elle çivi alırsan
-        süreye 10 sn eklenir. Dedektör ve mıknatıs çivileri görmez.</li>
-      <li><b>Puan</b> = zorluk çarpanı (×1/×2/×3) × (1000 − 2 × saniye − saman/100 − 50 × hak),
-        en az 100 × çarpan.</li>
-    </ul>
-  </details>
 
   <dialog id="bitis">
     <h2>İğneyi buldun! 🪡</h2>

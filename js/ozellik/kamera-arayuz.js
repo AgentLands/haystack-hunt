@@ -1,13 +1,15 @@
 /**
- * Kamera arayüzü: tuval kabının sağ altında +, −, ⤢ düğmeleri; sol altta (yakınken görünen)
- * mini harita: tarlanın küçük hâli, görünür alan dikdörtgeni; tıklayınca/sürükleyince oraya gider
- * (karakter takibi, oyuncu yeniden hareket edene dek bırakılır). Haritada yerel çiftçi parlak
- * bir nokta; yarıştaki diğer oyuncular haritaKaynagiKur ile verilen renkli küçük noktalardır.
+ * Kamera arayüzü: tuval kabının sağ altında büyüteç+, büyüteç−, çerçeve (sığdır) ikonlu
+ * düğmeleri; sol altta (yakınken görünen) mini harita: tarlanın küçük hâli, görünür alan
+ * dikdörtgeni; tıklayınca/sürükleyince oraya gider (karakter takibi, oyuncu yeniden hareket
+ * edene dek bırakılır). Haritada yerel çiftçi parlak bir nokta; yarıştaki diğer oyuncular
+ * haritaKaynagiKur ile verilen renkli küçük noktalardır.
  */
 import { gorunum, gorunumAyarla } from '../gorunum.js';
 import { gorunurAlan, merkezle, YAKIN_EN_AZ, YAKIN_EN_COK } from '../kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { katmanEkle, tarlaResmi } from '../cizim.js';
+import { ikon } from './ikon.js';
 
 const EN = 120;
 const BOY = 80;
@@ -29,10 +31,10 @@ function noktaCiz(ctx, x, y, renk, yaricap) {
   ctx.stroke();
 }
 
-function dugmeYap(metin, baslik, tikla) {
+function dugmeYap(ikonAdi, baslik, tikla) {
   const d = document.createElement('button');
   d.type = 'button';
-  d.textContent = metin;
+  d.append(ikon(ikonAdi, { boy: 22 }));
   d.title = baslik;
   d.setAttribute('aria-label', baslik);
   d.addEventListener('click', tikla);
@@ -91,9 +93,9 @@ export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir, elleKaydiril
   const kap = document.getElementById('tarla-kap');
   const sira = document.createElement('div');
   sira.className = 'kamera-dugmeleri';
-  const arti = dugmeYap('+', 'Yakınlaştır (+)', yakinlastir);
-  const eksi = dugmeYap('−', 'Uzaklaştır (−)', uzaklastir);
-  const sigdirDugme = dugmeYap('⤢', 'Sığdır (0)', sigdir);
+  const arti = dugmeYap('buyutec-arti', 'Yakınlaştır (+)', yakinlastir);
+  const eksi = dugmeYap('buyutec-eksi', 'Uzaklaştır (−)', uzaklastir);
+  const sigdirDugme = dugmeYap('cerceve', 'Sığdır (0)', sigdir);
   sira.append(arti, eksi, sigdirDugme);
   kap.append(sira);
   const haritaCiz = miniHaritaKur(kap, elleKaydirildi);

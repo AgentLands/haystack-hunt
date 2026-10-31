@@ -1,6 +1,6 @@
 /**
  * İstatistik, seri ve paylaşım: olayları dinleyip oyuncu istatistiklerini localStorage'ta
- * tutar (erişim yoksa bellekte), 📊 düğmesi ve penceresini ekler, bitiş penceresine
+ * tutar (erişim yoksa bellekte), defter ikonlu düğmesi ve penceresini ekler, bitiş penceresine
  * "Yeni rekor!" / "Seri" bilgisi koyar, paylaşım metnine okuma emojileri ve bağlantı ekler.
  * Saf kısımlar js/kural/istatistik.js içindedir.
  */
@@ -12,6 +12,7 @@ import {
 } from '../kural/istatistik.js';
 import { gununEtiketi } from '../kural/rastgele.js';
 import { pencereKur } from './istatistik-pencere.js';
+import { ikon } from './ikon.js';
 
 function depoAc() {
   try {
@@ -34,7 +35,9 @@ const guncelle = (yeni) => {
 };
 
 const pencere = pencereKur(() => ozet(ist));
-dugmeEkle('ust', { metin: '📊', baslik: 'İstatistik', tikla: () => pencere.ac() });
+dugmeEkle('ust', {
+  metin: 'Defter', baslik: 'İstatistik', ikon: ikon('defter'), tikla: () => pencere.ac(),
+});
 
 const bilgi = document.createElement('div');
 bilgi.id = 'istatistik-bitis';

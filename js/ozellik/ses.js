@@ -1,9 +1,10 @@
 /**
  * Ses özelliği: oyun olaylarını dinleyip sentezlenmiş seslere bağlar; sessiz/aç düğmesi
- * (🔊/🔇) ve 'M' tuşu. AudioContext ilk işaretçi/klavye hareketinde açılır.
+ * (ses-acik / ses-kapali ikonu) ve 'M' tuşu. AudioContext ilk işaretçi/klavye hareketinde açılır.
  */
 import { dinle } from '../olaylar.js';
 import { dugmeEkle } from '../arayuz.js';
+import { ikon, ikonDegistir } from './ikon.js';
 import { hizSinirlayici, kazimDuzeyi, sessizMi, sessizKaydet } from './ses-desen.js';
 import * as motor from './ses-motor.js';
 
@@ -21,9 +22,10 @@ function depo() {
 
 let sessiz = false;
 let dugme = null;
+const sesIkonu = ikon('ses-acik');
 
 function dugmeyiGuncelle() {
-  dugme.textContent = sessiz ? '🔇' : '🔊';
+  ikonDegistir(sesIkonu, sessiz ? 'ses-kapali' : 'ses-acik');
   const ad = sessiz ? 'Sesi aç' : 'Sesi kapat';
   dugme.title = `${ad} (M)`;
   dugme.setAttribute('aria-label', ad);
@@ -42,7 +44,9 @@ function sesKur() {
   const d = depo();
   sessiz = d ? sessizMi(d) : false;
   motor.sessizAyarla(sessiz);
-  dugme = dugmeEkle('ust', { metin: '🔊', baslik: 'Sesi kapat', tikla: sessizDegistir });
+  dugme = dugmeEkle('ust', {
+    metin: 'Ses', baslik: 'Sesi kapat', ikon: sesIkonu, tikla: sessizDegistir,
+  });
   dugmeyiGuncelle();
 
   // Otomatik çalma politikası: bağlam yalnız kullanıcı hareketinde kurulur/sürdürülür.
