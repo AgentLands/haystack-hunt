@@ -8,34 +8,16 @@ import { katmanEkle, OLCEK } from '../../cizim.js';
 import { durumAl } from '../../oyun.js';
 import { SEVIYELER, EL_YARICAP, TIRMIK_YARICAP } from '../../kural/araclar.js';
 import { igneDerinligi } from '../../kural/igne.js';
-import {
-  parcacikEkle, guncelle, parcaciklariCiz, hepsiniSil, COP, TOZ, ISIK,
-} from './parcacik.js';
+import { parcacikEkle, guncelle, parcaciklariCiz, hepsiniSil, ISIK } from './parcacik.js';
 import { efektEkle, efektleriCiz, efektleriSil, piksel, rgb, yildizIsigi } from './isiltilar.js';
 import { stilEkle, bulmaBaslat, bulmaSifirla, yamaAl, bulmaCiz } from './bulma.js';
 import { ortamCiz } from './ortam.js';
+import { sade, az, rasgele, copEkle, tozEkle } from './uretim.js';
+import './hareket.js';
 
-const SAMAN = ['#fff0b8', '#f6db86', '#ffe9a0', '#e9c463', '#fdf5d6'];
-const TOZ_RENK = '168, 134, 92';
-const sade = matchMedia('(prefers-reduced-motion: reduce)');
 let sonZaman = null;
 
-const az = (n) => (sade.matches ? Math.ceil(n * 0.25) : n);
-const rasgele = (a, b) => a + Math.random() * (b - a);
-const secim = (dizi) => dizi[Math.floor(Math.random() * dizi.length)];
 const simdi = () => performance.now();
-
-function copEkle(x, y, aci, hiz, vz, omur) {
-  parcacikEkle({
-    tur: COP, x, y, z: rasgele(0, 3), vx: Math.cos(aci) * hiz, vy: Math.sin(aci) * hiz,
-    vz, omur, boy: rasgele(3, 7), renk: secim(SAMAN),
-  });
-}
-
-function tozEkle(x, y, vx, vy, boy = rasgele(6, 12)) {
-  parcacikEkle({ tur: TOZ, x, y, vx, vy, vz: rasgele(4, 14), omur: rasgele(0.5, 0.9), boy,
-    renk: TOZ_RENK });
-}
 
 function kivilcimEkle(x, y, hiz, renk = '255, 226, 140') {
   const aci = rasgele(0, Math.PI * 2);

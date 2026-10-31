@@ -9,6 +9,7 @@ import { arayuzKur } from './arayuz.js';
 import { gununEtiketi } from './kural/rastgele.js';
 // Özellik modülleri (js/ozellik/): her biri kendi satırında, olaylara kendisi bağlanır.
 import './ozellik/ses.js';
+import './ozellik/ses-makine.js';
 import './ozellik/pwa.js';
 import './ozellik/rehber.js';
 import './ozellik/duyuru.js';

@@ -39,8 +39,13 @@ export function sessizAyarla(deger) {
   if (ana) ana.gain.setTargetAtTime(deger ? 0 : ANA_DUZEY, ctx.currentTime, 0.04);
 }
 
-function hazirMi() {
-  return ctx && ctx.state === 'running' && !sessiz;
+export function hazirMi() {
+  return Boolean(ctx) && ctx.state === 'running' && !sessiz;
+}
+
+/** Sürekli sesler (makine motoru) için ses bağlamı; çalmaya hazır değilse null. */
+export function baglam() {
+  return hazirMi() ? { ctx, ana, gurultu } : null;
 }
 
 function gurultuTamponu(c) {
@@ -55,7 +60,7 @@ function gurultuTamponu(c) {
 }
 
 /** Zarflı gürültü darbesi: bant geçiren filtre, frekans taraması isteğe bağlı. */
-function hisirti({ sure, duzey, f0, f1 = f0, q = 1, atak = 0.01, gecikme = 0 }) {
+export function hisirti({ sure, duzey, f0, f1 = f0, q = 1, atak = 0.01, gecikme = 0 }) {
   const t = ctx.currentTime + gecikme;
   const kaynak = ctx.createBufferSource();
   kaynak.buffer = gurultu;
@@ -76,7 +81,8 @@ function hisirti({ sure, duzey, f0, f1 = f0, q = 1, atak = 0.01, gecikme = 0 }) 
 }
 
 /** Zarflı osilatör notası. */
-function nota({ frekans, sure, duzey, dalga = 'sine', gecikme = 0, atak = 0.008, bitisFrekans }) {
+export function nota(o) {
+  const { frekans, sure, duzey, dalga = 'sine', gecikme = 0, atak = 0.008, bitisFrekans } = o;
   const t = ctx.currentTime + gecikme;
   const osc = ctx.createOscillator();
   osc.type = dalga;
