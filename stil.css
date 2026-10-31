@@ -57,6 +57,17 @@ button:hover { border-color: var(--vurgu); }
 button[aria-pressed="true"] { background: var(--vurgu); color: var(--vurgu-yazi); border-color: var(--vurgu); }
 button.ikincil { color: var(--soluk); margin-left: auto; }
 kbd { font-size: 0.7rem; opacity: 0.7; margin-right: 4px; }
+.hak { font-size: 0.75rem; opacity: 0.8; font-variant-numeric: tabular-nums; }
+.zorluk-secici {
+  font: inherit;
+  color: var(--yazi);
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-left: auto;
+}
+.puan { font-weight: 600; color: var(--vurgu); }
 
 canvas {
   display: block;

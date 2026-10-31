@@ -5,7 +5,7 @@
 import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
 import { bas, surukle, birak, imlecCikti, aracSec } from './oyun.js';
 
-export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor' };
+export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor', 4: 'miknatis' };
 
 /** Ekran noktasını tarla hücresine çevirir. */
 export function hucreBul(tuval, e) {
