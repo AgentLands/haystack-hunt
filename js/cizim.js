@@ -40,7 +40,60 @@ export function cizici(tuval) {
   };
 }
 
+/** Gölge yüksekliği tamponu: sol üstten gelen ışının o hücredeki en alçak yüksekliği. */
+const GOLGE = new Float32Array(GENISLIK * YUKSEKLIK);
+const GOLGE_DUSUS = 1.9;
+const GOLGE_YUMUSAK = 12;
+const TOPRAK_RENK = new Float32Array(GENISLIK * YUKSEKLIK * 3);
+let toprakTarla = null;
+
+function karistir(x, y, t) {
+  let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(t, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/** Kaba ızgarada değer gürültüsü (yumuşak ara değer); toprak lekeleri için. */
+function gurultu(x, y, adim, t) {
+  const gx = Math.floor(x / adim);
+  const gy = Math.floor(y / adim);
+  const fx = (x / adim - gx) ** 2 * (3 - 2 * (x / adim - gx));
+  const fy = (y / adim - gy) ** 2 * (3 - 2 * (y / adim - gy));
+  const ust = karistir(gx, gy, t) * (1 - fx) + karistir(gx + 1, gy, t) * fx;
+  const alt = karistir(gx, gy + 1, t) * (1 - fx) + karistir(gx + 1, gy + 1, t) * fx;
+  return ust * (1 - fy) + alt * fy;
+}
+
+/** Toprak rengi tarla başına bir kez: nemli/kuru lekeler, ince tane, çakıl ve anız. */
+function toprakHazirla(tarla) {
+  const t = tarla.tohum | 0;
+  for (let y = 0; y < YUKSEKLIK; y++) {
+    for (let x = 0; x < GENISLIK; x++) {
+      const o = (y * GENISLIK + x) * 3;
+      const leke = gurultu(x, y, 22, t) * 0.65 + gurultu(x, y, 7, t + 1) * 0.35 - 0.5;
+      const tane = karistir(x, y, t + 2) - 0.5;
+      let r = TOPRAK[0] + leke * 34 + tane * 12;
+      let g = TOPRAK[1] + leke * 26 + tane * 9;
+      let b = TOPRAK[2] + leke * 16 + tane * 7;
+      const z = karistir(x, y, t + 3);
+      if (z < 0.012) [r, g, b] = [r + 34, g + 30, b + 26];
+      else if (z < 0.03) [r, g, b] = [r * 0.8, g * 0.78, b * 0.76];
+      else if (z > 0.985) [r, g, b] = [r + 30, g + 22, b + 4];
+      TOPRAK_RENK[o] = r;
+      TOPRAK_RENK[o + 1] = g;
+      TOPRAK_RENK[o + 2] = b;
+    }
+  }
+  toprakTarla = tarla;
+}
+
+/**
+ * Tarlayı piksellere boyar: toprak dokusu, eğim ışığı (güneş sol üstten), saman çöpü
+ * dokusu, kat kenarları ve tek geçişte hesaplanan yumuşak yığın gölgesi (gölge yüksekliği
+ * sol üst komşulardan alçalarak taşınır; altında kalan hücre gölgede).
+ */
 function boya(tarla, veri) {
+  if (toprakTarla !== tarla) toprakHazirla(tarla);
   const { h, doku } = tarla;
   const W = GENISLIK;
   for (let y = 0; y < YUKSEKLIK; y++) {
@@ -48,27 +101,40 @@ function boya(tarla, veri) {
       const i = y * W + x;
       const o = i * 4;
       const yuk = h[i];
-      const t = (doku[i] - 128) / 64;
-      let r = TOPRAK[0] + t * 10;
-      let g = TOPRAK[1] + t * 8;
-      let b = TOPRAK[2] + t * 6;
-      if (yuk > 0) {
-        const sol = h[x > 0 ? i - 1 : i];
-        const sag = h[x < W - 1 ? i + 1 : i];
-        const ust = h[y > 0 ? i - W : i];
-        const alt = h[y < YUKSEKLIK - 1 ? i + W : i];
-        const k = Math.min(1, yuk / 100);
-        let isik = 1 + ((sag - sol) + (alt - ust)) * 0.05 + t * 0.09;
-        const katman = Math.floor(yuk / 15);
-        if (katman !== Math.floor(sol / 15) || katman !== Math.floor(ust / 15)) isik *= 0.93;
-        const a = Math.min(1, yuk / 4);
-        r = r * (1 - a) + (176 + 62 * k) * isik * a;
-        g = g * (1 - a) + (136 + 66 * k) * isik * a;
-        b = b * (1 - a) + (56 + 52 * k) * isik * a;
+      let gelen = 0;
+      if (x > 0 && y > 0) {
+        gelen = (GOLGE[i - W - 1] * 2 + GOLGE[i - 1] + GOLGE[i - W]) * 0.25 - GOLGE_DUSUS;
       }
-      veri[o] = r;
-      veri[o + 1] = g;
-      veri[o + 2] = b;
+      GOLGE[i] = gelen > yuk ? gelen : yuk;
+      const gol = gelen > yuk ? Math.min(1, (gelen - yuk) / GOLGE_YUMUSAK) : 0;
+      const sol = h[x > 0 ? i - 1 : i];
+      const sag = h[x < W - 1 ? i + 1 : i];
+      const ust = h[y > 0 ? i - W : i];
+      const alt = h[y < YUKSEKLIK - 1 ? i + W : i];
+      let r = TOPRAK_RENK[i * 3];
+      let g = TOPRAK_RENK[i * 3 + 1];
+      let b = TOPRAK_RENK[i * 3 + 2];
+      if (yuk < 4 && sol + ust + sag + alt > 12) {
+        r *= 0.86;
+        g *= 0.85;
+        b *= 0.84;
+      }
+      if (yuk > 0) {
+        const t = (doku[i] - 128) / 64;
+        const k = Math.min(1, yuk / 110);
+        let isik = 1 + ((sag - sol) + (alt - ust)) * 0.05 + t * 0.11;
+        if (doku[i] < 64) isik *= 0.88;
+        const katman = Math.floor(yuk / 15);
+        if (katman !== Math.floor(sol / 15) || katman !== Math.floor(ust / 15)) isik *= 0.92;
+        const parlak = isik > 1.12 ? (isik - 1.12) * 90 : 0;
+        const a = yuk > 2 ? Math.min(1, yuk / 4) : yuk * 0.16;
+        r = r * (1 - a) + ((168 + 70 * k) * isik + parlak) * a;
+        g = g * (1 - a) + ((124 + 76 * k) * isik + parlak) * a;
+        b = b * (1 - a) + ((46 + 50 * k) * isik + parlak * 0.6) * a;
+      }
+      veri[o] = r * (1 - gol * 0.52);
+      veri[o + 1] = g * (1 - gol * 0.56);
+      veri[o + 2] = b * (1 - gol * 0.5);
       veri[o + 3] = 255;
     }
   }
