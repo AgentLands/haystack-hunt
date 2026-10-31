@@ -16,6 +16,7 @@ import {
   hayaletKatmaniKur, hayaletKonum, hayaletSil, hayaletTemizle, hayaletKonumlari,
 } from './yaris-hayalet.js';
 import { haritaKaynagiKur } from './kamera-arayuz.js';
+import { korumaKaydet, yeniTarlaIzni } from './koruma.js';
 
 const TABLO_ARALIGI = 250;
 
@@ -189,17 +190,20 @@ dinle('pes-edildi', ({ durum }) => {
   if (oynuyorum() && durum.etiket === y.etiket) y.baglanti.gonder({ t: 'pes' });
 });
 
-// Yarış sürerken yerel "Yeni tarla / Günün tarlası": önce onay, onaylanırsa yarıştan çık.
+// Yarış sürerken yerel yeni tarla açan her giriş (düğmeler, zorluk seçici) koruma.js'ten geçer.
+korumaKaydet({
+  suruyor: yarisSuruyor,
+  ayril: () => {
+    ayril();
+    bildir('Yarıştan ayrıldın');
+  },
+});
+
+// Düğmeler: onay verilmezse tıklama diğer dinleyicilere (yeni tarla) ulaşmaz.
 for (const id of ['yeni', 'gunun', 'tekrar']) {
   const yerel = document.getElementById(id);
   if (!yerel) continue;
   yerel.addEventListener('click', (e) => {
-    if (!yarisSuruyor()) return;
-    if (!window.confirm('Yarış sürüyor. Yarıştan çıkıp yeni tarla açılsın mı?')) {
-      e.stopImmediatePropagation();
-      return;
-    }
-    ayril();
-    bildir('Yarıştan ayrıldın');
+    if (!yeniTarlaIzni()) e.stopImmediatePropagation();
   }, { capture: true });
 }

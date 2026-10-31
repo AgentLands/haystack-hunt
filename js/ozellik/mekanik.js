@@ -6,6 +6,7 @@ import { dinle } from '../olaylar.js';
 import { durumAl, yeniOyun, varsayilanZorlukAyarla } from '../oyun.js';
 import { ZORLUKLAR, VARSAYILAN_ZORLUK, zorlukAl } from '../kural/zorluk.js';
 import { bildir, sayi, paylasimEkiKaydet } from '../arayuz.js';
+import { yeniTarlaIzni } from './koruma.js';
 import './civi-cizim.js';
 
 const $ = (id) => document.getElementById(id);
@@ -23,7 +24,8 @@ function seciciKur() {
     secici.append(new Option(ayar.ad, anahtar));
   }
   secici.addEventListener('change', () => {
-    yeniOyun(durumAl().etiket, secici.value);
+    if (yeniTarlaIzni()) yeniOyun(durumAl().etiket, secici.value);
+    else secici.value = durumAl().zorluk; // yarış sürüyor ve onaylanmadı: seçim geri alınır
     secici.blur();
   });
   document.querySelector('.araclar').append(secici);
