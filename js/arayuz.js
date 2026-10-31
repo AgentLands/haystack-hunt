@@ -24,7 +24,8 @@ export function paylasimEkiKaydet(islev) {
 /** Paylaşılacak sonuç metni (özellikler paylasimEkiKaydet ile genişletir). */
 export function paylasimMetni(sonuc) {
   const temel = `Haystack Hunt · ${sonuc.etiket}\n🪡 ${sureMetni(sonuc.sureMs)} · `
-    + `${sayi.format(sonuc.kaldirilan)} saman · 📡 ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
+    + `${sayi.format(sonuc.kaldirilan)} saman · `
+    + `📡 ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
   return [temel, ...paylasimEkleri.map((ek) => ek(sonuc))].filter(Boolean).join('\n');
 }
 

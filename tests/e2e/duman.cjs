@@ -21,7 +21,8 @@ function sunucuAc() {
     if (!dosya.startsWith(KOK) || !fs.existsSync(dosya) || fs.statSync(dosya).isDirectory()) {
       yan.writeHead(404); yan.end(); return;
     }
-    yan.writeHead(200, { 'Content-Type': TURLER[path.extname(dosya)] || 'application/octet-stream' });
+    const tur = TURLER[path.extname(dosya)] || 'application/octet-stream';
+    yan.writeHead(200, { 'Content-Type': tur });
     fs.createReadStream(dosya).pipe(yan);
   });
   return new Promise((coz) => sunucu.listen(0, '127.0.0.1', () => coz(sunucu)));
@@ -54,7 +55,10 @@ function sunucuAc() {
   const [ax, ay] = px(igne.x - 30, igne.y + 25);
   await sayfa.mouse.move(ax, ay);
   await sayfa.mouse.down();
-  for (let i = 0; i < 20; i++) { await sayfa.mouse.move(ax + i * 8, ay); await sayfa.waitForTimeout(16); }
+  for (let i = 0; i < 20; i++) {
+    await sayfa.mouse.move(ax + i * 8, ay);
+    await sayfa.waitForTimeout(16);
+  }
   await sayfa.mouse.up();
   await sayfa.keyboard.press('1');
   await sayfa.mouse.move(...px(igne.x, igne.y));
@@ -69,10 +73,16 @@ function sunucuAc() {
   if (ekran) await sayfa.screenshot({ path: path.join(ekran, '3-bulundu.png') });
   const fps = await sayfa.evaluate(() => new Promise((coz) => {
     let n = 0; const s = performance.now();
-    const f = () => { n++; if (performance.now() - s < 1000) requestAnimationFrame(f); else coz(n); };
+    const f = () => {
+      n++;
+      if (performance.now() - s < 1000) requestAnimationFrame(f);
+      else coz(n);
+    };
     requestAnimationFrame(f);
   }));
-  const mobil = await tarayici.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const mobil = await tarayici.newPage({
+    viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
+  });
   mobil.on('pageerror', (e) => hatalar.push(e.message));
   await mobil.goto(adres);
   await mobil.waitForTimeout(500);

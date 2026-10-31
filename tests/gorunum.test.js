@@ -1,3 +1,4 @@
+/** Kamera dönüşüm matematiğinin (js/kural/gorunum.js) birim testleri. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
