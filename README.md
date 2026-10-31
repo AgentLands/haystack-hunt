@@ -7,8 +7,7 @@ güneşte parlayan iğneyi paslı çivilerin parıltısından ayırt et.
 **Özellikler:** Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
 gölgeler ve parçacık efektleri · sentezlenmiş sesler (M ile kapat) · yakınlaştırma, kaydırma ve
 mini harita · istatistikler, günün tarlası serisi ve emojili paylaşım · çevrimdışı çalışan,
-ana ekrana eklenebilen uygulama (PWA) · ilk açılış rehberi · çevrimiçi yarış (8 kişiye kadar) ·
-hile yapmayan bot ve demo modu (`?demo=1`).
+ana ekrana eklenebilen uygulama (PWA) · ilk açılış rehberi · çevrimiçi yarış (8 kişiye kadar).
 
 ## Oynamak
 
@@ -21,7 +20,7 @@ python3 -m http.server 8000      # sonra http://localhost:8000
 (ES modülleri `file://` ile açılmaz; küçük bir yerel sunucu gerekir.)
 
 - `?tohum=abc` adresi aynı tarlayı herkese açar; tohum yoksa **günün tarlası** gelir.
-  `?zorluk=kolay|zor` zorluğu seçer; `?demo=1` botu oynatır.
+  `?zorluk=kolay|zor` zorluğu seçer.
 - Klavye: `1` el, `2` tırmık, `3` dedektör, `4` mıknatıs, `M` ses, `+`/`−`/`0` yakınlaştırma,
   ok tuşları ya da Boşluk + sürükle kaydırma. Fare tekerleği / iki parmak yakınlaştırır.
 
