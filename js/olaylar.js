@@ -14,6 +14,9 @@
  *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
  *   civi-parladi   { x, y }                        yüzeye yakın paslı çivi parladı (turuncu)
  *   civi-alindi    { x, y, ceza }                  el paslı çivi aldı; ceza ms süreye eklendi
+ *   buluntu-gorundu { x, y, tur }                  samandaki buluntunun üstü ilk kez açıldı
+ *   buluntu-alindi { x, y, tur, yeni }             el buluntuyu aldı (cezasız); yeni: defterde
+ *                                                  bu tür ilk kez mi (defter özelliği bildirir)
  *   miknatis       { x, y, cekti, kalan }          mıknatıs kullanıldı; cekti: iğne menzildeydi
  *   miknatis-bos   { x, y }                        hak kalmadan mıknatıs denendi
  *   igne-gorundu   { x, y }                        iğne ilk kez açığa çıktı

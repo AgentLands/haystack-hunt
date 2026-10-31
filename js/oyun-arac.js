@@ -10,6 +10,7 @@ import {
 import { alinabilirCivi, civiAl, parlayanCiviler } from './kural/civi.js';
 import { igneKonumu, tarlada } from './kural/igne.js';
 import { puanHesapla } from './kural/zorluk.js';
+import { buluntuyuAl } from './oyun-buluntu.js';
 import { yay } from './olaylar.js';
 
 export const PARILTI_SURE = 800;
@@ -30,6 +31,7 @@ export function elKullan(durum, p) {
   const { tarla } = durum;
   if (igneyiAlabilirMi(tarla, p.x, p.y)) return true;
   civiyiAl(durum, p);
+  buluntuyuAl(durum, p);
   const miktar = elIleAl(tarla, p.x, p.y);
   if (miktar > 0) yay('kazildi', { x: p.x, y: p.y, miktar });
   return false;

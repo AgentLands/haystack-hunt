@@ -7,7 +7,8 @@ akıllıca kullan, güneşte parlayan iğneyi paslı çivilerin parıltısından
 balya makinesi iğneyi de yutabilir; o zaman doğru balyayı bulup açman gerekir.
 
 **Özellikler:** WASD ile yürüyen çiftçi ve yakıtlı makineler · telefonda sanal kol ·
-Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
+Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · samanda saklı buluntular ve
+Buluntu defteri (20 tür) · yığın kayması,
 gölgeler ve parçacık efektleri · sentezlenmiş sesler (M ile kapat) · yakınlaştırma, kaydırma ve
 mini harita · istatistikler, günün tarlası serisi ve emojili paylaşım · çevrimdışı çalışan,
 ana ekrana eklenebilen uygulama (PWA) · ilk açılış rehberi · çevrimiçi yarış (8 kişiye kadar).
