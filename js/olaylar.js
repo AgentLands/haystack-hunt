@@ -52,6 +52,10 @@
  *   balya-acildi     { balya, igne, civiSayisi }   El ile açıldı: saman çevreye döndü, iğne
  *                                                  (igne: true ise) ve çiviler balyanın
  *                                                  yerinde açıkta; balya listeden çıktı
+ * Tarla hayvanları (süs; x, y dünya birimi, ürktüğü yer):
+ *   hayvan-kacti     { tur, x, y }                 bir hayvan ürkünce (tur: 'fare' | 'serce' |
+ *                                                  'kurbaga' | 'kirpi' | 'kedi'); aynı fare
+ *                                                  iki kez kaçarsa iki kez yayılır
  */
 const dinleyiciler = new Map();
 
