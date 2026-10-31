@@ -4,3 +4,4 @@
  * yaz (makineTanimla), buraya bir satır ekle. oyun.js ve testler bunu içe aktarır.
  */
 import './traktor.js';
+import './ufleyici.js';

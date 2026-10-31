@@ -8,9 +8,11 @@ import { makineTanimi } from '../kural/makineler/kayit.js';
 
 const ad = (m) => makineTanimi(m.tur).ad;
 
-dinle('makine-bin', ({ makine }) => bildir(`${ad(makine)}: W/S gaz, A/D dön, `
-  + 'Boşluk çalıştır, E in', 3200));
-dinle('makine-in', ({ makine }) => bildir(`${ad(makine)} makinesinden indin`));
+dinle('makine-bin', ({ makine }) => bildir(makineTanimi(makine.tur).giyilir
+  ? `${ad(makine)} takıldı: WASD yürü, Boşluk üfle, E bırak`
+  : `${ad(makine)}: W/S gaz, A/D dön, Boşluk çalıştır, E in`, 3200));
+dinle('makine-in', ({ makine }) => bildir(makineTanimi(makine.tur).giyilir
+  ? `${ad(makine)} yere bırakıldı` : `${ad(makine)} makinesinden indin`));
 dinle('makine-yok', () => bildir('Yakında binecek makine yok (garaja git)'));
 dinle('makine-takildi', () => bildir('Takıldın: saman çok dik. Geri çık (S) ya da kepçeyle kaz.'));
 dinle('yakit-bitti', ({ makine }) => bildir(`${ad(makine)} yakıtı bitti! İn (E), yürü.`, 3200));
