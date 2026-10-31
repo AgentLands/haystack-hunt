@@ -106,6 +106,15 @@ export const BALYA_MAKINESI = makineTanimla('balya', {
     m.birikim = 0;
     m.icerik = { saman: 0, igne: false, civiler: [] };
   },
+  /** Yakıt bitince haznede ne varsa yarım bir balya olarak arkaya bırakılır. */
+  yakitBitince(tarla, m) {
+    const ic = m.icerik;
+    if (!ic.saman && !ic.igne && !ic.civiler.length) return [];
+    const olaylar = [];
+    balyala(tarla, m, olaylar);
+    Object.assign(m, { yuk: 0, birikim: 0 });
+    return olaylar;
+  },
   /** Haznedeki iğne ve çiviler makineyle taşınır (dedektör onları makinede bulur). */
   kare(tarla, m) {
     const ic = m.icerik;

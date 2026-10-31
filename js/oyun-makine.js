@@ -84,7 +84,7 @@ export function makineKaresi(durum, dt, zaman) {
   const s = surusAdim(durum.tarla, m, girdi, dt, engeller(durum, m));
   if (s.takildi) yay('makine-takildi', { makine: m });
   const bosaldi = isKaresi(durum, m, dt, zaman);
-  if (s.yakitBitti || bosaldi) yay('yakit-bitti', { makine: m });
+  if (s.yakitBitti || bosaldi) yakitBitti(durum, m);
   karakteriMakineyeKoy(k, m);
 }
 
@@ -99,8 +99,19 @@ function giyilenKare(durum, m, dt, zaman) {
   makineyiKaraktereKoy(m, k);
   m.hiz = dt > 0 ? s.mesafe / dt : 0;
   const bosaldi = isKaresi(durum, m, dt, zaman);
-  if (bosaldi) yay('yakit-bitti', { makine: m });
+  if (bosaldi) yakitBitti(durum, m);
   k.kullaniyor = m.calisiyor;
+}
+
+/**
+ * Depo boşaldı: makine içindekileri (iğne, çivi, saman) dışarı bırakır ki iğne yakıtsız
+ * bir makinede mahsur kalıp oyun bitirilemez olmasın (tanımın yakitBitince kancası).
+ */
+function yakitBitti(durum, m) {
+  yay('yakit-bitti', { makine: m });
+  const kanca = makineTanimi(m.tur).yakitBitince;
+  if (!kanca) return;
+  for (const [ad, veri] of kanca(durum.tarla, m)) yay(ad, veri);
 }
 
 /** İş aygıtı: Boşluk basılıyken (bırakılınca kilit açılır). Depo bu karede boşaldıysa true. */

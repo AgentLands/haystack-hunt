@@ -163,6 +163,12 @@ güncelle.
   hayaletlerdir** (120 ms gecikmeli ara değer, oyuncu renginde halka + ad etiketi); yerel
   tarlayı etkilemezler. Mini harita (`kamera-arayuz.js`) onları renkli nokta gösterir.
 
+## Yakıt bitince
+Tanımın isteğe bağlı `yakitBitince(tarla, m)` kancası (olay listesi döndürür) depo boşaldığı
+karede çağrılır: traktör kepçedekileri önüne döker (saman tarlaya döner, iğne/çiviler açıkta),
+balya makinesi haznedekileri yarım balya olarak bırakır. Böylece iğne yakıtsız bir makinede
+mahsur kalıp oyun bitirilemez olmaz.
+
 ## Yeni olaylar (olaylar.js kataloğuna eklenir)
 - `karakter-adim { x, y, z }` (adım sesi/izi için, ~her adımda bir)
 - `makine-bin { makine }`, `makine-in { makine }`

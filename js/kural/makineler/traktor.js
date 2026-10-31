@@ -125,6 +125,27 @@ export const TRAKTOR = makineTanimla('traktor', {
     m.birikim = 0;
     m.icerik = { saman: 0, igne: false, civiler: [] };
   },
+  /** Yakıt bitince kepçedekiler önüne dökülür: saman tarlaya döner, iğne/çiviler açıkta. */
+  yakitBitince(tarla, m) {
+    const ic = m.icerik;
+    if (!ic.saman && !ic.igne && !ic.civiler.length) return [];
+    const p = kepceNoktasi(m);
+    const hucreler = kepceHucreleri(p);
+    if (hucreler.length) {
+      const pay = Math.floor(ic.saman / hucreler.length);
+      const artan = ic.saman % hucreler.length;
+      hucreler.forEach((i, k) => { tarla.h[i] += pay + (k === 0 ? artan : 0); });
+    }
+    const { igne } = ic;
+    const civi = ic.civiler.length;
+    if (igne) yereBirak(tarla, tarla.igne, p.x, p.y);
+    ic.civiler.forEach((c, k) => yereBirak(tarla, c, p.x + 2 * (k + 1), p.y));
+    Object.assign(ic, { saman: 0, igne: false, civiler: [] });
+    Object.assign(m, { yuk: 0, birikim: 0 });
+    const x = Math.round(kirp(p.x, 2, GENISLIK - 3));
+    const y = Math.round(kirp(p.y, 2, YUKSEKLIK - 3));
+    return [['kepce-bosaltildi', { makine: m, miktar: 0, igne, civi, x, y }]];
+  },
   /** Kepçedeki iğne ve çiviler kepçeyle taşınır (dedektör iğneyi kepçede bulur). */
   kare(tarla, m) {
     const p = kepceNoktasi(m);
