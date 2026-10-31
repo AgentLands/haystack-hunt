@@ -14,6 +14,7 @@ import {
 import { defterBagla } from '../oyun-buluntu.js';
 import { buluntuSekil } from './buluntu-sekil.js';
 import { pencereHazirla, stilYukle } from './pencere.js';
+import { ikon } from './ikon.js';
 
 function depoAc() {
   try {
@@ -110,7 +111,8 @@ function pencereKur() {
 
 const pencere = pencereKur();
 dugmeEkle('ust', {
-  metin: 'Buluntular', baslik: 'Buluntu defteri', tikla: () => pencere.ac(),
+  metin: 'Buluntular', baslik: 'Buluntu defteri', ikon: ikon('anahtar'),
+  tikla: () => pencere.ac(),
 });
 
 defterBagla((tur) => !defter.bulunan[tur]);
