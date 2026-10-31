@@ -12,6 +12,9 @@ import { DERI, GOMLEK, GOMLEK_KOYU, TULUM, sapka } from './ciftci-parca.js';
 import { araciKur } from './arac-cizim.js';
 import { boruCiz, havaDalgasi, sirtMotoru } from './ufleyici-cizim.js';
 
+/** Çiftçi, yakın kamerada seçilsin diye çarpışma dairesinden biraz büyük çizilir. */
+const GORSEL_BOY = 1.35;
+
 const BOT = '#5b3d27';
 const BOT_ACIK = '#8a6244';
 
@@ -97,7 +100,7 @@ function ciftciCiz(ctx, k) {
  * 'dedektor' | 'miknatis' (durum.arac).
  */
 export function karakterCiz(ctx, karakter, zaman, arac = 'el') {
-  const olcek = 1 + (karakter.z || 0) / 400;
+  const olcek = GORSEL_BOY * (1 + (karakter.z || 0) / 400);
   const yuruyor = !!karakter.hareketli;
   const ufleMakine = karakter.makine?.tur === 'ufleyici' ? karakter.makine : null;
   const k = {

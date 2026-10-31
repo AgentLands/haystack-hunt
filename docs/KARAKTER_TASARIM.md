@@ -102,7 +102,7 @@ güncelle.
 - Makinedeyken (`karakter.makine !== null`) karakterin x, y, yon'u makineninkidir; karakter
   ayrıca çizilmez. Geçici yer tutucu çizim `js/ozellik/karakter-yer-tutucu.js` (birleştirmede
   kaldırılır).
-- Kamera varsayılan olarak karakteri (bindiyse makineyi) 2.5× yumuşak takip eder; **0** / ⤢
+- Kamera varsayılan olarak karakteri (bindiyse makineyi) 3.5× yumuşak takip eder; **0** / ⤢
   tüm tarlayı gösterip takibi bırakır (orta tuşla kaydırma ve mini harita da bırakır); yeni
   bir hareket isteği (yön ya da yeni tıkla-yürü hedefi) takibi geri getirir. Tekerlek ve
   +/− takip sürerken takibin yakınlığını değiştirir. Ok tuşu ve Boşluk+sürükle kaydırma yok.

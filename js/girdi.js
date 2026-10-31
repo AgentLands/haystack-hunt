@@ -7,7 +7,7 @@
 import { ekrandanHucre } from './kural/gorunum.js';
 import { gorunum } from './gorunum.js';
 import { bas, surukle, birak, imlecCikti, aracSec } from './oyun.js';
-import { kontrol, yonAyarla } from './kontrol.js';
+import { kontrol, yonAyarla, kullanAyarla } from './kontrol.js';
 
 export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor', 4: 'miknatis' };
 /** Hareket tuşları (e.code; klavye düzeninden bağımsız fiziksel konum) → [dx, dy]. */
@@ -50,7 +50,7 @@ function yonuGuncelle() {
     x += YON_TUSLARI[kod][0];
     y += YON_TUSLARI[kod][1];
   }
-  yonAyarla(Math.sign(x), Math.sign(y));
+  yonAyarla(Math.sign(x), Math.sign(y), 'klavye');
 }
 
 /** Klavye oyuna mı ait: yazı alanında ya da açık bir pencerede (dialog, rehber) değilse. */
@@ -73,7 +73,7 @@ function tusBasildi(e) {
   } else if (e.code === 'Space') {
     e.preventDefault(); // sayfa kaymasın, odaktaki düğme tıklanmasın
     if (!e.repeat) bosluk = { basildi: performance.now(), sayi: bosluk.sayi + 1 };
-    kontrol.kullan = true;
+    kullanAyarla(true, 'klavye');
   } else if (e.code === 'KeyE') {
     if (!e.repeat) kontrol.binIste = true;
   } else if (KISAYOLLAR[e.key]) {
@@ -87,16 +87,16 @@ function tusBirakildi(e) {
     if (oyunTusuMu(e)) e.preventDefault();
     const { basildi, sayi } = bosluk;
     const kalan = EN_KISA_BASIS - (performance.now() - basildi);
-    if (kalan <= 0) kontrol.kullan = false;
-    else setTimeout(() => { if (bosluk.sayi === sayi) kontrol.kullan = false; }, kalan);
+    if (kalan <= 0) kullanAyarla(false, 'klavye');
+    else setTimeout(() => { if (bosluk.sayi === sayi) kullanAyarla(false, 'klavye'); }, kalan);
   }
 }
 
 /** Pencere odağı kaybolunca basılı tuşlar takılı kalmasın. */
 function hepsiniBirak() {
   basiliYonler.clear();
-  yonAyarla(0, 0);
-  kontrol.kullan = false;
+  yonAyarla(0, 0, 'klavye');
+  kullanAyarla(false, 'klavye');
 }
 
 export function girdiKur(tuval) {

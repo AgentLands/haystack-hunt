@@ -9,7 +9,7 @@ import { takipEt, YAKIN_EN_AZ } from '../kural/gorunum.js';
 import { kontrol } from '../kontrol.js';
 import { dinle } from '../olaylar.js';
 
-export const TAKIP_Z = 2.5;
+export const TAKIP_Z = 3.5;
 /** Takip yumuşaklığı (1/sn): büyüdükçe kamera karaktere daha sıkı yapışır. */
 const TAKIP_HIZI = 6;
 

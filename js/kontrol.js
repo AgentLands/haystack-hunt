@@ -14,9 +14,31 @@ export const kontrol = {
   hedef: null,
 };
 
-/** Bir kaynağın tuttuğu yönleri birleştirir (ör. klavye + sanal kol aynı anda). */
-export function yonAyarla(x, y) {
-  kontrol.yon.x = Math.max(-1, Math.min(1, x));
-  kontrol.yon.y = Math.max(-1, Math.min(1, y));
+const yonlar = new Map();
+const kullananlar = new Set();
+const kenetle = (v) => Math.max(-1, Math.min(1, v));
+
+/**
+ * Bir kaynağın (ör. 'klavye', 'kol') istediği yönü kaydeder; kontrol.yon tüm kaynakların
+ * toplamıdır. Böylece bir kaynağı bırakmak ötekinin yönünü sıfırlamaz.
+ */
+export function yonAyarla(x, y, kaynak = 'varsayilan') {
+  if (x === 0 && y === 0) yonlar.delete(kaynak);
+  else yonlar.set(kaynak, { x, y });
+  let tx = 0;
+  let ty = 0;
+  for (const v of yonlar.values()) {
+    tx += v.x;
+    ty += v.y;
+  }
+  kontrol.yon.x = kenetle(tx);
+  kontrol.yon.y = kenetle(ty);
   if (x !== 0 || y !== 0) kontrol.hedef = null;
+}
+
+/** Bir kaynağın "kullan" basılı durumunu kaydeder; herhangi biri basılıysa kullan true. */
+export function kullanAyarla(basili, kaynak = 'varsayilan') {
+  if (basili) kullananlar.add(kaynak);
+  else kullananlar.delete(kaynak);
+  kontrol.kullan = kullananlar.size > 0;
 }

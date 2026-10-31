@@ -2,7 +2,11 @@
  * Parçacık havuzu: saman çöpü, toz bulutu ve ışık kıvılcımı. Üst sınırlı halka tampon
  * (en eskisinin üstüne yazılır), basit yerçekimi/sürtünme ve sönme. Koordinatlar tuval
  * pikseli; z yerden yükseklik (gölgesi sağ alta düşer, ışık sol üstten).
+ * Her parçacık doğduğu andaki yakınlaştırmaya göre ölçeklenir (s = 1/z): yakın kamerada
+ * efekt dünyada küçülür, ekranda aynı boyda kalır (çiftçinin yanında dev çöp olmasın).
  */
+import { gorunum } from '../../gorunum.js';
+
 export const AZAMI = 400;
 export const COP = 0;
 export const TOZ = 1;
@@ -13,7 +17,7 @@ const SURTUNME = [2.2, 1.6, 1.2];
 const alan = () => new Float32Array(AZAMI);
 const p = {
   x: alan(), y: alan(), z: alan(), vx: alan(), vy: alan(), vz: alan(),
-  aci: alan(), donus: alan(), yas: alan(), omur: alan(), boy: alan(),
+  aci: alan(), donus: alan(), yas: alan(), omur: alan(), boy: alan(), s: alan(),
   tur: new Uint8Array(AZAMI), renk: new Array(AZAMI).fill(''),
 };
 let sonraki = 0;
@@ -24,17 +28,19 @@ const spritelar = new Map();
 export function parcacikEkle(o) {
   const i = sonraki;
   sonraki = (sonraki + 1) % AZAMI;
+  const k = 1 / Math.max(1, gorunum.z);
+  p.s[i] = k;
   p.x[i] = o.x;
   p.y[i] = o.y;
-  p.z[i] = o.z || 0;
-  p.vx[i] = o.vx || 0;
-  p.vy[i] = o.vy || 0;
-  p.vz[i] = o.vz || 0;
+  p.z[i] = (o.z || 0) * k;
+  p.vx[i] = (o.vx || 0) * k;
+  p.vy[i] = (o.vy || 0) * k;
+  p.vz[i] = (o.vz || 0) * k;
   p.aci[i] = Math.random() * Math.PI;
   p.donus[i] = o.donus ?? (Math.random() - 0.5) * 14;
   p.yas[i] = 0;
   p.omur[i] = o.omur;
-  p.boy[i] = o.boy;
+  p.boy[i] = o.boy * k;
   p.tur[i] = o.tur;
   p.renk[i] = o.renk;
 }
@@ -60,7 +66,7 @@ export function guncelle(dt) {
     p.vy[i] *= s;
     p.x[i] += p.vx[i] * dt;
     p.y[i] += p.vy[i] * dt;
-    p.vz[i] -= YERCEKIMI[t] * dt;
+    p.vz[i] -= YERCEKIMI[t] * p.s[i] * dt;
     p.z[i] += p.vz[i] * dt;
     if (p.z[i] < 0) {
       p.z[i] = 0;
@@ -102,10 +108,11 @@ export function parcaciklariCiz(ctx) {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.strokeStyle = 'rgb(40, 24, 8)';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.5 / Math.max(1, gorunum.z);
   ctx.beginPath();
   for (let i = 0; i < AZAMI; i++) {
-    if (p.yas[i] >= p.omur[i] || p.tur[i] !== COP || p.z[i] < 1 || p.z[i] > 45) continue;
+    if (p.yas[i] >= p.omur[i] || p.tur[i] !== COP) continue;
+    if (p.z[i] < p.s[i] || p.z[i] > 45 * p.s[i]) continue;
     const ox = p.x[i] + p.z[i] * 0.3;
     const oy = p.y[i] + p.z[i] * 0.3;
     const dx = Math.cos(p.aci[i]) * p.boy[i] * 0.5;
@@ -121,15 +128,15 @@ export function parcaciklariCiz(ctx) {
     ctx.globalAlpha = alfa(i) * 0.35;
     ctx.drawImage(sprite(p.renk[i]), p.x[i] - r, p.y[i] - p.z[i] * 0.5 - r, r * 2, r * 2);
   }
-  ctx.lineWidth = 1.6;
   for (let i = 0; i < AZAMI; i++) {
     if (p.yas[i] >= p.omur[i] || p.tur[i] !== COP) continue;
-    const olcek = 1 + p.z[i] / 70;
+    const olcek = 1 + p.z[i] / (70 * p.s[i]);
     const dx = Math.cos(p.aci[i]) * p.boy[i] * 0.5 * olcek;
     const dy = Math.sin(p.aci[i]) * p.boy[i] * 0.5 * olcek;
     const x = p.x[i];
     const y = p.y[i] - p.z[i] * 0.5;
     ctx.globalAlpha = alfa(i);
+    ctx.lineWidth = 1.6 * p.s[i];
     ctx.strokeStyle = p.renk[i];
     ctx.beginPath();
     ctx.moveTo(x - dx, y - dy);
@@ -145,7 +152,8 @@ export function parcaciklariCiz(ctx) {
     ctx.globalAlpha = a;
     ctx.drawImage(sprite(p.renk[i]), p.x[i] - r, y - r, r * 2, r * 2);
     ctx.fillStyle = '#fffbe8';
-    ctx.fillRect(p.x[i] - 0.8, y - 0.8, 1.6, 1.6);
+    const n = 0.8 * p.s[i];
+    ctx.fillRect(p.x[i] - n, y - n, 2 * n, 2 * n);
   }
   ctx.restore();
 }

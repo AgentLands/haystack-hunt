@@ -46,3 +46,19 @@ test('geçersiz girdi güvenli: sıfır yön', () => {
   assert.deepEqual(kolYonu(10, 10, 0).yon, { x: 0, y: 0 });
   assert.deepEqual(kolYonu(NaN, 1, 50).yon, { x: 0, y: 0 });
 });
+
+test('klavye ve sanal kol birbirini sıfırlamaz', async () => {
+  const { kontrol, yonAyarla, kullanAyarla } = await import('../js/kontrol.js');
+  yonAyarla(1, 0, 'kol');
+  yonAyarla(0, -1, 'klavye');
+  assert.deepEqual(kontrol.yon, { x: 1, y: -1 });
+  yonAyarla(0, 0, 'klavye');
+  assert.deepEqual(kontrol.yon, { x: 1, y: 0 });
+  yonAyarla(0, 0, 'kol');
+  kullanAyarla(true, 'klavye');
+  kullanAyarla(true, 'dokunmatik');
+  kullanAyarla(false, 'klavye');
+  assert.equal(kontrol.kullan, true);
+  kullanAyarla(false, 'dokunmatik');
+  assert.equal(kontrol.kullan, false);
+});
