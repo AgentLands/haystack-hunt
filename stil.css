@@ -1,165 +1,258 @@
+/*
+ * Sayfa iskeleti: ambar tahtası zemin, tam ekran ızgara yerleşim (tuval ekrana sığar,
+ * sayfa kaydırılmaz), alt eylem sırası, temel düğme, bildirim şeridi, kamera düğmeleri ve
+ * mini harita. HUD (başlık, kâğıt etiketler, alet rafı) stil-hud.css'te; renkler
+ * belirtec.css'ten.
+ *
+ * Yerleşim: gövde bir ızgaradır. Başlık, panel, alet rafı ve main (tuval) aynı hücrede
+ * (`sahne`) üst üste durur; böylece HUD tuvalin kenarına iğnelenir. Gövdeye eklenen başka
+ * öğeler dialog ya da position: fixed/absolute olmalı (yoksa ızgarada boş hücreye düşer).
+ */
 :root {
-  --zemin: #1d1711;
-  --kart: #2a2119;
-  --cizgi: #4a3a2a;
-  --yazi: #f3e7d3;
-  --soluk: #b9a68a;
-  --vurgu: #e8b84a;
-  --vurgu-yazi: #2a1d08;
+  /* Eski adlar: henüz yeni belirteçlere geçmemiş modüller (rehber.css, yaris.css...) için. */
+  --zemin: var(--ahsap);
+  --kart: var(--ahsap-koyu);
+  --cizgi: var(--murekkep-soluk);
+  --yazi: var(--kagit);
+  --soluk: var(--kraft);
+  --vurgu: var(--saman);
+  --vurgu-yazi: var(--murekkep);
+
+  /* Ambar tahtası: yatay tahtalar, ek yerleri ve damar (gradyansız SVG). */
+  --ahsap-doku: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='96'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M0 1h240M0 49h240M60 2v46M180 50v46' stroke='rgba(15,9,4,.55)' stroke-width='2'/%3E%3Cpath d='M0 3h240M0 51h240' stroke='rgba(255,230,190,.07)'/%3E%3Cpath d='M0 14c40-3 80 3 120 0s80-2 120 1M0 31c50 3 90-4 140 0s70 2 100-1M0 64c30-2 70 3 110 0s90-3 130 1M0 82c60 2 100-3 150 0s60 1 90-1' stroke='rgba(15,9,4,.25)' stroke-width='1.2'/%3E%3Cpath d='M10 22c40 2 70-2 110 1M130 72c40-2 70 2 100 0' stroke='rgba(255,230,190,.06)' stroke-width='2'/%3E%3Cellipse cx='150' cy='25' rx='7' ry='2.6' stroke='rgba(15,9,4,.35)'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* Tuval kutusu (3:2) ekrana sığar; paylar HUD'un tuval dışına taşan kısmı içindir. */
+  --ust-pay: 30px;
+  --alt-pay: 42px;
+  --serit: 58px;
+  --kenar-pay: 16px;
+  --tuval-en: min(calc(100vw - 2 * var(--kenar-pay)),
+    calc((100dvh - var(--ust-pay) - var(--alt-pay) - var(--serit)) * 1.5));
+  --tuval-boy: calc(var(--tuval-en) / 1.5);
 }
 
 * { box-sizing: border-box; }
 
+html { background: var(--ahsap); }
 body {
-  margin: 0 auto;
-  max-width: 1000px;
-  padding: 16px;
-  background: var(--zemin);
-  color: var(--yazi);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-
-header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; color: var(--vurgu); }
-.etiket { margin: 0; color: var(--soluk); font-size: 0.9rem; }
-.dugme-sirasi { display: flex; gap: 6px; margin-left: auto; }
-.dugme-sirasi button { padding: 6px 10px; }
-
-.panel {
+  margin: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--ahsap);
+  background-image: var(--ahsap-doku);
+  color: var(--kagit);
+  font-family: var(--yazi-govde);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 12px 0;
+  grid-template-columns: 1fr var(--tuval-en) 1fr;
+  grid-template-rows: minmax(var(--ust-pay), 1fr) var(--tuval-boy)
+    minmax(var(--alt-pay), 1fr) var(--serit);
+  grid-template-areas: ". . ." ". sahne ." ". . ." "serit serit serit";
 }
-.panel div {
-  background: var(--kart);
-  border: 1px solid var(--cizgi);
-  border-radius: 10px;
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
+/* Alt şerit: koyu tahta pervaz. */
+body::before {
+  content: '';
+  grid-area: serit;
+  background: var(--ahsap-koyu);
+  border-top: 2px solid var(--murekkep);
+  box-shadow: inset 0 2px 0 rgba(255, 230, 190, 0.06);
 }
-.baslik { color: var(--soluk); font-size: 0.75rem; }
-.panel strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+main, .hud-baslik, .panel, .araclar { grid-area: sahne; min-width: 0; }
+main { position: relative; z-index: 1; }
 
-.araclar, .alt { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-
-button {
-  font: inherit;
-  color: var(--yazi);
-  background: var(--kart);
-  border: 1px solid var(--cizgi);
-  border-radius: 10px;
-  padding: 8px 14px;
-  cursor: pointer;
+.tarla-kap {
+  position: relative;
+  /* Tuval üstü bindirmeler HUD'un altında kalsın diye üst/alt kenardan bu kadar uzak dursun. */
+  --hud-ust: 34px;
+  --hud-alt: 40px;
 }
-button:hover { border-color: var(--vurgu); }
-button:focus-visible, summary:focus-visible {
-  outline: 3px solid var(--vurgu);
-  outline-offset: 2px;
-}
-button[aria-pressed="true"] { background: var(--vurgu); color: var(--vurgu-yazi); border-color: var(--vurgu); }
-button.ikincil { color: var(--soluk); margin-left: auto; }
-kbd { font-size: 0.7rem; opacity: 0.7; margin-right: 4px; }
-.hak { font-size: 0.75rem; opacity: 0.8; font-variant-numeric: tabular-nums; }
-.zorluk-secici {
-  font: inherit;
-  color: var(--yazi);
-  background: var(--kart);
-  border: 1px solid var(--cizgi);
-  border-radius: 10px;
-  padding: 8px 10px;
-  margin-left: auto;
-}
-.puan { font-weight: 600; color: var(--vurgu); }
-
-canvas {
+canvas#tarla {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 3 / 2;
-  border-radius: 12px;
-  border: 1px solid var(--cizgi);
+  /* Çerçeve gölgeyle: kenarlık girdi.js'in getBoundingClientRect eşlemesini kaydırırdı. */
+  box-shadow: 0 0 0 3px var(--murekkep), 5px 7px 0 3px rgba(36, 25, 16, 0.55);
   image-rendering: pixelated;
   touch-action: none;
   cursor: crosshair;
 }
+canvas.kaydirilabilir { cursor: grab; }
+canvas.kaydiriyor { cursor: grabbing; }
 
-.tarla-kap { position: relative; }
+/* Temel düğme = ikincil (kraft). Özel türler belirtec.css'teki sınıflarla. */
+button {
+  font: inherit;
+  font-family: var(--yazi-baslik);
+  color: var(--murekkep);
+  background: var(--kraft);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  padding: 0.45em 0.9em;
+  cursor: pointer;
+}
+button:active { transform: translate(2px, 3px); box-shadow: none; }
+button.ikincil { background: var(--kagit); }
+.ekranda-gizli {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Alt eylem sırası (alt şeritte ortada). */
+nav.alt {
+  grid-area: serit;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 12px;
+  min-width: 0;
+}
+nav.alt button { font-size: 0.95rem; white-space: nowrap; }
+nav.alt #pes { order: 9; color: var(--saman); }
+
+/* "Nasıl oynanır": şeridin sağında; açılınca yukarı doğru kâğıt sayfa. */
+details.nasil {
+  grid-area: serit;
+  z-index: 4;
+  align-self: center;
+  justify-self: end;
+  margin-right: 16px;
+  position: relative;
+}
+details.nasil summary {
+  cursor: pointer;
+  color: var(--kraft);
+  font-family: var(--yazi-govde);
+  text-decoration: underline dashed 1px;
+  text-underline-offset: 3px;
+  list-style: none;
+}
+details.nasil summary::-webkit-details-marker { display: none; }
+details.nasil ul {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 14px);
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 120px);
+  overflow: auto;
+  margin: 0;
+  padding: 14px 18px 14px 32px;
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  color: var(--murekkep);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge-buyuk);
+}
+details.nasil li { margin: 4px 0; line-height: 1.35; }
+
+/* Pencere tabanı (pencere.css'teki .kagit-pencere bunun üstüne yazar). */
+dialog {
+  background: var(--ahsap-koyu);
+  color: var(--kagit);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge-buyuk);
+  padding: 20px 24px;
+  max-width: min(440px, calc(100vw - 32px));
+  font-family: var(--yazi-govde);
+}
+dialog::backdrop { background: rgba(36, 25, 16, 0.6); }
+dialog h2 { margin-top: 0; font-family: var(--yazi-baslik); font-weight: 400; }
+.puan { font-family: var(--yazi-sayi); font-weight: 700; color: var(--saman); }
+.dugmeler { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* Bildirim: üst ortada iğnelenmiş kâğıt şerit. */
 .bildirim {
   position: absolute;
   left: 50%;
-  top: 12px;
-  transform: translateX(-50%);
-  background: rgba(20, 14, 8, 0.85);
-  border: 1px solid var(--vurgu);
-  color: var(--yazi);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.9rem;
+  top: calc(var(--hud-ust) + 6px);
+  transform: translateX(-50%) rotate(-0.6deg);
+  max-width: min(460px, calc(100% - 140px));
+  padding: 7px 14px 7px;
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  color: var(--murekkep);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  font-family: var(--yazi-govde);
+  font-size: 0.92rem;
+  line-height: 1.25;
+  text-align: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s;
-  max-width: calc(100% - 24px);
-  text-align: center;
+  transition: opacity 0.15s, transform 0.15s;
 }
-.bildirim.gorunur { opacity: 1; }
-
-.nasil { color: var(--soluk); margin-top: 8px; }
-.nasil summary { cursor: pointer; color: var(--yazi); }
-.nasil li { margin: 4px 0; }
-
-dialog {
-  background: var(--kart);
-  color: var(--yazi);
-  border: 1px solid var(--vurgu);
-  border-radius: 14px;
-  padding: 20px 24px;
-  max-width: min(420px, calc(100vw - 32px));
+.bildirim::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--damga);
+  border: 2px solid var(--murekkep);
 }
-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
-dialog h2 { margin-top: 0; color: var(--vurgu); }
-.dugmeler { display: flex; gap: 8px; flex-wrap: wrap; }
+.bildirim.gorunur { opacity: 1; transform: translateX(-50%) rotate(-0.6deg) translateY(2px); }
 
-@media (max-width: 520px) {
-  h1 { font-size: 1.3rem; }
-  .panel strong { font-size: 1.05rem; }
-  button.ikincil { margin-left: 0; }
-}
-
-/* Kamera: yakınlaştırma düğmeleri, mini harita, kaydırma imleci */
+/* Kamera: dikey kâğıt şerit üstünde yakınlaştırma düğmeleri; kâğıt çerçeveli mini harita. */
 .kamera-dugmeleri {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: 12px;
+  bottom: calc(var(--hud-alt) + 8px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  padding: 5px;
+  background: var(--kraft);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  z-index: 2;
 }
 .kamera-dugmeleri button {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  font-size: 1.25rem;
+  display: grid;
+  place-items: center;
+  font-family: var(--yazi-baslik);
+  font-size: 1.2rem;
   line-height: 1;
-  background: rgba(20, 14, 8, 0.8);
+  background: var(--kagit);
+  box-shadow: none;
   touch-action: manipulation;
 }
-.kamera-dugmeleri button:disabled { opacity: 0.4; cursor: default; }
+.kamera-dugmeleri button svg { width: 22px; height: 22px; }
+.kamera-dugmeleri button:disabled { opacity: 0.4; cursor: default; transform: none; }
 canvas.minik-harita {
   position: absolute;
-  left: 8px;
-  bottom: 8px;
+  left: 14px;
+  bottom: calc(var(--hud-alt) + 12px);
   width: 120px;
   height: 80px;
   aspect-ratio: auto;
-  border-radius: 6px;
-  border: 1px solid var(--vurgu);
+  /* Çerçeve gölgeyle çizilir: kenarlık getBoundingClientRect eşlemesini kaydırırdı. */
+  box-shadow: 0 0 0 3px var(--kagit), 0 0 0 5px var(--murekkep), 4px 7px 0 5px
+    rgba(36, 25, 16, 0.5);
   cursor: pointer;
+  z-index: 2;
 }
 canvas.minik-harita[hidden] { display: none; }
-canvas.kaydirilabilir { cursor: grab; }
-canvas.kaydiriyor { cursor: grabbing; }
-@media (max-width: 520px) {
-  canvas.minik-harita { width: 96px; height: 64px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bildirim { transition: none; }
+  button:active { transform: none; }
 }

@@ -1,18 +1,16 @@
 /**
- * Arayüz: üst panel (süre, saman, dedektör), araç düğmeleri, alt düğmeler, bitiş
- * penceresi ve paylaşım. Oyun olaylarını dinleyerek DOM'u günceller.
+ * Arayüz: araç düğmeleri, üst ikon düğmeleri ve alt eylem sırası (dugmeEkle), bildirim,
+ * bitiş penceresi ve paylaşım. Tuval kenarındaki HUD (süre, saman, haklar, makine kartı)
+ * hud.js'te. Oyun olaylarını dinleyerek DOM'u günceller.
  */
 import { dinle } from './olaylar.js';
 import { durumAl, yeniOyun, aracSec, pesEt, rastgeleEtiket } from './oyun.js';
 import { gununEtiketi } from './kural/rastgele.js';
+import { hudKur, sayi, sureMetni } from './hud.js';
+
+export { sayi, sureMetni };
 
 const $ = (id) => document.getElementById(id);
-export const sayi = new Intl.NumberFormat('tr-TR');
-
-export function sureMetni(ms) {
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
 
 const paylasimEkleri = [];
 
@@ -40,11 +38,17 @@ export function bildir(metin, sure = 2200) {
   bildirimZamani = setTimeout(() => kutu.classList.remove('gorunur'), sure);
 }
 
-/** Üst sıraya (ust-dugmeler) ya da alt sıraya (alt-dugmeler) düğme ekler. */
-export function dugmeEkle(yer, { metin, baslik, tikla }) {
+/**
+ * Üst sıraya (ust-dugmeler: HUD'un sağındaki ikon düğmeleri) ya da alt eylem sırasına
+ * (alt-dugmeler) düğme ekler. ikon bir DOM düğümüyse (ör. ikon.js'ten SVG) metnin yerine
+ * konur; değilse metin gösterilir. Erişilebilir ad baslik'tir.
+ */
+export function dugmeEkle(yer, { metin, baslik, tikla, ikon }) {
   const dugme = document.createElement('button');
   dugme.type = 'button';
-  dugme.textContent = metin;
+  dugme.className = yer === 'ust' ? 'dugme-ikon' : 'dugme-ikincil';
+  if (ikon instanceof Node) dugme.append(ikon);
+  else dugme.textContent = metin;
   if (baslik) {
     dugme.title = baslik;
     dugme.setAttribute('aria-label', baslik);
@@ -76,8 +80,6 @@ export function arayuzKur() {
     const adres = new URL(location.href);
     adres.searchParams.set('tohum', durum.etiket);
     history.replaceState(null, '', adres);
-    $('etiket').textContent = durum.etiket === gununEtiketi()
-      ? `Günün tarlası (${durum.etiket})` : durum.etiket;
     $('bitis').close();
     $('paylas').textContent = 'Sonucu kopyala';
   });
@@ -92,10 +94,5 @@ export function arayuzKur() {
       + `${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki} dedektörle buldun.`;
     $('bitis').showModal();
   });
-  dinle('kare', ({ zaman, durum }) => {
-    const gecen = durum.baslangic === null ? 0 : (durum.bitis ?? zaman) - durum.baslangic;
-    $('sure').textContent = sureMetni(gecen);
-    $('kaldirilan').textContent = sayi.format(durum.tarla.kaldirilan);
-    $('dedektor-hak').textContent = durum.dedektor;
-  });
+  hudKur();
 }

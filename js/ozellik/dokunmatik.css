@@ -1,7 +1,23 @@
-/* Dokunmatik denetim: sanal kol, eylem düğmeleri ve dokunmatik kipte yerleşim (body.dokunmatik). */
-.dokunmatik-kol, .dokunmatik-dugme {
-  position: absolute;
-  z-index: 3;
+/*
+ * Dokunmatik denetim (body.dokunmatik): kumanda = sanal kol (kraft disk, kırmızı damga topuz)
+ * ve eylem düğmeleri (Kullan damgası, Bin/İn kraft). Dikey ekranda tuvalin altındaki tablada,
+ * yatayda tuvalin alt köşelerinde. Dokunma hedefleri en az 44 px.
+ */
+.kumanda {
+  grid-area: 2 / 1 / 3 / -1; /* yatay: sahne satırı boyunca, alt köşeler */
+  align-self: end;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 12px 12px;
+  pointer-events: none; /* aradaki boşluk tuvale dokunmayı engellemesin */
+}
+.kumanda > * { pointer-events: auto; }
+.dokunmatik-kol,
+.dokunmatik-dugme {
+  position: relative;
+  flex: none;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -9,76 +25,115 @@
   -webkit-tap-highlight-color: transparent;
 }
 .dokunmatik-kol {
-  left: 12px;
-  bottom: 12px;
   width: 124px;
   height: 124px;
   border-radius: 50%;
-  background: rgba(20, 14, 8, 0.45);
-  border: 2px solid rgba(232, 184, 74, 0.55);
-  transition: background 0.1s;
+  background-color: var(--kraft);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  border: 3px solid var(--murekkep);
+  box-shadow: inset 0 0 0 8px var(--kraft-koyu), var(--golge);
 }
-.dokunmatik-kol.basili { background: rgba(20, 14, 8, 0.6); border-color: var(--vurgu); }
+/* Dört yön çentiği: diske kazınmış küçük çizgiler. */
+.dokunmatik-kol::before {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 2px dashed var(--murekkep-soluk);
+}
 .dokunmatik-kol-parmak {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 56px;
-  height: 56px;
-  margin: -28px 0 0 -28px;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
   border-radius: 50%;
-  background: rgba(232, 184, 74, 0.55);
-  border: 2px solid var(--vurgu);
+  background: var(--damga);
+  border: 3px solid var(--murekkep);
+  box-shadow: var(--golge);
   pointer-events: none;
 }
-.dokunmatik-kol.basili .dokunmatik-kol-parmak { background: var(--vurgu); }
-.dokunmatik-eylemler { position: absolute; right: 12px; bottom: 12px; z-index: 3;
-  width: 0; height: 0; }
+.dokunmatik-kol.basili .dokunmatik-kol-parmak { background: var(--saman); }
+.dokunmatik-eylemler {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
 .dokunmatik-dugme {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 76px;
-  height: 76px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: rgba(42, 33, 25, 0.8);
-  border: 2px solid var(--vurgu);
-  color: var(--yazi);
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-family: var(--yazi-baslik);
+  font-size: 0.82rem;
+  line-height: 1.05;
   text-align: center;
-  line-height: 1.1;
-  transition: background 0.08s, transform 0.08s;
+  color: var(--murekkep);
+  background: var(--kraft);
+  border: 3px solid var(--murekkep);
+  box-shadow: var(--golge);
+  transition: transform 60ms, box-shadow 60ms;
 }
-.dokunmatik-dugme.kullan { right: 0; bottom: 0; width: 84px; height: 84px; font-size: 0.9rem; }
-.dokunmatik-dugme.binin { right: 92px; bottom: 0; }
-.dokunmatik-dugme.basili {
-  background: var(--vurgu);
-  color: var(--vurgu-yazi);
-  transform: scale(0.95);
-  box-shadow: 0 0 14px rgba(232, 184, 74, 0.8);
+.dokunmatik-dugme.kullan {
+  order: 2;
+  width: 88px;
+  height: 88px;
+  font-size: 0.95rem;
+  color: var(--damga-yazi);
+  background: var(--damga);
+  /* İç halka: lastik damganın kabartma kenarı. */
+  box-shadow: inset 0 0 0 4px var(--damga), inset 0 0 0 6px var(--damga-yazi), var(--golge);
+}
+.dokunmatik-dugme.basili { transform: translate(2px, 3px); box-shadow: none; }
+.dokunmatik-dugme.kullan.basili {
+  background: var(--saman);
+  color: var(--murekkep);
+  box-shadow: inset 0 0 0 4px var(--saman), inset 0 0 0 6px var(--murekkep);
 }
 
-/* Yerleşim: alt köşeler kol ve düğmelerin; mini harita sol üste, kamera düğmeleri sağ üste. */
-body.dokunmatik canvas.minik-harita { bottom: auto; top: 8px; left: 8px; }
-body.dokunmatik .kamera-dugmeleri { bottom: auto; top: 8px; right: 8px; }
-/* Bildirim ortada kalır, köşelerdeki harita ve düğmelerin altına inmez. */
-body.dokunmatik .bildirim { top: 8px; max-width: calc(100% - 2 * 110px); font-size: 0.8rem; }
-@media (max-width: 520px) {
-  body.dokunmatik .bildirim { max-width: calc(100% - 2 * 60px); top: 76px; }
+/* Dokunmatikte kısayol rakamı ve küçük hedefler yok. */
+body.dokunmatik .arac-kart kbd { display: none; }
+body.dokunmatik .dugme-sirasi .dugme-ikon { min-width: 44px; min-height: 44px; }
+body.dokunmatik .kamera-dugmeleri button { width: 44px; height: 44px; }
+
+/* Yatay: köşeler kumandanın; mini harita sol üste, kamera düğmeleri sağ üste. */
+@media (orientation: landscape) {
+  body.dokunmatik canvas.minik-harita { bottom: auto; top: calc(var(--hud-ust) + 34px); }
+  body.dokunmatik .kamera-dugmeleri { bottom: auto; top: calc(var(--hud-ust) + 22px); }
+  body.dokunmatik .rehber { top: var(--hud-ust); bottom: auto; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .kumanda { padding: 0 8px 8px; }
   .dokunmatik-kol { width: 112px; height: 112px; }
+  .dokunmatik-eylemler { flex-direction: column; align-items: center; gap: 8px; }
+  .dokunmatik-dugme { width: 64px; height: 64px; font-size: 0.75rem; }
+  .dokunmatik-dugme.kullan { width: 80px; height: 80px; }
+  body.dokunmatik .kamera-dugmeleri { gap: 4px; padding: 3px; right: 8px; }
+  body.dokunmatik canvas.minik-harita { width: 84px; height: 56px; }
+  body.dokunmatik .bildirim { max-width: calc(100% - 2 * 110px); }
 }
 
-/* İlk açılış rehberi alta değil üste oturur: kol ve eylem düğmelerini örtmesin. */
-body.dokunmatik .rehber { top: 8px; bottom: auto; padding: 6px 10px 8px; }
-body.dokunmatik .rehber p { font-size: 0.8rem; line-height: 1.25; }
-body.dokunmatik .rehber h2 { font-size: 0.95rem; margin-bottom: 2px; }
-body.dokunmatik .rehber-dugmeler { margin-top: 6px; }
-
-/* Yatay telefon: tarla görüntü alanına sığsın (kol ve düğmeler ekranın dışında kalmasın). */
-@media (orientation: landscape) and (max-height: 600px) {
-  body.dokunmatik .tarla-kap {
-    width: min(100%, calc((100dvh - 16px) * 1.5));
-    margin: 0 auto;
+/* Dikey: kumanda tuvalin altındaki tablada. */
+@media (orientation: portrait) {
+  .kumanda {
+    grid-area: kumanda;
+    align-self: center;
+    align-items: center;
+    padding: 6px 22px 12px;
   }
+  .dokunmatik-kol { width: 140px; height: 140px; }
+  .dokunmatik-kol-parmak { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
+  .dokunmatik-dugme { width: 76px; height: 76px; }
+  .dokunmatik-dugme.kullan { width: 96px; height: 96px; font-size: 1rem; }
+  body.dokunmatik .rehber { top: var(--hud-ust); bottom: auto; padding: 6px 10px 8px; }
+  body.dokunmatik .rehber p { font-size: 0.8rem; line-height: 1.25; }
+  body.dokunmatik .rehber h2 { font-size: 0.95rem; margin-bottom: 2px; }
+  body.dokunmatik .rehber-dugmeler { margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dokunmatik-dugme { transition: none; }
 }

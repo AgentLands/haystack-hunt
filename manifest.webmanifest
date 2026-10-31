@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#1d1711",
-  "theme_color": "#1d1711",
+  "background_color": "#3a2a1c",
+  "theme_color": "#3a2a1c",
   "icons": [
     { "src": "ikon/ikon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "ikon/ikon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },

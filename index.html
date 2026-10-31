@@ -7,31 +7,76 @@
   <meta name="description" content="Kuş bakışı bir saman tarlasında tek bir iğneyi ara.">
   <link rel="stylesheet" href="belirtec.css">
   <link rel="stylesheet" href="stil.css">
+  <link rel="stylesheet" href="stil-hud.css">
+  <link rel="stylesheet" href="stil-telefon.css">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="ikon/ikon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="ikon/ikon-192.png">
-  <meta name="theme-color" content="#1d1711">
+  <meta name="theme-color" content="#3a2a1c">
 </head>
 <body>
-  <header>
-    <h1>Haystack Hunt</h1>
+  <!-- Gövde bir ızgara: başlık, panel, alet rafı ve tuval aynı hücrede üst üste (HUD). -->
+  <header class="hud-baslik">
+    <h1 class="logo">Haystack Hunt</h1>
     <p id="etiket" class="etiket"></p>
     <!-- Özellik modülleri küçük ikon düğmelerini buraya JS ile ekler (ses, istatistik...). -->
     <div id="ust-dugmeler" class="dugme-sirasi"></div>
   </header>
 
   <section class="panel" aria-label="Durum">
-    <div><span class="baslik">Süre</span><strong id="sure">0:00</strong></div>
-    <div><span class="baslik">Kaldırılan saman</span><strong id="kaldirilan">0</strong></div>
-    <div><span class="baslik">Dedektör</span><strong id="dedektor-hak">3</strong></div>
+    <div class="hud-etiket" title="Süre">
+      <svg class="hud-ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5"
+        r="7.6"/><path d="M10 2.8h4.2M12.1 3v2.6M12 9.4l.1 4.3 2.9 1.8M18.4 6.2l1.3-1.2"/></svg>
+      <span class="baslik ekranda-gizli">Süre</span><strong id="sure" class="sayi">0:00</strong>
+    </div>
+    <div class="hud-etiket" title="Kaldırılan saman">
+      <svg class="hud-ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.2 3.6c4.6.1
+        8.3 3.8 8.2 8.5-.1 4.6-3.9 8.2-8.5 8.1-4.6-.1-8.2-3.9-8.1-8.5.1-4.4 3.8-8.2
+        8.4-8.1zM12 12.1c.1-.9 1.5-1 2-.2.8 1.4-.6 3-2.2 2.8-2.2-.3-3-2.7-1.8-4.5 1.6-2.3
+        5-2.2 6.4.2 1.5 2.7-.3 6.2-3.4 6.7"/></svg>
+      <span class="baslik ekranda-gizli">Kaldırılan saman</span><strong id="kaldirilan" class="sayi">0</strong>
+    </div>
   </section>
 
   <nav class="araclar" aria-label="Araçlar">
-    <button data-arac="el" aria-pressed="true"><kbd>1</kbd> El</button>
-    <button data-arac="tirmik" aria-pressed="false"><kbd>2</kbd> Tırmık</button>
-    <button data-arac="dedektor" aria-pressed="false"><kbd>3</kbd> Dedektör</button>
-    <button data-arac="miknatis" aria-pressed="false"><kbd>4</kbd> Mıknatıs
-      <span id="miknatis-hak" class="hak">1</span></button>
+    <button data-arac="el" aria-pressed="true" class="arac-kart"><kbd aria-hidden="true">1</kbd>
+      <svg class="arac-ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.3 20.8C5.5 18
+        4.6 15.3 4.5 12.6c0-1.5 1.5-2 2.3-.7L8.1 14l-.2-8.7c0-1.5 2-1.6 2.2-.1l.4 5.6.2-7c0-1.6
+        2.1-1.6 2.3-.1l.3 7 .5-5.8c.2-1.5 2.2-1.4 2.2.2l-.2 6.7 1.2-3c.6-1.4 2.4-.9 2.1.7-.5
+        3.4-1.4 7.2-3.6 11.2"/></svg>
+      <span class="arac-ad">El</span></button>
+    <button data-arac="tirmik" aria-pressed="false" class="arac-kart"><kbd
+      aria-hidden="true">2</kbd>
+      <svg class="arac-ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 3.2 8.2
+        15.1M4.3 11.4l7.4 7.5M4.4 11.5l-1.7 1.4M6.2 13.3l-1.5 1.8M8 15.1l-1.6 1.6M9.9 17l-1.6
+        1.5M11.7 18.8l-1.5 1.7"/></svg>
+      <span class="arac-ad">Tırmık</span></button>
+    <button data-arac="dedektor" aria-pressed="false" class="arac-kart"><kbd
+      aria-hidden="true">3</kbd>
+      <svg class="arac-ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.2 3.3l3
+        1.9M18.6 4.3 9.6 16.1M15.4 7.2l1.9 1.4"/><ellipse cx="7.2" cy="18.1" rx="4.6" ry="2.3"
+        transform="rotate(-8 7.2 18.1)"/></svg>
+      <span class="arac-ad">Dedektör</span>
+      <span class="hak-dizi" id="dedektor-noktalar" aria-hidden="true"></span>
+      <span class="ekranda-gizli">, kalan hak <span id="dedektor-hak">3</span></span></button>
+    <button data-arac="miknatis" aria-pressed="false" class="arac-kart"><kbd
+      aria-hidden="true">4</kbd>
+      <svg class="arac-ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.9 4.1h4.2l-.1
+        8.3c0 1.7 1.4 3 3 3s3-1.3 3-3.1l.1-8.2h4.1l-.1 8.4c0 3.9-3.2 7.1-7.1 7.1S4.9 16.3
+        4.9 12.4zM5 7.6h4.1M15 7.7h4.1"/></svg>
+      <span class="arac-ad">Mıknatıs</span>
+      <span class="hak-dizi" id="miknatis-noktalar" aria-hidden="true"></span>
+      <span class="ekranda-gizli">, kalan hak <span id="miknatis-hak">1</span></span></button>
+    <!-- Makineye binince alet kartlarının yerini alır (js/hud.js). -->
+    <div id="makine-karti" class="makine-karti" role="status" hidden>
+      <strong id="makine-ad" class="makine-ad"></strong>
+      <span class="serit"><span class="serit-ad">Yakıt</span><span class="serit-kutu"><span
+        id="makine-yakit" class="serit-dolu"></span></span></span>
+      <span id="makine-yuk-serit" class="serit"><span id="makine-yuk-ad"
+        class="serit-ad">Kepçe</span><span class="serit-kutu"><span id="makine-yuk"
+        class="serit-dolu"></span></span></span>
+      <span id="makine-ipucu" class="makine-ipucu"></span>
+    </div>
   </nav>
 
   <main>
@@ -42,10 +87,10 @@
     </div>
   </main>
 
-  <nav class="alt" id="alt-dugmeler">
-    <button id="gunun">Günün tarlası</button>
-    <button id="yeni">Yeni tarla</button>
-    <button id="pes" class="ikincil">Pes et, iğneyi göster</button>
+  <nav class="alt" id="alt-dugmeler" aria-label="Tarla">
+    <button id="gunun" class="dugme-birincil">Günün tarlası</button>
+    <button id="yeni" class="dugme-ikincil">Yeni tarla</button>
+    <button id="pes" class="dugme-metin tehlike">Pes et, iğneyi göster</button>
   </nav>
 
   <details class="nasil">
