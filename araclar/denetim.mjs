@@ -1,8 +1,9 @@
 /**
- * Kod denetimi (CLAUDE.md kuralları), bağımlılıksız. js/, tests/ ve varsa sunucu/ altındaki
- * .js/.mjs/.cjs dosyalarında şunları arar: satır ≤ 100 karakter (Unicode kod noktası), kod
- * dosyası ≤ 300 satır, test dosyası (*.test.js) ≤ 400 satır, modül belge yorumu (dosya
- * ilk anlamlı satırda belge yorumuyla başlamalı), js/kural/ içinde Math.random ve boş catch.
+ * Kod denetimi (CLAUDE.md kuralları), bağımlılıksız. js/, tests/, araclar/, dev/ ve varsa
+ * sunucu/ altındaki .js/.mjs/.cjs dosyalarında şunları arar: satır ≤ 100 karakter (Unicode
+ * kod noktası), kod dosyası ≤ 300 satır, test dosyası (*.test.js) ≤ 400 satır, modül belge
+ * yorumu (dosya ilk anlamlı satırda belge yorumuyla başlamalı), js/kural/ içinde Math.random
+ * ve boş catch.
  *   node araclar/denetim.mjs     bulgu varsa çıkış kodu 1, yoksa "DENETİM TEMİZ"
  * `denetle` ve `dosyaDenetle` birim testlerinde de kullanılır.
  */
@@ -13,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 export const SATIR_TAVANI = 100;
 export const KOD_TAVANI = 300;
 export const TEST_TAVANI = 400;
-const KLASORLER = ['js', 'tests', 'sunucu'];
+const KLASORLER = ['js', 'tests', 'sunucu', 'araclar', 'dev'];
 const UZANTILAR = new Set(['.js', '.mjs', '.cjs']);
 const BOS_CATCH = /catch\s*(\([^)]*\))?\s*\{(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*\}/g;
 const STRINGLER = /'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g;
@@ -50,7 +51,8 @@ export function dosyaDenetle(dosya, metin) {
   }
   if (/\.test\.js$/.test(dosya)) {
     if (satirlar.length > TEST_TAVANI) {
-      bulgular.push(bulgu(dosya, 1, `test dosyası ${satirlar.length} satır (tavan ${TEST_TAVANI})`));
+      const ne = `test dosyası ${satirlar.length} satır (tavan ${TEST_TAVANI})`;
+      bulgular.push(bulgu(dosya, 1, ne));
     }
   } else if (satirlar.length > KOD_TAVANI) {
     bulgular.push(bulgu(dosya, 1, `kod dosyası ${satirlar.length} satır (tavan ${KOD_TAVANI})`));
@@ -64,7 +66,8 @@ export function dosyaDenetle(dosya, metin) {
   if (dosya.startsWith('js/kural/')) {
     satirlar.forEach((s, k) => {
       if (s.includes('Math.random')) {
-        bulgular.push(bulgu(dosya, k + 1, 'js/kural/ içinde Math.random yasak (rastgelelik üreteçten)'));
+        const ne = 'js/kural/ içinde Math.random yasak (rastgelelik üreteçten)';
+        bulgular.push(bulgu(dosya, k + 1, ne));
       }
     });
   }
@@ -90,7 +93,7 @@ function dosyaListele(klasor) {
   return cikti.sort();
 }
 
-/** Proje kökündeki js/, tests/ ve varsa sunucu/ klasörlerini denetler. */
+/** Proje kökündeki js/, tests/, araclar/, dev/ ve varsa sunucu/ klasörlerini denetler. */
 export function denetle(kok) {
   const bulgular = [];
   for (const klasor of KLASORLER) {
