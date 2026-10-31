@@ -6,6 +6,7 @@
 import http from 'node:http';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
+import { pipeline } from 'node:stream';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { elSikis, reddet, OLAGAN_KOPMA } from './websocket.js';
@@ -14,6 +15,11 @@ import { iletiCoz, HizSiniri } from './dogrulama.js';
 
 const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const MAKS_BAGLANTI = 1000;
+/** Tek uzak adresten aynı anda en çok bağlantı ve kurulu oda (bir istemci herkesi dışlamasın). */
+export const MAKS_IP_BAGLANTI = 8;
+export const MAKS_IP_ODA = 3;
+/** Hız sınırı aşım sayacı (zamanla azalır) bunu geçerse bağlantı 1008 ile kapatılır. */
+const ASIM_TAVANI = 200;
 export const SURUM = 1;
 const TURLER = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -22,11 +28,29 @@ const TURLER = {
   '.ico': 'image/x-icon', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg',
   '.wav': 'audio/wav', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8',
 };
-/** Sunulmayan üst klasörler (nokta ile başlayan her şey de sunulmaz). */
-const YASAK = new Set(['sunucu', 'tests', 'node_modules']);
+/**
+ * Yalnız oyun dosyaları sunulur (beyaz liste): kökte index.html, *.css, manifest, sw.js,
+ * favicon.ico; klasör olarak js/, font/, ikon/. CLAUDE.md, package.json, docs/, dev/,
+ * araclar/, tests/, sunucu/ ve nokta ile başlayan her şey sunulmaz.
+ */
+const KOK_DOSYALAR = /^(index\.html|[\w-]+\.css|manifest\.webmanifest|sw\.js|favicon\.ico)$/;
+const KLASORLER = new Set(['js', 'font', 'ikon']);
+
+function sunulurMu(parcalar) {
+  if (parcalar.length === 0) return true; // '/' -> index.html
+  if (parcalar.length === 1) return KOK_DOSYALAR.test(parcalar[0]);
+  return KLASORLER.has(parcalar[0]);
+}
 
 function yolAl(istek) {
   return URL.canParse(istek.url, 'http://x') ? new URL(istek.url, 'http://x').pathname : null;
+}
+
+/** İstemcinin adresi; `vekil` açıksa güvenilir vekilin eklediği X-Forwarded-For'un SON değeri. */
+function uzakAdres(istek, vekil) {
+  const xff = vekil ? String(istek.headers['x-forwarded-for'] || '') : '';
+  const baslik = xff.split(',').pop().trim();
+  return baslik || istek.socket.remoteAddress || 'bilinmiyor';
 }
 
 function bitir(yanit, durum, metin) {
@@ -39,7 +63,7 @@ async function statikSun(kok, istek, yanit) {
   const yol = yolAl(istek);
   const parcalar = (yol || '').split('/').filter(Boolean);
   const gecerli = yol !== null && /^[\w\-./]*$/.test(yol)
-    && parcalar.every((p) => !p.startsWith('.')) && !YASAK.has(parcalar[0]);
+    && parcalar.every((p) => !p.startsWith('.')) && sunulurMu(parcalar);
   if (!gecerli) return bitir(yanit, 404, 'Bulunamadı');
   const dosya = path.join(kok, ...(parcalar.length ? parcalar : ['index.html']));
   let bilgi;
@@ -57,25 +81,25 @@ async function statikSun(kok, istek, yanit) {
     'X-Content-Type-Options': 'nosniff',
   });
   if (istek.method === 'HEAD') return yanit.end();
-  return createReadStream(dosya)
-    .on('error', (hata) => {
+  // pipeline: istemci kopunca (yanıt yok edilince) okuma akışı da kapanır, fd sızmaz.
+  return pipeline(createReadStream(dosya), yanit, (hata) => {
+    if (hata && hata.code !== 'ERR_STREAM_PREMATURE_CLOSE' && !OLAGAN_KOPMA.has(hata.code)) {
       console.error('Dosya okunamadı:', hata);
-      yanit.destroy();
-    })
-    .pipe(yanit);
+    }
+  });
 }
 
 /** Bir WebSocket bağlantısını oyuncuya çevirir ve odalara bağlar. */
-function oyuncuBagla(ws, id, odalar) {
-  const oyuncu = { id, gonder: (metin) => ws.gonder(metin) };
+function oyuncuBagla(ws, id, ip, odalar) {
+  const oyuncu = { id, ip, gonder: (metin) => ws.gonder(metin) };
   const hiz = new HizSiniri();
-  let asim = 0;
+  let reddedilen = 0;
   const hataGonder = (kod, mesaj) => oyuncu.gonder(JSON.stringify({ t: 'hata', kod, mesaj }));
   ws.on('ileti', (metin) => {
     if (!hiz.izinVer()) {
-      asim += 1;
-      if (asim > 200) ws.kapat(1008, 'hız sınırı');
-      else if (asim % 20 === 1) hataGonder('hiz', 'Çok hızlı ileti gönderiyorsun');
+      reddedilen += 1;
+      if (hiz.asimEkle() > ASIM_TAVANI) ws.kapat(1008, 'hız sınırı');
+      else if (reddedilen % 20 === 1) hataGonder('hiz', 'Çok hızlı ileti gönderiyorsun');
       return;
     }
     const { ileti, hata } = iletiCoz(metin);
@@ -88,13 +112,16 @@ function oyuncuBagla(ws, id, odalar) {
 
 /**
  * Sunucuyu açar. Seçenekler: port (0 = rastgele), host, kok (statik kök),
- * geriSayimMs, yarisMs, nabizMs. Döner: { sunucu, port, odalar, kapat() }.
+ * geriSayimMs, yarisMs, nabizMs, ipBaglanti, ipOda, vekil (güvenilir ters vekil arkasında
+ * X-Forwarded-For kullan). Döner: { sunucu, port, odalar, kapat() }.
  */
 export function sunucuAc({
   port = 8080, host, kok = KOK, geriSayimMs = 1000, yarisMs, nabizMs = 15000,
+  ipBaglanti = MAKS_IP_BAGLANTI, ipOda = MAKS_IP_ODA, vekil = false,
 } = {}) {
-  const odalar = new Odalar({ geriSayimMs, yarisMs });
+  const odalar = new Odalar({ geriSayimMs, yarisMs, ipOda });
   const baglantilar = new Set();
+  const ipSayac = new Map(); // uzak adres -> açık bağlantı sayısı
   let sayac = 0;
   const sunucu = http.createServer((istek, yanit) => {
     statikSun(kok, istek, yanit).catch((hata) => {
@@ -108,12 +135,20 @@ export function sunucuAc({
     });
     if (yolAl(istek) !== '/ws') return reddet(soket, '404 Not Found');
     if (baglantilar.size >= MAKS_BAGLANTI) return reddet(soket, '503 Service Unavailable');
+    const ip = uzakAdres(istek, vekil);
+    if ((ipSayac.get(ip) || 0) >= ipBaglanti) return reddet(soket, '429 Too Many Requests');
     const ws = elSikis(istek, soket);
     if (!ws) return undefined;
     baglantilar.add(ws);
-    ws.on('kapandi', () => baglantilar.delete(ws));
+    ipSayac.set(ip, (ipSayac.get(ip) || 0) + 1);
+    ws.on('kapandi', () => {
+      baglantilar.delete(ws);
+      const kalan = (ipSayac.get(ip) || 1) - 1;
+      if (kalan > 0) ipSayac.set(ip, kalan);
+      else ipSayac.delete(ip);
+    });
     sayac += 1;
-    return oyuncuBagla(ws, sayac, odalar);
+    return oyuncuBagla(ws, sayac, ip, odalar);
   });
   const nabiz = setInterval(() => {
     for (const ws of baglantilar) ws.nabiz();

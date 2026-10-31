@@ -4,8 +4,16 @@ Bağlantı: sayfayı sunan sunucunun `/ws` yolu (`ws://` ya da `wss://`). Her il
 JSON nesnesidir (WebSocket metin çerçevesi); `t` alanı türünü söyler. Sunucu yalnız metin
 kabul eder: ikili çerçeve 1003, 64 KB üstü ileti 1009, geçersiz UTF-8 1007 ile kapatılır.
 Uygulama düzeyinde ileti ≤ 1024 karakter; bağlantı başına ~15 ileti/sn (30'luk patlama).
-Sınırı aşan ileti atılır ve arada bir `hata{kod:'hiz'}` gelir; ısrar 1008 ile kapatılır.
-Sunucu 15 sn'de bir ping atar; yanıt gelmeyen bağlantı düşer.
+Sınırı aşan ileti atılır ve arada bir `hata{kod:'hiz'}` gelir; ısrar 1008 ile kapatılır
+(aşım sayacı saniyede 5 azalır, 200'ü geçen bağlantı düşer; seyrek patlama atmaz).
+Sunucu 15 sn'de bir ping atar; yanıt gelmeyen bağlantı düşer. İstemci ping'lerine pong yanıtı
+da sınırlıdır (10'luk patlama, saniyede 2); fazlası yanıtsız atılır.
+
+Uzak adres başına en çok 8 açık bağlantı (fazlası `429 Too Many Requests` ile reddedilir) ve en
+çok 3 kurulu oda vardır (`oda-siniri`). Sunucu bir ters vekil arkasındaysa `vekil` seçeneği
+`X-Forwarded-For`'un son değerini adres sayar. Kapanış çerçevesinden sonra gelen veri okunmaz.
+Statik olarak yalnız oyun dosyaları sunulur: `index.html`, kökteki `*.css`, `manifest.webmanifest`,
+`sw.js`, `favicon.ico` ve `js/`, `font/`, `ikon/` klasörleri.
 
 ## İstemci → sunucu
 
@@ -56,7 +64,7 @@ karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'
 | `hata` | `kod`, `mesaj` | Reddedilen istek; `mesaj` Türkçe, gösterilebilir. |
 
 Hata kodları: `oda-yok`, `oda-dolu`, `yaris-suruyor`, `zaten-odada`, `kurucu-degil`,
-`odada-degil`, `yaris-yok`, `sunucu-dolu`, `gecersiz`, `hiz`.
+`odada-degil`, `yaris-yok`, `sunucu-dolu`, `oda-siniri`, `gecersiz`, `hiz`.
 
 Oda `durum`u: `lobi` → `geri-sayim` → `yaris` → `bitti` (→ rövanşla yeniden `geri-sayim`).
 Oyuncu kaydı: `{ id, ad, renk (0-7), durum, sira, sureMs, saman, bagli }`; oyuncu `durum`u

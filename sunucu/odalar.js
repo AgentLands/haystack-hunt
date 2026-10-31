@@ -8,6 +8,8 @@ import { randomInt } from 'node:crypto';
 
 export const MAKS_OYUNCU = 8;
 export const MAKS_ODA = 500;
+/** Aynı uzak adresin aynı anda kurucusu olabileceği oda sayısı. */
+export const MAKS_IP_ODA = 3;
 /** Karışmayan harfler (I, O, Q, W, X yok). */
 const HARFLER = 'ABCDEFGHJKLMNPRSTUVYZ';
 const GERI_SAYIM = 3;
@@ -53,7 +55,8 @@ function hata(oyuncu, kod, mesaj) {
 }
 
 export class Odalar {
-  constructor({ geriSayimMs = 1000, yarisMs = 20 * 60 * 1000 } = {}) {
+  constructor({ geriSayimMs = 1000, yarisMs = 20 * 60 * 1000, ipOda = MAKS_IP_ODA } = {}) {
+    this.ipOda = ipOda;
     this.geriSayimMs = geriSayimMs;
     this.yarisMs = yarisMs;
     this.odalar = new Map();
@@ -77,10 +80,13 @@ export class Odalar {
   kur(oyuncu, ad) {
     if (this.uyelik.has(oyuncu.id)) return hata(oyuncu, 'zaten-odada', 'Zaten bir odadasın');
     if (this.odalar.size >= MAKS_ODA) return hata(oyuncu, 'sunucu-dolu', 'Sunucu dolu');
+    if (oyuncu.ip && this.#ipOdalari(oyuncu.ip) >= this.ipOda) {
+      return hata(oyuncu, 'oda-siniri', `Bu adresten en çok ${this.ipOda} oda kurulabilir`);
+    }
     let kod = yeniKod();
     while (this.odalar.has(kod)) kod = yeniKod();
     const oda = {
-      kod, kurucu: oyuncu.id, durum: 'lobi', tur: 0, etiket: null, sira: 0,
+      kod, kurucu: oyuncu.id, ip: oyuncu.ip, durum: 'lobi', tur: 0, etiket: null, sira: 0,
       kayitlar: new Map(), zamanlayici: null,
     };
     this.odalar.set(kod, oda);
@@ -168,6 +174,12 @@ export class Odalar {
     for (const oda of this.odalar.values()) clearTimeout(oda.zamanlayici);
     this.odalar.clear();
     this.uyelik.clear();
+  }
+
+  #ipOdalari(ip) {
+    let n = 0;
+    for (const oda of this.odalar.values()) if (oda.ip === ip) n += 1;
+    return n;
   }
 
   #ekle(oda, oyuncu, ad) {

@@ -125,13 +125,29 @@ export function iletiCoz(metin) {
   return KALIPLAR[m.t](m);
 }
 
-/** Jeton kovası: saniyede `dolum` ileti, en çok `kapasite` birikir. */
+/** Aşım sayacı saniyede bu kadar azalır: seyrek patlama atmaz, süren taşkın atar. */
+export const ASIM_AZALMA = 5;
+
+/**
+ * Jeton kovası: saniyede `dolum` ileti, en çok `kapasite` birikir. Reddedilen iletiler
+ * `asimEkle` ile sayılır; sayaç zamanla azalır (bağlantı ömrü boyunca birikmez).
+ */
 export class HizSiniri {
   constructor(kapasite = 30, dolum = 15, simdi = Date.now()) {
     this.kapasite = kapasite;
     this.dolum = dolum;
     this.jeton = kapasite;
     this.son = simdi;
+    this.asim = 0;
+    this.asimSon = simdi;
+  }
+
+  /** Reddedilen bir iletiyi sayar; azalmış güncel aşım sayacını döndürür. */
+  asimEkle(simdi = Date.now()) {
+    const azalan = ((simdi - this.asimSon) / 1000) * ASIM_AZALMA;
+    this.asim = Math.max(0, this.asim - azalan) + 1;
+    this.asimSon = simdi;
+    return this.asim;
   }
 
   izinVer(simdi = Date.now()) {
