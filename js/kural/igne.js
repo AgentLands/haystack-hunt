@@ -43,8 +43,12 @@ export function igneHucreleri(igne) {
   return [...kume];
 }
 
-/** Gömülü bir nesnenin ({x, y, z, aci}: iğne ya da çivi) üstündeki en ince saman katı. */
+/**
+ * Gömülü bir nesnenin ({x, y, z, aci}: iğne ya da çivi) üstündeki en ince saman katı.
+ * Makine kepçesindeki nesne (kepcede) tarlada değildir: derinliği sonsuz sayılır.
+ */
 export function nesneDerinligi(tarla, nesne) {
+  if (nesne.kepcede) return Infinity;
   let enAz = Infinity;
   for (const i of igneHucreleri(nesne)) {
     enAz = Math.min(enAz, Math.max(0, tarla.h[i] - nesne.z));

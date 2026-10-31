@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   varsayilan, sinirla, odakla, kaydir, merkezle, gorunurAlan,
-  ekrandanDunyaya, ekrandanHucre, dunyadanEkrana, YAKIN_EN_AZ, YAKIN_EN_COK,
+  ekrandanDunyaya, ekrandanHucre, dunyadanEkrana, takipEt, YAKIN_EN_AZ, YAKIN_EN_COK,
 } from '../js/kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../js/kural/boyut.js';
 
@@ -92,4 +92,21 @@ test('yakın görünümde hücre bulma görünür alana göre', () => {
   const c = ekrandanHucre(g, 0.5, 0.5);
   assert.equal(c.x, Math.floor(GENISLIK / 2));
   assert.equal(c.y, Math.floor(YUKSEKLIK / 2));
+});
+
+test('takipEt: oran 1 hedefi ortalar, küçük oran yumuşak yaklaşır, sınırda kenetlenir', () => {
+  const g = varsayilan();
+  const tam = takipEt(g, 120, 80, 2.5, 1);
+  assert.deepEqual(tam, merkezle({ z: 2.5, gx: 0, gy: 0 }, 120, 80));
+  const yari = takipEt(g, 120, 80, 2.5, 0.5);
+  yakin(yari.z, 1.75);
+  assert.ok(yari.gx > 0 && yari.gx < tam.gx);
+  let h = g;
+  for (let i = 0; i < 200; i++) h = takipEt(h, 120, 80, 2.5, 0.1);
+  yakin(h.z, 2.5, 1e-6);
+  yakin(h.gx, tam.gx, 1e-6);
+  const kose = takipEt(g, 0, 0, 3, 1);
+  assert.equal(kose.gx, 0);
+  assert.equal(kose.gy, 0);
+  assert.deepEqual(takipEt(tam, 120, 80, 2.5, 0), tam);
 });

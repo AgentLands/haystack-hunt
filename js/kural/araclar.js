@@ -86,6 +86,7 @@ export function igneyiAlabilirMi(tarla, cx, cy) {
 export function miknatisCek(tarla, cx, cy) {
   const { igne } = tarla;
   if (Math.hypot(cx - igne.x, cy - igne.y) > MIKNATIS_MENZIL) return false;
+  if (igne.kepcede) return true; // kepçedeki iğne zaten tarlada değil
   igne.z += Math.min(MIKNATIS_CEKIS, igneDerinligi(tarla));
   return true;
 }

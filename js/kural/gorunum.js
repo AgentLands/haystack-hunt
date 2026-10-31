@@ -61,3 +61,17 @@ export function kaydir(g, dfx, dfy, W = GENISLIK, H = YUKSEKLIK) {
 export function merkezle(g, x, y, W = GENISLIK, H = YUKSEKLIK) {
   return sinirla({ z: g.z, gx: x - W / g.z / 2, gy: y - H / g.z / 2 }, W, H);
 }
+
+/**
+ * Yumuşak takip: görünümü, (x, y) noktasını z yakınlaştırmasıyla ortalayan görünüme doğru
+ * oran (0..1) kadar yaklaştırır. oran = 1 hemen oraya atlar. Kare başına oran için
+ * 1 − exp(−hız · dt) kullanılırsa kare hızından bağımsız olur.
+ */
+export function takipEt(g, x, y, z, oran, W = GENISLIK, H = YUKSEKLIK) {
+  const k = Math.min(1, Math.max(0, oran));
+  const hz = Math.min(YAKIN_EN_COK, Math.max(YAKIN_EN_AZ, z));
+  const nz = g.z + (hz - g.z) * k;
+  const hedef = merkezle({ z: nz, gx: 0, gy: 0 }, x, y, W, H);
+  return sinirla({ z: nz, gx: g.gx + (hedef.gx - g.gx) * k, gy: g.gy + (hedef.gy - g.gy) * k },
+    W, H);
+}

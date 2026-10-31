@@ -6,6 +6,7 @@
  *   oyun-basladi   { durum }                       yeni tarla kuruldu
  *   ilk-hamle      { zaman }                       süre başladı
  *   arac-secildi   { arac }                        'el' | 'tirmik' | 'dedektor' | 'miknatis'
+ *   (Araç olaylarında x, y hücre birimidir: hücre i'nin merkezi i.)
  *   kazildi        { x, y, miktar }                el bu karede saman aldı (miktar > 0)
  *   tirmiklandi    { x, y, dx, dy, disari }        tırmık bir adım itti
  *   dedektor       { x, y, seviye, kalan }         dedektör okundu
@@ -20,6 +21,22 @@
  *                                                  zorluk, puan, cezaMs, miknatis* alanlarıyla)
  *   pes-edildi     { durum }                       oyuncu pes etti, iğne gösterildi
  *   kare           { zaman, durum }                her kare, çizimden hemen önce
+ *
+ * Karakter ve makineler (sözleşme: docs/KARAKTER_TASARIM.md; x, y dünya birimi):
+ *   karakter-adim    { x, y, z }                   yürürken ayak yere bastı (~0.85 hücrede)
+ *   makine-bin       { makine }                    E ile makineye binildi
+ *   makine-in        { makine }                    E ile makineden inildi
+ *   makine-yok       { x, y }                      E basıldı ama yakında makine yok
+ *   makine-calisti   { makine, miktar }            iş aygıtı bu karede miktar saman aldı/itti
+ *   makine-takildi   { makine }                    yükseklik farkı tırmanma eşiğini aştı
+ *   yakit-bitti      { makine }                    depo boşaldı (makine artık kımıldamaz)
+ * Kepçeli traktör (x, y hücre birimi):
+ *   kepce-doldu      { makine }                    kepçe kapasiteye ulaştı
+ *   kepce-bosaltildi { makine, miktar, igne, civi, x, y }  kenarda boşaltıldı (miktar saman
+ *                                                  tarladan çıktı; igne: iğne düştü mü,
+ *                                                  civi: düşen çivi sayısı)
+ *   igne-kepcede     { makine, x, y }              kepçe iğnenin katına indi, iğne kepçede
+ *   civi-kepcede     { makine, x, y }              paslı çivi kepçeye takıldı
  */
 const dinleyiciler = new Map();
 

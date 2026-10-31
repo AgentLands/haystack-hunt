@@ -21,6 +21,12 @@ function kaydet(ad) {
   return { gelen, birak };
 }
 
+/** Karakteri hücre p'ye taşır (fare tıklaması artık yalnız erişimde araç kullanır). */
+function buraya(d, p) {
+  d.karakter.x = p.x + 0.5;
+  d.karakter.y = p.y + 0.5;
+}
+
 /** Nesnenin üstünü (r > 0 ise çevresiyle birlikte, yamaç kayması dolduramasın) açar. */
 function ac(tarla, nesne, r = 0) {
   for (const i of igneHucreleri(nesne)) tarla.h[i] = Math.min(tarla.h[i], nesne.z);
@@ -101,7 +107,8 @@ test('açıktaki çivi elle alınınca +10 sn ceza bir kez yazılır', () => {
   assert.equal(alinabilirCivi(d.tarla, civi.x, civi.y), civi);
   const olay = kaydet('civi-alindi');
   aracSec('el');
-  bas({ x: civi.x, y: civi.y }, 1000);
+  buraya(d, { x: civi.x + 2, y: civi.y });
+  assert.equal(bas({ x: civi.x, y: civi.y }, 1000), true);
   adim(1000);
   adim(1016);
   birak();
@@ -128,6 +135,7 @@ test('çivi yüzeye yakınsa parıltı zamanında parlar', () => {
   ac(d.tarla, civi, 8);
   const olay = kaydet('civi-parladi');
   aracSec('tirmik');
+  buraya(d, { x: 2, y: 2 });
   bas({ x: 0, y: 0 }, 0);
   birak();
   adim(d.pariltiAralik + 1);
@@ -161,12 +169,13 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   const bos = kaydet('miknatis-bos');
   aracSec('miknatis');
   assert.equal(d.aracYaricap, 10);
+  buraya(d, { x: igne.x + 3, y: igne.y });
   bas({ x: igne.x + 3, y: igne.y }, 100);
   birak();
   assert.deepEqual(olay.gelen, [{ x: igne.x + 3, y: igne.y, cekti: true, kalan: 0 }]);
   assert.equal(parilti.gelen.length, 1);
   assert.ok(d.parilti && d.parilti.bitis > 100);
-  bas({ x: igne.x, y: igne.y }, 200);
+  bas({ x: igne.x + 4, y: igne.y }, 200);
   birak();
   assert.equal(bos.gelen.length, 1);
 
@@ -174,6 +183,7 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   const k = durumAl();
   const uzakX = k.tarla.igne.x > 120 ? 5 : 230;
   const zOnce = k.tarla.igne.z;
+  buraya(k, { x: uzakX, y: k.tarla.igne.y });
   bas({ x: uzakX, y: k.tarla.igne.y }, 100);
   birak();
   for (const o of [olay, parilti, bos]) o.birak();
@@ -196,6 +206,7 @@ test('sonuç nesnesi zorluk, puan ve mıknatıs kullanımını taşır', () => {
   yeniOyun('sonuc', 'zor');
   const d = durumAl();
   aracSec('dedektor');
+  buraya(d, { x: 10, y: 10 });
   bas({ x: 10, y: 10 }, 0);
   birak();
   aracSec('miknatis');

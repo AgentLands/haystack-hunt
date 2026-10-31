@@ -15,6 +15,8 @@ import './ozellik/duyuru.js';
 import './ozellik/sure-duraklat.js';
 import './ozellik/istatistik.js';
 import './ozellik/kamera.js';
+import './ozellik/makine-bildirim.js';
+import './ozellik/karakter-yer-tutucu.js'; // GEÇİCİ: çizim ajanı gelince kalkar
 import './ozellik/mekanik.js';
 import './ozellik/efekt/efekt.js';
 import './ozellik/yaris.js';
