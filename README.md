@@ -48,7 +48,7 @@ node sunucu/sunucu.js --port 8080          # sonra http://localhost:8080 (LAN'da
   açtığın çukurun kenarları içeri dökülür.
 - İğnenin yerden bir yüksekliği var; üstündeki saman o yüksekliğe inince görünür,
   elle üstüne basınca alınır.
-- İğne yüzeye 8 kattan yakınsa her 12 saniyede bir güneşte parlar.
+- İğne yüzeye 8 kattan yakınsa her 12 saniyede bir güneşte parlar (Normal; Kolay ve Zor farklı).
 
 ## Geliştirme
 
