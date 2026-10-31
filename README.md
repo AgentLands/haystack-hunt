@@ -1,8 +1,14 @@
 # Haystack Hunt
 
 Kuş bakışı, tarayıcıda oynanan bir arama oyunu: tepeli bir saman tarlasının içinde tek
-bir iğne var. Samanı elle al, tırmıkla it, üç dedektör hakkını akıllıca kullan, güneşte
-parlayan iğneyi gözden kaçırma.
+bir iğne var. Samanı elle al, tırmıkla it, dedektör ve mıknatıs haklarını akıllıca kullan,
+güneşte parlayan iğneyi paslı çivilerin parıltısından ayırt et.
+
+**Özellikler:** Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
+gölgeler ve parçacık efektleri · sentezlenmiş sesler (M ile kapat) · yakınlaştırma, kaydırma ve
+mini harita · istatistikler, günün tarlası serisi ve emojili paylaşım · çevrimdışı çalışan,
+ana ekrana eklenebilen uygulama (PWA) · ilk açılış rehberi · çevrimiçi yarış (8 kişiye kadar) ·
+hile yapmayan bot ve demo modu (`?demo=1`).
 
 ## Oynamak
 
@@ -15,7 +21,9 @@ python3 -m http.server 8000      # sonra http://localhost:8000
 (ES modülleri `file://` ile açılmaz; küçük bir yerel sunucu gerekir.)
 
 - `?tohum=abc` adresi aynı tarlayı herkese açar; tohum yoksa **günün tarlası** gelir.
-- Klavye: `1` el, `2` tırmık, `3` dedektör.
+  `?zorluk=kolay|zor` zorluğu seçer; `?demo=1` botu oynatır.
+- Klavye: `1` el, `2` tırmık, `3` dedektör, `4` mıknatıs, `M` ses, `+`/`−`/`0` yakınlaştırma,
+  ok tuşları ya da Boşluk + sürükle kaydırma. Fare tekerleği / iki parmak yakınlaştırır.
 
 ## Yarış modu
 
