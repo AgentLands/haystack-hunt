@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import { tarlaKur } from '../js/kural/tarla.js';
 import { GENISLIK } from '../js/kural/boyut.js';
 import { igneDerinligi, igneHucreleri } from '../js/kural/igne.js';
-import { dedektorOku, miknatisCek, MIKNATIS_CEKIS } from '../js/kural/araclar.js';
+import {
+  dedektorOku, miknatisCek, MIKNATIS_CEKIS, MIKNATIS_MENZIL,
+} from '../js/kural/araclar.js';
 import {
   civiDerinligi, alinabilirCivi, CIVI_CEZA_MS, CIVI_IGNE_ARALIK,
 } from '../js/kural/civi.js';
-import { ZORLUKLAR, zorlukTohumu, puanHesapla } from '../js/kural/zorluk.js';
+import { ZORLUKLAR, zorlukTohumu, puanHesapla, HAK_BEDELI } from '../js/kural/zorluk.js';
 import { metindenTohum } from '../js/kural/rastgele.js';
 import {
   yeniOyun, durumAl, bas, birak, adim, aracSec, sonucOlustur, varsayilanZorlukAyarla,
@@ -78,7 +80,7 @@ test('zorluk hakları ve parıltı ayarlarını belirler; zorluk yeni oyunda sü
   yeniOyun('z1', 'zor');
   let d = durumAl();
   assert.equal(d.zorluk, 'zor');
-  assert.equal(d.dedektor, 2);
+  assert.equal(d.dedektor, 3);
   assert.equal(d.miknatis, 1);
   assert.equal(d.pariltiAralik, ZORLUKLAR.zor.pariltiAralik);
   yeniOyun('z2');
@@ -98,7 +100,7 @@ test('varsayılan zorluk ayarlanabilir', () => {
   varsayilanZorlukAyarla(null);
 });
 
-test('açıktaki çivi elle alınınca +10 sn ceza bir kez yazılır', () => {
+test('açıktaki çivi elle alınınca +25 sn ceza bir kez yazılır', () => {
   yeniOyun('civi', 'normal');
   const d = durumAl();
   const civi = d.tarla.civiler[0];
@@ -115,12 +117,13 @@ test('açıktaki çivi elle alınınca +10 sn ceza bir kez yazılır', () => {
   olay.birak();
   assert.equal(civi.alindi, true);
   assert.deepEqual(olay.gelen, [{ x: civi.x, y: civi.y, ceza: CIVI_CEZA_MS }]);
-  assert.equal(d.ceza, 10000);
-  assert.equal(d.baslangic, 1000 - 10000);
+  assert.equal(CIVI_CEZA_MS, 25000);
+  assert.equal(d.ceza, CIVI_CEZA_MS);
+  assert.equal(d.baslangic, 1000 - CIVI_CEZA_MS);
   assert.equal(d.bitti, false);
   const sonuc = sonucOlustur(5000);
-  assert.equal(sonuc.sureMs, 14000);
-  assert.equal(sonuc.cezaMs, 10000);
+  assert.equal(sonuc.sureMs, 4000 + CIVI_CEZA_MS);
+  assert.equal(sonuc.cezaMs, CIVI_CEZA_MS);
 });
 
 test('dedektör çiviyi değil yalnız iğneyi algılar', () => {
@@ -144,14 +147,15 @@ test('çivi yüzeye yakınsa parıltı zamanında parlar', () => {
   assert.ok(d.civiPariltilar.length >= 1);
 });
 
-test('mıknatıs menzildeki iğneyi 15 kat çeker, en çok yüzeye kadar', () => {
+test('mıknatıs menzildeki iğneyi MIKNATIS_CEKIS kat çeker, en çok yüzeye kadar', () => {
+  assert.deepEqual([MIKNATIS_CEKIS, MIKNATIS_MENZIL], [25, 12]);
   const t = tarlaKur(zorlukTohumu('m', 'zor'), 'zor');
   const once = igneDerinligi(t);
   assert.ok(once > MIKNATIS_CEKIS);
-  assert.equal(miknatisCek(t, t.igne.x + 6, t.igne.y + 6), true);
+  assert.equal(miknatisCek(t, t.igne.x + 8, t.igne.y + 8), true);
   assert.equal(igneDerinligi(t), once - MIKNATIS_CEKIS);
   const z = t.igne.z;
-  assert.equal(miknatisCek(t, t.igne.x + 11, t.igne.y), false);
+  assert.equal(miknatisCek(t, t.igne.x + MIKNATIS_MENZIL + 1, t.igne.y), false);
   assert.equal(t.igne.z, z);
   const yuzey = Math.min(...igneHucreleri(t.igne).map((i) => t.h[i]));
   t.igne.z = yuzey - 4;
@@ -168,7 +172,7 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   const parilti = kaydet('parilti');
   const bos = kaydet('miknatis-bos');
   aracSec('miknatis');
-  assert.equal(d.aracYaricap, 10);
+  assert.equal(d.aracYaricap, MIKNATIS_MENZIL);
   buraya(d, { x: igne.x + 3, y: igne.y });
   bas({ x: igne.x + 3, y: igne.y }, 100);
   birak();
@@ -194,11 +198,12 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   assert.equal(k.parilti, null);
 });
 
-test('puan: çarpan × (1000 − 2·sn − saman/100 − 50·hak), en az 100 × çarpan', () => {
+test('puan: çarpan × (1000 − 2·sn − saman/100 − 100·hak), en az 100 × çarpan', () => {
+  assert.equal(HAK_BEDELI, 100);
   const s = { sureMs: 60500, kaldirilan: 5050, kullanilanHak: 2 };
-  assert.equal(puanHesapla(s, 'kolay'), 1000 - 120 - 50 - 100);
-  assert.equal(puanHesapla(s, 'normal'), 2 * 730);
-  assert.equal(puanHesapla(s, 'zor'), 3 * 730);
+  assert.equal(puanHesapla(s, 'kolay'), 1000 - 120 - 50 - 200);
+  assert.equal(puanHesapla(s, 'normal'), 2 * 630);
+  assert.equal(puanHesapla(s, 'zor'), 3 * 630);
   assert.equal(puanHesapla({ sureMs: 3600000, kaldirilan: 0, kullanilanHak: 0 }, 'zor'), 300);
 });
 
@@ -218,5 +223,5 @@ test('sonuç nesnesi zorluk, puan ve mıknatıs kullanımını taşır', () => {
   assert.equal(s.dedektorKullanilan, 1);
   assert.equal(s.miknatisKullanilan, 1);
   assert.equal(s.miknatisHakki, 1);
-  assert.equal(s.puan, 3 * (1000 - 60 - 20 - 100));
+  assert.equal(s.puan, 3 * (1000 - 60 - 20 - 2 * HAK_BEDELI));
 });

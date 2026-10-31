@@ -10,7 +10,7 @@ import { GENISLIK, YUKSEKLIK, icinde } from '../boyut.js';
 import { igneHucreleri, tarlada } from '../igne.js';
 import { makineTanimla } from './kayit.js';
 
-export const KEPCE_KAPASITE = 6000;
+export const KEPCE_KAPASITE = 10000;
 /** Kepçe altındaki her hücreden saniyede alınan en çok kat. */
 export const KEPCE_HIZI = 360;
 export const KEPCE_YARICAP = 2.2;
@@ -117,7 +117,7 @@ export const TRAKTOR = makineTanimla('traktor', {
   azamiHiz: 15,
   donus: 2.4,
   tirmanma: 2,
-  yakitTuketim: 1 / 150,
+  yakitTuketim: 1 / 260,
   isYaricap: KEPCE_YARICAP,
   isNoktasi: kepceNoktasi,
   kur(m) {

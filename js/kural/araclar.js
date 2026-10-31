@@ -10,8 +10,8 @@ export const EL_YARICAP = 2.5;
 export const TIRMIK_YARICAP = 4;
 export const TIRMIK_ADIM = 5;
 export const DEDEKTOR_HAKKI = 3;
-export const MIKNATIS_MENZIL = 10;
-export const MIKNATIS_CEKIS = 15;
+export const MIKNATIS_MENZIL = 12;
+export const MIKNATIS_CEKIS = 25;
 
 export const SEVIYELER = [
   { mesafe: 6, ad: 'Yanıyor!', renk: '#ff4d4f' },

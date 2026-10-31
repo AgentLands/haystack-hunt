@@ -8,7 +8,7 @@ import { uretec } from './rastgele.js';
 import { nesneDerinligi } from './igne.js';
 import { EL_YARICAP } from './araclar.js';
 
-export const CIVI_CEZA_MS = 10000;
+export const CIVI_CEZA_MS = 25000;
 /** Çivi iğneye bundan yakın konmaz (iğneyi kazan, yanlışlıkla çivi almasın). */
 export const CIVI_IGNE_ARALIK = 15;
 const CIVI_TOHUM_KARISTIR = 0x9e3779b9;
