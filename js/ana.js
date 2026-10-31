@@ -18,6 +18,7 @@ import './ozellik/kamera.js';
 import './ozellik/mekanik.js';
 import './ozellik/efekt/efekt.js';
 import './ozellik/yaris.js';
+import './ozellik/dokunmatik.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
