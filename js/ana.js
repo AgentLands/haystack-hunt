@@ -8,6 +8,7 @@ import { girdiKur } from './girdi.js';
 import { arayuzKur } from './arayuz.js';
 import { gununEtiketi } from './kural/rastgele.js';
 // Özellik modülleri (js/ozellik/): her biri kendi satırında, olaylara kendisi bağlanır.
+import './ozellik/kamera.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
