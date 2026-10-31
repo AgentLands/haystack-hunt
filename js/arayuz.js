@@ -14,10 +14,18 @@ export function sureMetni(ms) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-/** Paylaşılacak sonuç metni (özellikler genişletebilir). */
+const paylasimEkleri = [];
+
+/** Paylaşım metnine ek satır veren işlev kaydeder: islev(sonuc) → metin ya da boş. */
+export function paylasimEkiKaydet(islev) {
+  paylasimEkleri.push(islev);
+}
+
+/** Paylaşılacak sonuç metni (özellikler paylasimEkiKaydet ile genişletir). */
 export function paylasimMetni(sonuc) {
-  return `Haystack Hunt · ${sonuc.etiket}\n🪡 ${sureMetni(sonuc.sureMs)} · `
+  const temel = `Haystack Hunt · ${sonuc.etiket}\n🪡 ${sureMetni(sonuc.sureMs)} · `
     + `${sayi.format(sonuc.kaldirilan)} saman · 📡 ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
+  return [temel, ...paylasimEkleri.map((ek) => ek(sonuc))].filter(Boolean).join('\n');
 }
 
 let bildirimZamani = null;
