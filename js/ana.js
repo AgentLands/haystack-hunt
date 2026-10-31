@@ -14,6 +14,7 @@ import './ozellik/rehber.js';
 import './ozellik/duyuru.js';
 import './ozellik/sure-duraklat.js';
 import './ozellik/istatistik.js';
+import './ozellik/kamera.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);

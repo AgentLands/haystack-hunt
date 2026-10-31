@@ -4,8 +4,11 @@
  */
 import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
 import { igneDerinligi } from './kural/igne.js';
+import { gorunum } from './gorunum.js';
 
 export const OLCEK = 4;
+/** Boyanmış çıplak tarla (GENISLIK×YUKSEKLIK, katmansız); mini harita bundan çizer. */
+export let tarlaResmi = null;
 const TOPRAK = [104, 78, 52];
 const katmanlar = { alt: [], ust: [] };
 
@@ -25,11 +28,15 @@ export function cizici(tuval) {
   const ara = document.createElement('canvas');
   ara.width = GENISLIK;
   ara.height = YUKSEKLIK;
+  tarlaResmi = ara;
   const actx = ara.getContext('2d');
   const resim = actx.createImageData(GENISLIK, YUKSEKLIK);
   return function ciz(durum, zaman) {
     boya(durum.tarla, resim.data);
     actx.putImageData(resim, 0, 0);
+    // Kamera: tüm dünya çizimi (tarla, iğne, halkalar, imleç, katmanlar) tek dönüşümle sarılır.
+    const { z, gx, gy } = gorunum;
+    ctx.setTransform(z, 0, 0, z, -gx * OLCEK * z, -gy * OLCEK * z);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(ara, 0, 0, tuval.width, tuval.height);
     for (const k of katmanlar.alt) k(ctx, durum, zaman);
@@ -37,6 +44,7 @@ export function cizici(tuval) {
     halkalariCiz(ctx, durum.halkalar, zaman);
     imleciCiz(ctx, durum);
     for (const k of katmanlar.ust) k(ctx, durum, zaman);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
 }
 
