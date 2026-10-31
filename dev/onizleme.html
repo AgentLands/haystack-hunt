@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Görsel önizleme</title>
+<style>
+  body { margin: 0; padding: 12px 16px; background: #2a2118; color: #eadfc6;
+    font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 6px; }
+  h2 { font-size: 14px; margin: 18px 0 6px; color: #f0c870; }
+  .arac { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  button { background: #4b3a28; color: inherit; border: 1px solid #7a6240; padding: 4px 10px;
+    border-radius: 4px; cursor: pointer; }
+  button.secili { background: #8a6a30; }
+  canvas { display: block; max-width: 100%; border: 1px solid #00000066; }
+</style>
+</head>
+<body>
+<h1>Çiftçi, makineler ve balyalar: önizleme</h1>
+<div class="arac">
+  Yakınlaştırma:
+  <button data-z="1">1×</button>
+  <button data-z="2.5">2.5×</button>
+  <button data-z="3">3×</button>
+  <label><input type="checkbox" id="anim" checked> Canlandır</label>
+</div>
+<div id="bolumler"></div>
+<script type="module" src="onizleme.js"></script>
+</body>
+</html>
