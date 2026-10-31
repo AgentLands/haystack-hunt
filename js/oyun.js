@@ -33,18 +33,34 @@ const EN_UZUN_KARE = 0.05;
 
 let durum = null;
 let varsayilanZorluk = VARSAYILAN_ZORLUK;
+let varsayilanRahat = false;
 
 /** İlk oyunun (ve zorluk verilmeyen yeniOyun'ların) zorluğu; ör. URL'deki ?zorluk= için. */
 export function varsayilanZorlukAyarla(zorluk) {
   varsayilanZorluk = zorlukAdi(zorluk);
 }
 
+/**
+ * Rahat mod: sonraki oyunlar rahat açılır (süre/puan gösterilmez, çivi cezası 0). Puan
+ * kuralı değişmez; gösterimi gizlemek arayüzün işidir. Yarış oyunları rahat açılmaz.
+ */
+export function rahatAyarla(rahat) {
+  varsayilanRahat = Boolean(rahat);
+}
+
+export function rahatMi() {
+  return varsayilanRahat;
+}
+
 export function durumAl() {
   return durum;
 }
 
-/** Yeni tarla. zorluk verilmezse önceki oyunun (yoksa varsayılanın) zorluğu sürer. */
-export function yeniOyun(etiket, zorluk) {
+/**
+ * Yeni tarla. zorluk verilmezse önceki oyunun (yoksa varsayılanın) zorluğu sürer.
+ * secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine geçer.
+ */
+export function yeniOyun(etiket, zorluk, secenek = {}) {
   const arac = durum ? durum.arac : 'el';
   const ad = zorlukAdi(zorluk ?? (durum ? durum.zorluk : varsayilanZorluk));
   const ayar = zorlukAl(ad);
@@ -53,7 +69,7 @@ export function yeniOyun(etiket, zorluk) {
   const karakter = karakterKur(tarla, garaj, makineler.map(makineEngeli));
   durum = {
     etiket, zorluk: ad, tarla, garaj, makineler, karakter, balyalar: tarla.balyalar,
-    arac, aracYaricap: YARICAP[arac],
+    arac, aracYaricap: YARICAP[arac], rahat: secenek.rahat ?? varsayilanRahat,
     basili: false, fare: null, imlec: null, son: null,
     oncekiKullan: false, elKilitli: false, tirmikSayac: 0, sonZaman: null,
     halkalar: [], dedektor: ayar.dedektor, dedektorHakki: ayar.dedektor,

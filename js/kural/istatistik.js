@@ -18,6 +18,7 @@ export function bosIstatistik() {
     tohumEnIyi: Object.create(null), // etiket → en iyi süre (ms)
     sonSureler: [],                  // son bulunan tarlalar: { etiket, sureMs }
     seri: 0, enUzunSeri: 0, gunlukSon: null, // günün tarlası serisi
+    dondurmaSon: null,               // seri dondurmanın en son kullanıldığı gün (etiket)
   };
 }
 
@@ -42,6 +43,7 @@ export function temizle(ham) {
     'seri', 'enUzunSeri']) ist[alan] = sayi(ham[alan]);
   ist.enIyiMs = sayiMi(ham.enIyiMs) ? ham.enIyiMs : null;
   ist.gunlukSon = etiketMi(ham.gunlukSon) ? ham.gunlukSon : null;
+  ist.dondurmaSon = etiketMi(ham.dondurmaSon) ? ham.dondurmaSon : null;
   if (ham.tohumEnIyi && typeof ham.tohumEnIyi === 'object') {
     for (const [etiket, ms] of Object.entries(ham.tohumEnIyi)) {
       if (sayiMi(ms)) ist.tohumEnIyi[etiket] = ms;
@@ -91,10 +93,38 @@ export function dunEtiketi(etiket) {
   return gununEtiketi(new Date(y, a - 1, g - 1));
 }
 
-/** Şu anki geçerli seri: bugün ya da dün çözüldüyse sürer, yoksa kopmuştur (0). */
+/** İki gün etiketi arasındaki takvim günü farkı (b - a; yerel saat dilimi kaymasız). */
+export function gunFarki(a, b) {
+  const [ya, aa, ga] = a.split('-').map(Number);
+  const [yb, ab, gb] = b.split('-').map(Number);
+  return Math.round((Date.UTC(yb, ab - 1, gb) - Date.UTC(ya, aa - 1, ga)) / 86400000);
+}
+
+/** Seri dondurma hakkı: son kullanımdan bu kadar gün geçmeden yeniden kullanılmaz. */
+export const DONDURMA_ARALIK_GUN = 7;
+
+/** Haftada bir dondurma hakkı var mı (hiç kullanılmadıysa ya da 7 gün geçtiyse)? */
+export function dondurmaVar(ist, bugun = gununEtiketi()) {
+  return ist.dondurmaSon === null
+    || gunFarki(ist.dondurmaSon, bugun) >= DONDURMA_ARALIK_GUN;
+}
+
+/**
+ * Tek bir kaçırılan günü (en son çözülen gün iki gün önceyse) dondurma hakkı kurtarır:
+ * bugün çözülürse seri sürer. Daha uzun boşluk seriyi koparır.
+ */
+export function dondurmaKurtarir(ist, bugun = gununEtiketi()) {
+  return ist.seri > 0 && ist.gunlukSon === dunEtiketi(dunEtiketi(bugun))
+    && dondurmaVar(ist, bugun);
+}
+
+/**
+ * Şu anki geçerli seri: bugün ya da dün çözüldüyse sürer; tek gün kaçırıldıysa ve dondurma
+ * hakkı varsa bugün çözülene dek korunur; yoksa kopmuştur (0).
+ */
 export function gecerliSeri(ist, bugun = gununEtiketi()) {
   if (ist.gunlukSon === bugun || ist.gunlukSon === dunEtiketi(bugun)) return ist.seri;
-  return 0;
+  return dondurmaKurtarir(ist, bugun) ? ist.seri : 0;
 }
 
 /** İlk hamle yapıldı: bir tarla "oynandı" sayılır. */
@@ -112,8 +142,9 @@ export function pesKaydet(ist) {
 }
 
 /**
- * İğne bulundu. Döner: { ist, rapor } (rapor: rekor, tohumRekoru, oncekiEnIyiMs, gunluk, seri).
- * Günün tarlası yalnızca etiketi bugüne eşitse seriye sayılır.
+ * İğne bulundu. Döner: { ist, rapor } (rapor: rekor, tohumRekoru, oncekiEnIyiMs, gunluk, seri,
+ * dondurma: seri bir dondurma hakkıyla kurtarıldı). Günün tarlası yalnızca etiketi bugüne
+ * eşitse seriye sayılır.
  */
 export function bulunduKaydet(ist, sonuc, bugun = gununEtiketi()) {
   const yeni = kopya(ist);
@@ -121,7 +152,9 @@ export function bulunduKaydet(ist, sonuc, bugun = gununEtiketi()) {
   const oncekiEnIyiMs = ist.enIyiMs;
   const oncekiTohumMs = Object.hasOwn(ist.tohumEnIyi, sonuc.etiket)
     ? ist.tohumEnIyi[sonuc.etiket] : null;
-  const rapor = { rekor: false, tohumRekoru: false, oncekiEnIyiMs, gunluk: false, seri: 0 };
+  const rapor = {
+    rekor: false, tohumRekoru: false, oncekiEnIyiMs, gunluk: false, seri: 0, dondurma: false,
+  };
   yeni.bulunan += 1;
   yeni.toplamSaman += sayi(sonuc.kaldirilan);
   if (ms !== null) {
@@ -142,7 +175,13 @@ export function bulunduKaydet(ist, sonuc, bugun = gununEtiketi()) {
   if (sonuc.etiket === bugun) {
     rapor.gunluk = true;
     if (yeni.gunlukSon !== bugun) {
-      yeni.seri = yeni.gunlukSon === dunEtiketi(bugun) ? yeni.seri + 1 : 1;
+      if (dondurmaKurtarir(ist, bugun)) {
+        rapor.dondurma = true;
+        yeni.dondurmaSon = bugun;
+        yeni.seri += 1;
+      } else {
+        yeni.seri = yeni.gunlukSon === dunEtiketi(bugun) ? yeni.seri + 1 : 1;
+      }
       yeni.gunlukSon = bugun;
       yeni.enUzunSeri = Math.max(yeni.enUzunSeri, yeni.seri);
     }
@@ -164,6 +203,7 @@ export function ozet(ist, bugun = gununEtiketi()) {
     seri: gecerliSeri(ist, bugun),
     enUzunSeri: ist.enUzunSeri,
     bugunCozuldu: ist.gunlukSon === bugun,
+    dondurmaVar: dondurmaVar(ist, bugun),
     sonSureler: ist.sonSureler,
   };
 }

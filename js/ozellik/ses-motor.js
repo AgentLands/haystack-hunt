@@ -10,6 +10,7 @@ let ctx = null;
 let ana = null;
 let gurultu = null;
 let sessiz = false;
+let kazimPerde = 1;
 
 /** AudioContext'i oluşturur/devam ettirir (kullanıcı hareketi içinde çağrılmalı). */
 export function uyandir() {
@@ -97,9 +98,17 @@ export function nota(o) {
   osc.stop(t + sure + 0.05);
 }
 
+/** Kazı hışırtısının perdesi (akış: 1 sakin, hafifçe üstü akıcı ritim). */
+export function kazimPerdesi(oran) {
+  kazimPerde = oran;
+}
+
 export function kazimSesi(duzey) {
   if (!hazirMi()) return;
-  hisirti({ sure: 0.11, duzey: 0.5 * duzey, f0: 2400 + Math.random() * 900, f1: 1400, q: 0.8 });
+  hisirti({
+    sure: 0.11, duzey: 0.5 * duzey, f0: (2400 + Math.random() * 900) * kazimPerde,
+    f1: 1400 * kazimPerde, q: 0.8,
+  });
 }
 
 export function tirmikSesi() {

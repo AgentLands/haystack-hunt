@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ANAHTAR, SON_SAYISI, TOHUM_SINIRI, bosIstatistik, bellekDeposu, temizle, yukle, kaydet,
   dunEtiketi, gecerliSeri, oynandiKaydet, pesKaydet, bulunduKaydet, ozet,
-  okumalarEmoji, paylasimEki,
+  okumalarEmoji, paylasimEki, gunFarki, dondurmaVar, dondurmaKurtarir,
 } from '../js/kural/istatistik.js';
 
 const sonuc = (etiket, sureMs, ek = {}) => ({
@@ -91,11 +91,12 @@ test('günün tarlası serisi: art arda günler artar, boşluk sıfırlar', () =
   // aynı gün tekrar çözmek seriyi artırmaz
   ({ ist, rapor: r } = bulunduKaydet(ist, sonuc('2026-10-31', 900), '2026-10-31'));
   assert.equal(r.seri, 3);
-  // iki gün atlayınca seri kopar; yeni çözüm 1'den başlar, en uzun korunur
+  // üç gün atlayınca (dondurma yalnız tek günü kurtarır) seri kopar; yeni çözüm 1'den
+  // başlar, en uzun korunur
   assert.equal(gecerliSeri(ist, '2026-11-01'), 3, 'dün çözüldüyse hâlâ geçerli');
-  assert.equal(gecerliSeri(ist, '2026-11-02'), 0);
-  assert.equal(ozet(ist, '2026-11-02').bugunCozuldu, false);
-  ({ ist, rapor: r } = bulunduKaydet(ist, sonuc('2026-11-02', 1000), '2026-11-02'));
+  assert.equal(gecerliSeri(ist, '2026-11-03'), 0);
+  assert.equal(ozet(ist, '2026-11-03').bugunCozuldu, false);
+  ({ ist, rapor: r } = bulunduKaydet(ist, sonuc('2026-11-03', 1000), '2026-11-03'));
   assert.equal(r.seri, 1);
   assert.equal(ist.enUzunSeri, 3);
 });
@@ -156,4 +157,78 @@ test('okuma emojileri ve paylaşım eki', () => {
   const ek = paylasimEki(sonuc('a b', 1, { okumalar: ['Soğuk', 'Yanıyor!'] }), 'https://x.y/oyun/');
   assert.equal(ek, '🟦🟥\nhttps://x.y/oyun/?tohum=a%20b');
   assert.equal(paylasimEki(sonuc('k', 1), 'https://x.y/'), 'https://x.y/?tohum=k');
+});
+
+// --- Seri dondurma (haftada bir) ---
+/** gunlukSon ve seri verilmiş bir istatistik. */
+const seriIst = (gunlukSon, seri, dondurmaSon = null) => ({
+  ...bosIstatistik(), gunlukSon, seri, enUzunSeri: seri, dondurmaSon,
+});
+
+test('gunFarki: ay, yıl ve artık yıl sınırları', () => {
+  assert.equal(gunFarki('2026-02-27', '2026-03-01'), 2);
+  assert.equal(gunFarki('2024-02-27', '2024-03-01'), 3);
+  assert.equal(gunFarki('2025-12-31', '2026-01-01'), 1);
+  assert.equal(gunFarki('2026-10-31', '2026-10-24'), -7);
+});
+
+test('dondurma: tek kaçırılan gün seriyi kurtarır, hak harcanır', () => {
+  const ist = seriIst('2026-10-29', 5);
+  assert.equal(gecerliSeri(ist, '2026-10-31'), 5, 'bugün oynanana dek korunur');
+  const { ist: yeni, rapor } = bulunduKaydet(ist, sonuc('2026-10-31', 60000), '2026-10-31');
+  assert.equal(yeni.seri, 6);
+  assert.equal(rapor.dondurma, true);
+  assert.equal(rapor.seri, 6);
+  assert.equal(yeni.dondurmaSon, '2026-10-31');
+  assert.equal(yeni.enUzunSeri, 6);
+});
+
+test('dondurma: iki gün kaçırılırsa seri kopar', () => {
+  const ist = seriIst('2026-10-28', 5);
+  assert.equal(gecerliSeri(ist, '2026-10-31'), 0);
+  const { ist: yeni, rapor } = bulunduKaydet(ist, sonuc('2026-10-31', 60000), '2026-10-31');
+  assert.equal(yeni.seri, 1);
+  assert.equal(rapor.dondurma, false);
+  assert.equal(yeni.dondurmaSon, null, 'hak harcanmadı');
+});
+
+test('dondurma: bir hafta dolmadan ikinci hak yok, dolunca yeniden var', () => {
+  const kullanilmis = seriIst('2026-10-29', 6, '2026-10-26');
+  assert.equal(dondurmaVar(kullanilmis, '2026-10-31'), false);
+  assert.equal(dondurmaKurtarir(kullanilmis, '2026-10-31'), false);
+  assert.equal(gecerliSeri(kullanilmis, '2026-10-31'), 0);
+  const { ist: kopuk } = bulunduKaydet(kullanilmis, sonuc('2026-10-31', 1000), '2026-10-31');
+  assert.equal(kopuk.seri, 1);
+  assert.equal(dondurmaVar(seriIst('2026-10-29', 6, '2026-10-24'), '2026-10-31'), true);
+  assert.equal(dondurmaVar(seriIst('2026-10-29', 6, '2026-10-25'), '2026-10-31'), false);
+});
+
+test('dondurma: dün ya da bugün çözülmüşse hak harcanmaz', () => {
+  const dun = seriIst('2026-10-30', 3);
+  const { ist, rapor } = bulunduKaydet(dun, sonuc('2026-10-31', 1000), '2026-10-31');
+  assert.equal(ist.seri, 4);
+  assert.equal(rapor.dondurma, false);
+  assert.equal(ist.dondurmaSon, null);
+});
+
+test('dondurma: seri yokken (0) hak kurtaracak bir şey bulmaz', () => {
+  assert.equal(dondurmaKurtarir(seriIst('2026-10-29', 0), '2026-10-31'), false);
+  assert.equal(dondurmaKurtarir(bosIstatistik(), '2026-10-31'), false);
+});
+
+test('dondurma: temizle ve özet eski veriyle uyumlu', () => {
+  const eski = temizle({ seri: 2, gunlukSon: '2026-10-30' });
+  assert.equal(eski.dondurmaSon, null);
+  assert.equal(temizle({ dondurmaSon: 'bozuk' }).dondurmaSon, null);
+  assert.equal(temizle({ dondurmaSon: '2026-10-20' }).dondurmaSon, '2026-10-20');
+  assert.equal(ozet(eski, '2026-10-31').dondurmaVar, true);
+  assert.equal(ozet(seriIst('2026-10-29', 3, '2026-10-30'), '2026-10-31').dondurmaVar, false);
+});
+
+test('dondurma: rahat modda süresiz kayıt rekora girmez, seri sayılır', () => {
+  const { ist, rapor } = bulunduKaydet(seriIst('2026-10-30', 2),
+    { ...sonuc('2026-10-31', 1), sureMs: null }, '2026-10-31');
+  assert.equal(ist.enIyiMs, null);
+  assert.equal(rapor.rekor, false);
+  assert.equal(ist.seri, 3);
 });

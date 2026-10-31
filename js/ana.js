@@ -24,6 +24,9 @@ import './ozellik/dokunmatik.js';
 import './ozellik/gorsel/katman.js';
 import './ozellik/balya-isaret.js';
 import './ozellik/menu.js';
+import './ozellik/rahat.js';
+import './ozellik/meydan.js';
+import './ozellik/akis.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
