@@ -3,7 +3,7 @@
  * olarak çizilir; yarıçap seviyenin gerçek uzaklığıdır (araclar.js SEVIYELER: iğne o
  * daireyle bir alt seviyenin dairesi arasındaki halkada). "Soğuk" okuma en geniş seviye
  * dairesini mavi çizer ve içini hafifçe karartır (iğne burada değil). Okumada daire
- * merkezden büyüyerek açılır; etiket ("Sıcak ≤16") okuma noktasının epey üstünde (karakterin
+ * merkezden büyüyerek açılır; etiket ("Sıcak ≤25") okuma noktasının epey üstünde (karakterin
  * üstüne binmeden) durur: ilk ETIKET_TAM ms belirgin, sonra soluk ama kalıcı.
  * Alt katmanda (iğne ve imleçten önce) çizilir; yalnız durum.halkalar'ı okur. Telafi hakkı
  * verilince (kural/dedektor.js) kısa bir bildirim gösterir.
@@ -30,7 +30,7 @@ export function seviyeBandi(seviye) {
   return { ic, dis: seviye.mesafe };
 }
 
-/** Etiket metni: "Sıcak ≤16", "Soğuk >35". */
+/** Etiket metni: "Sıcak ≤25", "Soğuk >50". */
 export function seviyeEtiketi(seviye) {
   const { ic, dis } = seviyeBandi(seviye);
   return Number.isFinite(dis) ? `${seviye.ad} ≤${dis}` : `${seviye.ad} >${ic}`;

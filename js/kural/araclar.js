@@ -13,10 +13,14 @@ export const DEDEKTOR_HAKKI = 3;
 export const MIKNATIS_MENZIL = 12;
 export const MIKNATIS_CEKIS = 25;
 
+/**
+ * Dedektör seviyeleri (iğneye uzaklık, hücre). Halkalar geniş tutulur: en dıştaki (Ilık)
+ * 50 hücre olduğundan şanssız tohumda bile okumaların hepsinin Soğuk çıkması seyrektir.
+ */
 export const SEVIYELER = [
-  { mesafe: 6, ad: 'Yanıyor!', renk: '#ff4d4f' },
-  { mesafe: 16, ad: 'Sıcak', renk: '#ff8a1f' },
-  { mesafe: 35, ad: 'Ilık', renk: '#ffd23f' },
+  { mesafe: 10, ad: 'Yanıyor!', renk: '#ff4d4f' },
+  { mesafe: 25, ad: 'Sıcak', renk: '#ff8a1f' },
+  { mesafe: 50, ad: 'Ilık', renk: '#ffd23f' },
   { mesafe: Infinity, ad: 'Soğuk', renk: '#4aa8ff' },
 ];
 
