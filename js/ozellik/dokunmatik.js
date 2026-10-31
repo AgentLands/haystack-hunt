@@ -4,7 +4,7 @@
  * masaüstünde DOM'a hiçbir şey eklenmez. Yalnız js/kontrol.js'e yazar. Kipte gövdeye
  * `dokunmatik` sınıfı eklenir; mini harita/kamera düğmesi/bildirim yerleşimi o sınıfla CSS'tedir.
  */
-import { kontrol, yonAyarla, kullanAyarla } from '../kontrol.js';
+import { kontrol, yonAyarla, ekranYonAyarla, kullanAyarla } from '../kontrol.js';
 import { kolYonu } from '../kural/kol.js';
 
 const stil = document.createElement('link');
@@ -63,11 +63,13 @@ function kolKur(kap) {
       e.clientY - (k.top + k.height / 2), yaricap);
     parmak.style.transform = `translate(${sonuc.parmak.x}px, ${sonuc.parmak.y}px)`;
     yonAyarla(sonuc.yon.x, sonuc.yon.y, 'kol');
+    ekranYonAyarla(sonuc.yon.x, sonuc.yon.y);
   };
   const birak = () => {
     kol.classList.remove('basili');
     parmak.style.transform = '';
     yonAyarla(0, 0, 'kol');
+    ekranYonAyarla(0, 0);
   };
   parmakIzle(kol, (e) => { kol.classList.add('basili'); surdur(e); }, birak, surdur);
   kap.append(kol);

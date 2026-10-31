@@ -6,6 +6,11 @@
 export const kontrol = {
   /** Hareket isteği, her eksen -1..1 (sanal kol analog olabilir). y aşağı pozitif. */
   yon: { x: 0, y: 0 },
+  /**
+   * Ekran yönlü hedef yön (sanal kol), -1..1; (0, 0) = yok. Makinedeyken araç bu yöne döner ve
+   * ilerler (kural/kol.js kolSurus); klavye W/S/A/D ise tank gibi gaz/dönüş verir (yon).
+   */
+  ekranYon: { x: 0, y: 0 },
   /** Seçili aracı / makinenin işini kullan (Boşluk ya da dokunmatik "Kullan"), basılı tut. */
   kullan: false,
   /** Tek seferlik istekler: kaynak true yapar, oyun.js tüketip false'a çeker. */
@@ -41,4 +46,10 @@ export function kullanAyarla(basili, kaynak = 'varsayilan') {
   if (basili) kullananlar.add(kaynak);
   else kullananlar.delete(kaynak);
   kontrol.kullan = kullananlar.size > 0;
+}
+
+/** Ekran yönlü hedef yönü ayarlar (sanal kol; bırakınca 0, 0). */
+export function ekranYonAyarla(x, y) {
+  kontrol.ekranYon.x = x;
+  kontrol.ekranYon.y = y;
 }
