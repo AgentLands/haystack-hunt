@@ -124,6 +124,18 @@ export function adim(zaman) {
   yay('kare', { zaman, durum });
 }
 
+/**
+ * Oyun saatini ms kadar geri iter (sekme gizliyken geçen süre sayılmasın diye).
+ * Süre, parıltı zamanlaması ve dedektör halkaları aynı kadar kayar.
+ */
+export function zamaniKaydir(ms) {
+  if (!durum || durum.baslangic === null || durum.bitti || !(ms > 0)) return;
+  durum.baslangic += ms;
+  durum.sonrakiParilti += ms;
+  if (durum.parilti) durum.parilti.bitis += ms;
+  for (const halka of durum.halkalar) halka.zaman += ms;
+}
+
 export function sonucOlustur(zaman) {
   return {
     etiket: durum.etiket,
