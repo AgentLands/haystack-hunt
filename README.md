@@ -1,11 +1,13 @@
 # Haystack Hunt
 
 Kuş bakışı, tarayıcıda oynanan bir arama oyunu: tepeli bir saman tarlasının içinde tek
-bir iğne var. Tarlada yürüyen bir çiftçisin: samanı elle al, tırmıkla it, garajdaki kepçeli
-traktörle taşı, dedektör ve mıknatıs haklarını akıllıca kullan, güneşte parlayan iğneyi paslı
-çivilerin parıltısından ayırt et.
+bir iğne var. Tarlada yürüyen bir çiftçisin: samanı elle al, tırmıkla it, garajdaki makinelerle
+(kepçeli traktör, balya makinesi, sırt üfleyicisi) azalt, dedektör ve mıknatıs haklarını
+akıllıca kullan, güneşte parlayan iğneyi paslı çivilerin parıltısından ayırt et. Dikkat:
+balya makinesi iğneyi de yutabilir; o zaman doğru balyayı bulup açman gerekir.
 
-**Özellikler:** Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
+**Özellikler:** WASD ile yürüyen çiftçi ve yakıtlı makineler · telefonda sanal kol ·
+Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
 gölgeler ve parçacık efektleri · sentezlenmiş sesler (M ile kapat) · yakınlaştırma, kaydırma ve
 mini harita · istatistikler, günün tarlası serisi ve emojili paylaşım · çevrimdışı çalışan,
 ana ekrana eklenebilen uygulama (PWA) · ilk açılış rehberi · çevrimiçi yarış (8 kişiye kadar).
