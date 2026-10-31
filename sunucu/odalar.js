@@ -65,7 +65,7 @@ export class Odalar {
     switch (m.t) {
       case 'kur': return this.kur(oyuncu, m.ad);
       case 'katil': return this.katil(oyuncu, m.oda, m.ad);
-      case 'baslat': return this.baslat(oyuncu);
+      case 'baslat': return this.baslat(oyuncu, m.zorluk);
       case 'imlec': return this.imlec(oyuncu, m);
       case 'bulundu': return this.bulundu(oyuncu, m);
       case 'pes': return this.pes(oyuncu);
@@ -98,7 +98,7 @@ export class Odalar {
     return this.#ekle(oda, oyuncu, ad);
   }
 
-  baslat(oyuncu) {
+  baslat(oyuncu, zorluk = 'normal') {
     const oda = this.uyelik.get(oyuncu.id);
     if (!oda) return hata(oyuncu, 'odada-degil', 'Bir odada değilsin');
     if (oda.kurucu !== oyuncu.id) return hata(oyuncu, 'kurucu-degil', 'Yalnız kurucu başlatır');
@@ -109,7 +109,9 @@ export class Odalar {
     for (const k of oda.kayitlar.values()) {
       Object.assign(k, { durum: 'bekliyor', sira: null, sureMs: null, saman: 0 });
     }
-    Object.assign(oda, { durum: 'geri-sayim', tur: oda.tur + 1, sira: 0, etiket: yeniEtiket() });
+    Object.assign(oda, {
+      durum: 'geri-sayim', tur: oda.tur + 1, sira: 0, etiket: yeniEtiket(), zorluk,
+    });
     this.#yay(oda, odaDurumu(oda));
     return this.#say(oda, GERI_SAYIM);
   }
@@ -192,7 +194,7 @@ export class Odalar {
     }
     oda.durum = 'yaris';
     for (const k of bagli(oda)) k.durum = 'oynuyor';
-    this.#yay(oda, { t: 'basla', etiket: oda.etiket, tur: oda.tur });
+    this.#yay(oda, { t: 'basla', etiket: oda.etiket, zorluk: oda.zorluk, tur: oda.tur });
     oda.zamanlayici = setTimeout(() => this.#sureDoldu(oda), this.yarisMs);
     oda.zamanlayici.unref();
     this.#guncelle(oda);

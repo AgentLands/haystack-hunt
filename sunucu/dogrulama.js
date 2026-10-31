@@ -32,6 +32,9 @@ function tamSayi(deger, en, cok) {
 
 const gecersiz = (neden) => ({ hata: neden });
 
+/** Yarışın tarlası kurucunun zorluğuyla açılır (js/kural/zorluk.js anahtarları). */
+const ZORLUKLAR = ['kolay', 'normal', 'zor'];
+
 const KALIPLAR = {
   kur(m) {
     const ad = adTemizle(m.ad);
@@ -43,7 +46,9 @@ const KALIPLAR = {
     if (!ad) return gecersiz('Geçersiz ad');
     return oda ? { ileti: { t: 'katil', oda, ad } } : gecersiz('Oda kodu 4 harf olmalı');
   },
-  baslat: () => ({ ileti: { t: 'baslat' } }),
+  baslat: (m) => ({
+    ileti: { t: 'baslat', zorluk: ZORLUKLAR.includes(m.zorluk) ? m.zorluk : 'normal' },
+  }),
   pes: () => ({ ileti: { t: 'pes' } }),
   ayril: () => ({ ileti: { t: 'ayril' } }),
   imlec(m) {

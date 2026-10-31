@@ -5,7 +5,7 @@
  * ve canlı tablo yaris-cizim.js'de. Yarış sürerken yerel yeni tarla düğmeleri onay ister.
  */
 import { dinle } from '../olaylar.js';
-import { yeniOyun } from '../oyun.js';
+import { yeniOyun, durumAl } from '../oyun.js';
 import { dugmeEkle, bildir } from '../arayuz.js';
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { baglan } from './yaris-baglanti.js';
@@ -85,7 +85,7 @@ const ISLEYICILER = {
   basla(m) {
     Object.assign(y, { etiket: m.etiket, basladi: performance.now(), sonImlec: '' });
     y.imlecler.clear();
-    yeniOyun(m.etiket);
+    yeniOyun(m.etiket, m.zorluk || 'normal');
     sayac('Başla!', 700);
   },
   imlec(m) {
@@ -142,7 +142,7 @@ async function yarisAc() {
 pencereKur({
   kur: (ad) => y.baglanti && y.baglanti.gonder({ t: 'kur', ad }),
   katil: (kod, ad) => y.baglanti && y.baglanti.gonder({ t: 'katil', oda: kod, ad }),
-  baslat: () => y.baglanti && y.baglanti.gonder({ t: 'baslat' }),
+  baslat: () => y.baglanti && y.baglanti.gonder({ t: 'baslat', zorluk: durumAl().zorluk }),
   ayril: () => {
     ayril();
     pencereKapat();

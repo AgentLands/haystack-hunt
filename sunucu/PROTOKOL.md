@@ -13,7 +13,7 @@ Sunucu 15 sn'de bir ping atar; yanıt gelmeyen bağlantı düşer.
 | --- | --- | --- |
 | `kur` | `ad` | Yeni oda kurar; kuran kurucu olur. |
 | `katil` | `oda` (4 harf), `ad` | Odaya katılır (lobide ya da yarış bittikten sonra). |
-| `baslat` | — | Yalnız kurucu; oda `lobi` ya da `bitti` iken (rövanş). |
+| `baslat` | `zorluk?` | Yalnız kurucu; oda `lobi` ya da `bitti` iken (rövanş). `zorluk`: `kolay`, `normal` (varsayılan) ya da `zor`; kurucunun seçimi. |
 | `imlec` | `x`, `y` (hücre, tam sayı ya da ikisi `null`), `saman` | Yarışta ~5 Hz. |
 | `bulundu` | `sureMs` (yarış başından), `saman` | İğne alındı. |
 | `pes` | — | Oyuncu pes etti. |
@@ -29,7 +29,7 @@ karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'
 | `merhaba` | `id`, `surum` | Bağlanınca; `id` bu bağlantının oyuncu kimliği. |
 | `oda` | `kod`, `kurucu`, `durum`, `tur`, `oyuncular[]` | Odanın tam durumu; her değişiklikte. |
 | `geri-sayim` | `n` (3, 2, 1) | Başlat'tan sonra saniyede bir. |
-| `basla` | `etiket`, `tur` | Herkes aynı anda `yeniOyun(etiket)` açar. |
+| `basla` | `etiket`, `zorluk`, `tur` | Herkes aynı anda `yeniOyun(etiket, zorluk)` açar; aynı etiket + zorluk = aynı tarla. |
 | `imlec` | `id`, `x`, `y`, `saman` | Başka bir oyuncunun imleci (kendi imlecin gelmez). |
 | `kazanan` | `id`, `ad`, `sureMs` | İğneyi ilk bulan. |
 | `hata` | `kod`, `mesaj` | Reddedilen istek; `mesaj` Türkçe, gösterilebilir. |

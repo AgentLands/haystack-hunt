@@ -77,13 +77,15 @@ test('iki oyuncu: kur, katıl, başlat, imleç, bulundu, pes, rövanş', async (
   b.gonder({ t: 'baslat' });
   assert.equal((await b.bekle('hata')).kod, 'kurucu-degil');
 
-  a.gonder({ t: 'baslat' });
+  a.gonder({ t: 'baslat', zorluk: 'zor' });
   const sayimlar = [];
   for (const n of [3, 2, 1]) sayimlar.push((await b.bekle('geri-sayim', (m) => m.n === n)).n);
   assert.deepEqual(sayimlar, [3, 2, 1]);
   const [ba, bb] = await Promise.all([a.bekle('basla'), b.bekle('basla')]);
   assert.match(ba.etiket, /^[0-9a-z]{6}$/);
   assert.equal(ba.etiket, bb.etiket);
+  assert.equal(ba.zorluk, 'zor');
+  assert.equal(bb.zorluk, 'zor');
   await b.bekle('oda', (m) => m.durum === 'yaris');
 
   a.gonder({ t: 'imlec', x: 10, y: 20, saman: 55 });
