@@ -7,6 +7,7 @@
  */
 import { tarlaKur, cokert } from './kural/tarla.js';
 import { igneDerinligi } from './kural/igne.js';
+import { pariltiTuru } from './kural/parilti.js';
 import { EL_YARICAP, TIRMIK_YARICAP, MIKNATIS_MENZIL } from './kural/araclar.js';
 import { zorlukAdi, zorlukAl, zorlukTohumu, VARSAYILAN_ZORLUK } from './kural/zorluk.js';
 import { kaymaKos } from './kural/kayma.js';
@@ -16,7 +17,7 @@ import { garajKur } from './kural/makineler/garaj.js';
 import { makineEngeli } from './kural/makineler/surus.js';
 import { kontrol } from './kontrol.js';
 import {
-  igneParlat, civileriParlat, sonucHesapla, PARILTI_SURE,
+  igneParlat, balyaParlat, civileriParlat, sonucHesapla, PARILTI_SURE,
 } from './oyun-arac.js';
 import { karakterKaresi, fareBas, fareSurukle } from './oyun-karakter.js';
 import { binIn, makineKaresi, makineImleci } from './oyun-makine.js';
@@ -147,7 +148,9 @@ export function adim(zaman) {
     }
     buluntuKaresi(durum, zaman);
     if (zaman >= durum.sonrakiParilti) {
-      if (derinlik <= durum.pariltiDerinlik) igneParlat(durum, zaman);
+      const tur = pariltiTuru(tarla, durum.pariltiDerinlik);
+      if (tur === 'igne') igneParlat(durum, zaman);
+      else if (tur === 'balya') balyaParlat(durum, zaman);
       civileriParlat(durum, zaman);
       durum.sonrakiParilti = zaman + durum.pariltiAralik;
     }
@@ -164,6 +167,7 @@ export function zamaniKaydir(ms) {
   durum.baslangic += ms;
   durum.sonrakiParilti += ms;
   if (durum.parilti) durum.parilti.bitis += ms;
+  if (durum.balyaParilti) durum.balyaParilti.bitis += ms;
   for (const halka of durum.halkalar) halka.zaman += ms;
   for (const c of durum.civiPariltilar || []) c.bitis += ms;
 }

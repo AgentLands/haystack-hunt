@@ -7,19 +7,26 @@ import { GENISLIK, icinde } from './boyut.js';
 import { igneAcikMi, igneDerinligi, igneKonumu } from './igne.js';
 
 export const EL_YARICAP = 2.5;
-/** El kazısı: fırça altındaki her hücreden saniyede alınan kat (60 Hz'de karede 1 kat). */
-export const EL_HIZI = 60;
+/**
+ * El kazısı: fırça altındaki her hücreden saniyede alınan kat. 45: el tek çukurda hâlâ
+ * traktörden hızlı, geniş alanda traktör açıkça önde (rapor: denge.md).
+ */
+export const EL_HIZI = 45;
 /** Bir karede en çok bu kadar kat birikir (uzun karede ışınlanır gibi kazmasın). */
 const EL_BIRIKIM_TAVAN = 4;
 export const TIRMIK_YARICAP = 4;
 export const TIRMIK_ADIM = 5;
-export const MIKNATIS_MENZIL = 10;
-export const MIKNATIS_CEKIS = 15;
+export const MIKNATIS_MENZIL = 12;
+export const MIKNATIS_CEKIS = 25;
 
+/**
+ * Dedektör seviyeleri (iğneye uzaklık, hücre). Halkalar geniş tutulur: en dıştaki (Ilık)
+ * 50 hücre olduğundan şanssız tohumda bile okumaların hepsinin Soğuk çıkması seyrektir.
+ */
 export const SEVIYELER = [
-  { mesafe: 6, ad: 'Yanıyor!', renk: '#ff4d4f' },
-  { mesafe: 16, ad: 'Sıcak', renk: '#ff8a1f' },
-  { mesafe: 35, ad: 'Ilık', renk: '#ffd23f' },
+  { mesafe: 10, ad: 'Yanıyor!', renk: '#ff4d4f' },
+  { mesafe: 25, ad: 'Sıcak', renk: '#ff8a1f' },
+  { mesafe: 50, ad: 'Ilık', renk: '#ffd23f' },
   { mesafe: Infinity, ad: 'Soğuk', renk: '#4aa8ff' },
 ];
 

@@ -4,13 +4,17 @@
  * aygıtı (Boşluk basılıyken tanımın calis işlevi), yakıt ve makine olayları. Her kare
  * her makinenin kare kancası (ör. kepçedeki iğneyi taşıma) çağrılır. Giyilen makineler
  * (tanımda giyilir: sırt üfleyicisi) sürülmez: çiftçi normal yürür (yuruHizi kadar yavaş),
- * makine karakteri izler; E ile çıkınca karakterin durduğu yere bırakılır. DOM'a dokunmaz.
+ * makine karakteri izler; E ile çıkınca karakterin durduğu yere bırakılır. Park yerine
+ * dönen makine bir kez garajda ikmal yapar (garaj.js ikmalKontrol). DOM'a dokunmaz.
  */
 import { kontrol } from './kontrol.js';
 import { KARAKTER_YARICAP, karakterYuru } from './kural/karakter.js';
 import { yukseklik } from './kural/tarla.js';
 import { makineTanimi } from './kural/makineler/kayit.js';
-import { surusAdim, yakitHarca, makineEngeli } from './kural/makineler/surus.js';
+import {
+  surusAdim, yakitHarca, makineEngeli, isYakiti,
+} from './kural/makineler/surus.js';
+import { ikmalKontrol } from './kural/makineler/garaj.js';
 import { binilebilir, inmeYeri } from './kural/makineler/binme.js';
 import { balyaEngelleri } from './kural/balyalar.js';
 import { kolSurus } from './kural/kol.js';
@@ -94,7 +98,14 @@ export function makineKaresi(durum, dt, zaman) {
   if (s.takildi) yay('makine-takildi', { makine: m });
   const bosaldi = isKaresi(durum, m, dt, zaman);
   if (s.yakitBitti || bosaldi) yakitBitti(durum, m);
+  ikmalKaresi(m);
   karakteriMakineyeKoy(k, m);
+}
+
+/** Park yerine dönüp duran makinenin tek seferlik garaj ikmali. */
+function ikmalKaresi(m) {
+  const onceki = ikmalKontrol(m);
+  if (onceki !== null) yay('yakit-ikmal', { makine: m, onceki });
 }
 
 /** Giyilen makine: karakter yürür (yuruHizi), makine izler, Boşlukla iş çalışır. */
@@ -109,6 +120,7 @@ function giyilenKare(durum, m, dt, zaman) {
   m.hiz = dt > 0 ? s.mesafe / dt : 0;
   const bosaldi = isKaresi(durum, m, dt, zaman);
   if (bosaldi) yakitBitti(durum, m);
+  ikmalKaresi(m);
   k.kullaniyor = m.calisiyor;
 }
 
@@ -123,7 +135,10 @@ function yakitBitti(durum, m) {
   for (const [ad, veri] of kanca(durum.tarla, m)) yay(ad, veri);
 }
 
-/** İş aygıtı: Boşluk basılıyken (bırakılınca kilit açılır). Depo bu karede boşaldıysa true. */
+/**
+ * İş aygıtı: Boşluk basılıyken (bırakılınca kilit açılır). Yakıt surus.js isYakiti ile:
+ * iş yapılmayan karede çok az. Depo bu karede boşaldıysa true.
+ */
 function isKaresi(durum, m, dt, zaman) {
   const t = makineTanimi(m.tur);
   if (!kontrol.kullan) m.kilitli = false;
@@ -134,7 +149,7 @@ function isKaresi(durum, m, dt, zaman) {
   const sonuc = t.calis(durum.tarla, m, dt);
   if (sonuc.miktar > 0) yay('makine-calisti', { makine: m, miktar: sonuc.miktar });
   for (const [ad, veri] of sonuc.olaylar) yay(ad, veri);
-  return yakitHarca(m, t.isYakit * dt);
+  return yakitHarca(m, isYakiti(t, sonuc, dt));
 }
 
 /** Bindiği makinenin iş noktası ve yarıçapı (imleç halkası için) ya da null. */

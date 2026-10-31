@@ -25,7 +25,7 @@ test('elAdimi: saniyede EL_HIZI kat, kesir sonraki kareye kalır', () => {
     }
     assert.ok(Math.abs(toplam - EL_HIZI) <= 1, `${hz} Hz: ${toplam}`);
   }
-  assert.equal(elAdimi(0, 1 / 60).n, 1, '60 Hz: karede tam 1 kat');
+  assert.equal(elAdimi(0, 1 / EL_HIZI).n, 1, '1/EL_HIZI sn: tam 1 kat');
   assert.equal(elAdimi(0, 10).n, 4, 'uzun karede tavan');
 });
 

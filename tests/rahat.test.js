@@ -57,5 +57,5 @@ test('oyun: secenek.rahat genel ayarı geçer (yarış rahat açılmaz)', () => 
 
 test('puan kuralı rahat moddan etkilenmez', () => {
   const girdi = { sureMs: 60000, kaldirilan: 500, kullanilanHak: 1 };
-  assert.equal(puanHesapla(girdi, 'normal'), 2 * (1000 - 120 - 5 - 50));
+  assert.equal(puanHesapla(girdi, 'normal'), 2 * (1000 - 120 - 5 - 100));
 });

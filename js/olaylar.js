@@ -9,9 +9,12 @@
  *   (Araç olaylarında x, y hücre birimidir: hücre i'nin merkezi i.)
  *   kazildi        { x, y, miktar }                el bu karede saman aldı (miktar > 0)
  *   tirmiklandi    { x, y, dx, dy, disari }        tırmık bir adım itti
- *   dedektor       { x, y, seviye, kalan }         dedektör okundu
+ *   dedektor       { x, y, seviye, kalan, telafi }  dedektör okundu (telafi: hepsi Soğuk
+ *                                                  çıkıp hak bitti, bir hak geri verildi)
  *   dedektor-bos   { x, y }                        hak kalmadan dedektör denendi
  *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
+ *   balya-parladi  { x, y }                        iğne bir balyada: balya parıltı anında
+ *                                                  hafifçe parladı (x, y balyanın hücresi)
  *   civi-parladi   { x, y }                        yüzeye yakın paslı çivi parladı (turuncu)
  *   civi-alindi    { x, y, ceza }                  el paslı çivi aldı; ceza ms süreye eklendi
  *   buluntu-gorundu { x, y, tur }                  samandaki buluntunun üstü ilk kez açıldı
@@ -33,6 +36,9 @@
  *   makine-calisti   { makine, miktar }            iş aygıtı bu karede miktar saman aldı/itti
  *   makine-takildi   { makine }                    yükseklik farkı tırmanma eşiğini aştı
  *   yakit-bitti      { makine }                    depo boşaldı (makine artık kımıldamaz)
+ *   yakit-ikmal      { makine, onceki }            garajdaki park yerine dönüp durdu: depo
+ *                                                  %100'e doldu (makine başına tur başına
+ *                                                  bir kez; onceki: ikmalden önceki yakıt)
  * Kepçeli traktör (x, y hücre birimi):
  *   kepce-doldu      { makine }                    kepçe kapasiteye ulaştı
  *   kepce-bosaltildi { makine, miktar, igne, civi, x, y }  kenarda boşaltıldı (miktar saman

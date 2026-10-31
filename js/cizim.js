@@ -1,7 +1,8 @@
 /**
  * Çizim: tarlayı yükseklik ve eğime göre gölgeli piksellere boyar (cizim/tarla-boya.js;
- * yakınken alt piksel atlası cizim/yakin.js), üstüne iğneyi, güneş parıltısını, dedektör
- * halkalarını ve imleci çizer. Tarla yalnız yüksekliği değişince yeniden boyanır.
+ * yakınken alt piksel atlası cizim/yakin.js), üstüne iğneyi, güneş parıltısını ve imleci
+ * çizer (dedektör halkaları ozellik/dedektor-cizim.js katmanında). Tarla yalnız yüksekliği
+ * değişince yeniden boyanır.
  */
 import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
 import { igneDerinligi } from './kural/igne.js';
@@ -65,7 +66,6 @@ export function cizici(tuval) {
     cizimOlcum.ornekler?.push(cizimOlcum.tarlaMs);
     for (const k of katmanlar.alt) k(ctx, durum, zaman);
     igneyiCiz(ctx, durum, zaman);
-    halkalariCiz(ctx, durum.halkalar, zaman);
     imleciCiz(ctx, durum);
     for (const k of katmanlar.ust) k(ctx, durum, zaman);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -178,40 +178,6 @@ function yildiz(ctx, x, y, boy, alfa, eb) {
   const k = boy * 0.45;
   cizgi(ctx, x - k, y - k, x + k, y + k);
   cizgi(ctx, x - k, y + k, x + k, y - k);
-}
-
-/** Dedektör işaretleri: yakınlaştırmadan bağımsız, ekranda hep aynı boyutta. */
-function halkalariCiz(ctx, halkalar, zaman) {
-  const k = 1 / gorunum.z;
-  ctx.font = 'bold 13px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  for (const halka of halkalar) {
-    const gecen = zaman - halka.zaman;
-    ctx.save();
-    ctx.translate((halka.x + 0.5) * OLCEK, (halka.y + 0.5) * OLCEK);
-    ctx.scale(k, k);
-    ctx.strokeStyle = halka.seviye.renk;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.85;
-    ctx.beginPath();
-    ctx.arc(0, 0, 6, 0, Math.PI * 2);
-    ctx.stroke();
-    if (gecen < 1400) {
-      ctx.globalAlpha = 1 - gecen / 1400;
-      ctx.beginPath();
-      ctx.arc(0, 0, 6 + gecen / 14, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    if (gecen < 3500) {
-      ctx.globalAlpha = Math.min(1, (3500 - gecen) / 600);
-      ctx.fillStyle = 'rgba(20, 14, 8, 0.75)';
-      const en = ctx.measureText(halka.seviye.ad).width + 12;
-      ctx.fillRect(-en / 2, -32, en, 19);
-      ctx.fillStyle = halka.seviye.renk;
-      ctx.fillText(halka.seviye.ad, 0, -18);
-    }
-    ctx.restore();
-  }
 }
 
 function imleciCiz(ctx, durum) {

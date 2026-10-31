@@ -2,7 +2,8 @@
  * Garaj: tarla kenarında, tohumdan seçilen (en az samanlı aday) bir park yeri; kayıtlı her
  * makine türünden birer tane, kayıt sırasıyla kenar boyunca yan yana, yüzü tarlaya dönük
  * park eder. Başlangıç yakıtı zorluğa bağlıdır (zorluk.js: yakit). Kendi üretecini kullanır
- * ki tarla, iğne ve çivi üretimi değişmesin.
+ * ki tarla, iğne ve çivi üretimi değişmesin. Garajda ikmal: her makine tur başına bir kez,
+ * park yerinden uzaklaşıp geri dönünce ve orada durunca deposunu %100'e doldurur.
  */
 import { GENISLIK, YUKSEKLIK } from '../boyut.js';
 import { uretec } from '../rastgele.js';
@@ -16,6 +17,13 @@ export const GARAJ_ICERI = 4;
 export const PARK_ARALIK = 5;
 /** Kenarlar: 0 üst, 1 sağ, 2 alt, 3 sol; tarlaya doğru (içeri) bakan yön. */
 const ICERI = [Math.PI / 2, Math.PI, -Math.PI / 2, 0];
+/** İkmal: park yerine bu kadar yakın (hücre) ve bundan yavaş (hücre/sn) olmalı. */
+export const IKMAL_YARICAP = 3;
+export const IKMAL_HIZ = 0.3;
+/** İkmal hakkı ancak makine park yerinden bu kadar uzaklaştıktan sonra işler (hücre). */
+export const IKMAL_UZAKLASMA = 10;
+/** Makine başına tur boyunca ikmal sayısı. */
+export const IKMAL_HAKKI = 1;
 
 /** Kenar k üzerinde, kenar boyunca t (0..1) oranındaki park merkezi (dünya birimi). */
 function kenarNoktasi(k, t) {
@@ -40,6 +48,7 @@ export function yeniMakine(tur, id, x, y, yon, yakit) {
   const m = {
     id, tur, x, y, yon, hiz: 0, yakit, surucu: false, calisiyor: false, yuk: 0,
     z: 0, takili: false, kilitli: false,
+    park: { x, y }, ikmalHakki: IKMAL_HAKKI, parktanUzak: false,
   };
   makineTanimi(tur).kur(m);
   return m;
@@ -75,4 +84,21 @@ export function garajKur(tarla, zorluk) {
     return m;
   });
   return { garaj, makineler };
+}
+
+/**
+ * Garajda ikmal (her kare, sürülen makine için): makine park yerinden IKMAL_UZAKLASMA
+ * uzaklaşmış, geri dönmüş (≤ IKMAL_YARICAP), durmuş (|hiz| ≤ IKMAL_HIZ), deposu dolu
+ * değil ve hakkı varsa depo 1'e dolar. Dönüş: ikmal olduysa önceki yakıt, yoksa null.
+ */
+export function ikmalKontrol(m) {
+  if (!m.park || !(m.ikmalHakki > 0)) return null;
+  const uzaklik = Math.hypot(m.x - m.park.x, m.y - m.park.y);
+  if (uzaklik > IKMAL_UZAKLASMA) m.parktanUzak = true;
+  if (!m.parktanUzak || uzaklik > IKMAL_YARICAP || Math.abs(m.hiz) > IKMAL_HIZ) return null;
+  if (m.yakit >= 1) return null;
+  const onceki = m.yakit;
+  m.yakit = 1;
+  m.ikmalHakki -= 1;
+  return onceki;
 }

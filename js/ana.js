@@ -33,6 +33,9 @@ import './ozellik/buluntu-cizim.js';
 import './ozellik/buluntu-defter.js';
 import './ozellik/ses-buluntu.js';
 import './ozellik/hayvan/hayvan.js';
+import './ozellik/dedektor-cizim.js';
+import './ozellik/kenar-isaret.js';
+import './ozellik/kulak.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);

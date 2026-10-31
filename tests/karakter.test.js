@@ -156,7 +156,8 @@ test('oyunda: Boşluk el ile önündeki samanı kazar, imleç araç noktasını 
   bitir();
   assert.ok(kazilar.length >= 1);
   yakin(kazilar[0].x, 100 + ARAC_UZAKLIK);
-  assert.equal(d.tarla.h[70 * GENISLIK + 101], 8);
+  const h = d.tarla.h[70 * GENISLIK + 101];
+  assert.ok(h < 10 && h >= 8, `iki karede 1-2 kat kazılır: ${h}`);
   adim(2 * KARE);
   yakin(d.imlec.x, 100 + ARAC_UZAKLIK);
   // Fare erişimdeyse orada kazar; bırakınca durur.

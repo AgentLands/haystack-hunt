@@ -11,9 +11,10 @@ import { alinabilirCivi, civiAl, parlayanCiviler } from './kural/civi.js';
 import { igneKonumu, tarlada } from './kural/igne.js';
 import { puanHesapla } from './kural/zorluk.js';
 import { buluntuyuAl } from './oyun-buluntu.js';
+import { telafiHakki } from './kural/dedektor.js';
 import { yay } from './olaylar.js';
 
-export const PARILTI_SURE = 800;
+export const PARILTI_SURE = 1200;
 
 /** İlk hamlede süreyi başlatır (yürümek, araç ya da makine). */
 export function baslat(durum, zaman) {
@@ -53,7 +54,11 @@ export function dedektorKullan(durum, p, zaman) {
   durum.dedektor -= 1;
   const seviye = dedektorOku(durum.tarla, p.x, p.y);
   durum.halkalar.push({ x: p.x, y: p.y, seviye, zaman });
-  yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor });
+  // Şanssız tohum koruması: hepsi Soğuk okunup hak bittiyse bir kez ücretsiz hak.
+  const telafi = telafiHakki(durum.halkalar, durum.dedektor, durum.dedektorTelafi || 0);
+  durum.dedektor += telafi;
+  durum.dedektorTelafi = (durum.dedektorTelafi || 0) + telafi;
+  yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor, telafi: telafi > 0 });
 }
 
 export function miknatisKullan(durum, p, zaman) {
@@ -71,6 +76,13 @@ export function igneParlat(durum, zaman) {
   durum.parilti = { bitis: zaman + PARILTI_SURE, sure: PARILTI_SURE };
   durum.sonrakiParilti = zaman + durum.pariltiAralik;
   yay('parilti', igneKonumu(durum.tarla));
+}
+
+/** İğneyi içeren balya hafifçe parlar (durum.balyaParilti; çizimi ozellik/kenar-isaret.js). */
+export function balyaParlat(durum, zaman) {
+  const p = igneKonumu(durum.tarla);
+  durum.balyaParilti = { x: p.x, y: p.y, bitis: zaman + PARILTI_SURE * 2, sure: PARILTI_SURE * 2 };
+  yay('balya-parladi', { x: p.x, y: p.y });
 }
 
 export function civileriParlat(durum, zaman) {
