@@ -23,7 +23,7 @@ Statik olarak yalnız oyun dosyaları sunulur: `index.html`, kökteki `*.css`, `
 | `katil` | `oda` (4 harf), `ad` | Odaya katılır (lobide ya da yarış bittikten sonra). |
 | `baslat` | `zorluk?` | Yalnız kurucu; oda `lobi` ya da `bitti` iken (rövanş). `zorluk`: `kolay`, `normal` (varsayılan) ya da `zor`; kurucunun seçimi. |
 | `imlec` | Çiftçi konumu (aşağıda): `x`, `y`, `yon?`, `hareketli?`, `arac?`, `makine?`, `kullan?`, `saman` | Yarışta ~8 Hz, yalnız değişince. |
-| `bulundu` | `sureMs` (yarış başından), `saman` | İğne alındı. |
+| `bulundu` | `sureMs` (yarış başından, **çivi cezası dahil**), `cezaMs?` (cezanın payı, varsayılan 0), `saman` | İğne alındı. |
 | `pes` | — | Oyuncu pes etti. |
 | `ayril` | — | Odadan çık (bağlantıyı kapatmak da aynıdır). |
 
@@ -60,16 +60,18 @@ karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'
 | `geri-sayim` | `n` (3, 2, 1) | Başlat'tan sonra saniyede bir. |
 | `basla` | `etiket`, `zorluk`, `tur` | Herkes aynı anda `yeniOyun(etiket, zorluk)` açar; aynı etiket + zorluk = aynı tarla. |
 | `imlec` | `id` + temizlenmiş konum alanlarının hepsi | Başka bir oyuncunun çiftçisi (kendi konumun gelmez). |
-| `kazanan` | `id`, `ad`, `sureMs` | İğneyi ilk bulan. |
+| `kazanan` | `id`, `ad`, `sureMs` | İğneyi **ilk bulan** (anında duyurulur; kesin kazanan yarış bitince `sira` 1 olan). |
 | `hata` | `kod`, `mesaj` | Reddedilen istek; `mesaj` Türkçe, gösterilebilir. |
 
 Hata kodları: `oda-yok`, `oda-dolu`, `yaris-suruyor`, `zaten-odada`, `kurucu-degil`,
 `odada-degil`, `yaris-yok`, `sunucu-dolu`, `oda-siniri`, `gecersiz`, `hiz`.
 
 Oda `durum`u: `lobi` → `geri-sayim` → `yaris` → `bitti` (→ rövanşla yeniden `geri-sayim`).
-Oyuncu kaydı: `{ id, ad, renk (0-7), durum, sira, sureMs, saman, bagli }`; oyuncu `durum`u
-`bekliyor`, `oynuyor`, `buldu`, `pes`, `ayrildi`. `sira` sunucuya varış sırasıdır (ilk
-`bulundu` 1.). Oynayan kalmayınca (ya da 20 dakika dolunca) yarış `bitti` olur. Odada en çok
+Oyuncu kaydı: `{ id, ad, renk (0-7), durum, sira, sureMs, cezaMs, saman, bagli }`; oyuncu `durum`u
+`bekliyor`, `oynuyor`, `buldu`, `pes`, `ayrildi`. `sira` bulanların **çivi cezası dahil süreye
+(`sureMs`)** göre sırasıdır (eşitlikte önce gelen); her `bulundu`'da yeniden hesaplanır, yarış
+`bitti` olunca kesindir. Sonradan bulan, daha az ceza aldığı için öncekini geçebilir; bu yüzden
+`kazanan` yalnız ilk bulanı duyurur. Oynayan kalmayınca (ya da 20 dakika dolunca) yarış `bitti` olur. Odada en çok
 8 bağlı oyuncu olur; kurucu ayrılırsa ilk bağlı oyuncu kurucu olur; boşalan oda silinir.
 
 Güven: sunucu istemcinin `bulundu`, `sureMs` ve `saman` değerlerine güvenir (yalnız tür ve

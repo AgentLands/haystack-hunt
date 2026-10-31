@@ -104,8 +104,9 @@ const KALIPLAR = {
   bulundu(m) {
     const sureMs = tamSayi(m.sureMs, 0, MAKS_SURE_MS);
     const saman = tamSayi(m.saman, 0, MAKS_SAMAN);
-    if (sureMs === null || saman === null) return gecersiz('Geçersiz sonuç');
-    return { ileti: { t: 'bulundu', sureMs, saman } };
+    const cezaMs = m.cezaMs === undefined ? 0 : tamSayi(m.cezaMs, 0, MAKS_SURE_MS);
+    if (sureMs === null || saman === null || cezaMs === null) return gecersiz('Geçersiz sonuç');
+    return { ileti: { t: 'bulundu', sureMs, cezaMs, saman } };
   },
 };
 

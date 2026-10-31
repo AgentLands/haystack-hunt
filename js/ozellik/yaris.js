@@ -3,7 +3,8 @@
  * da katılır, geri sayımdan sonra herkes aynı etiketle yeniOyun açar. Yarışta çiftçinin
  * konumu/makinesi ve kaldırılan saman ~8 Hz (yalnız değişince) gönderilir, bulundu/pes
  * sunucuya bildirilir; diğerlerinin çiftçileri yaris-hayalet.js'de, canlı tablo
- * yaris-cizim.js'de. Yarış sürerken yerel yeni tarla düğmeleri onay ister.
+ * yaris-cizim.js'de. Yarış sürerken yerel yeni tarla açışı onay ister (koruma.js).
+ * Sıralama çivi cezası dahil süreyle yapılır; ilk bulan hemen duyurulur.
  */
 import { dinle } from '../olaylar.js';
 import { yeniOyun, durumAl } from '../oyun.js';
@@ -100,8 +101,8 @@ const ISLEYICILER = {
     hayaletKonum(m.id, m, performance.now());
   },
   kazanan(m) {
-    bildir(m.id === y.benim ? 'Kazandın! İğneyi ilk sen buldun.' : `${m.ad} iğneyi buldu!`,
-      3000);
+    // İlk bulan duyurulur; kesin sıra (çivi cezası dahil süre) yarış bitince tabloda.
+    bildir(m.id === y.benim ? 'İğneyi ilk sen buldun!' : `${m.ad} iğneyi buldu!`, 3000);
   },
   hata(m) {
     bildir(typeof m.mesaj === 'string' ? m.mesaj : 'Yarış hatası', 3000);
@@ -182,8 +183,10 @@ dinle('kare', ({ zaman, durum }) => {
 
 dinle('bulundu', ({ sonuc }) => {
   if (!oynuyorum() || sonuc.etiket !== y.etiket) return;
-  const sureMs = Math.round(performance.now() - y.basladi);
-  y.baglanti.gonder({ t: 'bulundu', sureMs, saman: sonuc.kaldirilan });
+  // Yarış süresi = "Başla!"dan beri geçen süre + paslı çivi cezası (sıralama buna göre).
+  const cezaMs = Math.max(0, Math.round(sonuc.cezaMs || 0));
+  const sureMs = Math.round(performance.now() - y.basladi) + cezaMs;
+  y.baglanti.gonder({ t: 'bulundu', sureMs, cezaMs, saman: sonuc.kaldirilan });
 });
 
 dinle('pes-edildi', ({ durum }) => {

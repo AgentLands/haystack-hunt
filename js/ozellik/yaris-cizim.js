@@ -18,9 +18,12 @@ export function sirala(oyuncular) {
     || ((a.sira ?? 0) - (b.sira ?? 0)));
 }
 
+/** Paslı çivi cezası aldıysa süre yanında gösterilir (süre ceza dahildir). */
+const cezaEki = (k) => (k.cezaMs > 0 ? ` (+${k.cezaMs / 1000} sn)` : '');
+
 export function durumMetni(k) {
   switch (k.durum) {
-    case 'buldu': return `${k.sira}. · ${sureMetni(k.sureMs)}`;
+    case 'buldu': return `${k.sira}. · ${sureMetni(k.sureMs)}${cezaEki(k)}`;
     case 'oynuyor': return `${sayi.format(k.saman)} saman`;
     case 'pes': return 'pes etti';
     case 'ayrildi': return 'ayrıldı';

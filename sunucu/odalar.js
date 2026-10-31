@@ -45,9 +45,21 @@ export function odaDurumu(oda) {
     tur: oda.tur,
     oyuncular: [...oda.kayitlar.values()].map((k) => ({
       id: k.id, ad: k.ad, renk: k.renk, durum: k.durum,
-      sira: k.sira, sureMs: k.sureMs, saman: k.saman, bagli: Boolean(k.oyuncu),
+      sira: k.sira, sureMs: k.sureMs, cezaMs: k.cezaMs, saman: k.saman,
+      bagli: Boolean(k.oyuncu),
     })),
   };
+}
+
+/**
+ * İğneyi bulanları ceza dahil süreye göre sıralar (eşitlikte varış sırası); `sira` 1'den
+ * başlar. Sonradan bulan, çivi cezası daha büyük olan öncekini geçebilir; sıra her bulundu'da
+ * yeniden hesaplanır, yarış bitince kesinleşir.
+ */
+function siraVer(oda) {
+  const bulanlar = [...oda.kayitlar.values()].filter((k) => k.durum === 'buldu');
+  bulanlar.sort((a, b) => (a.sureMs - b.sureMs) || (a.varis - b.varis));
+  bulanlar.forEach((k, i) => { k.sira = i + 1; });
 }
 
 function hata(oyuncu, kod, mesaj) {
@@ -113,7 +125,7 @@ export class Odalar {
     }
     for (const [id, k] of oda.kayitlar) if (!k.oyuncu) oda.kayitlar.delete(id);
     for (const k of oda.kayitlar.values()) {
-      Object.assign(k, { durum: 'bekliyor', sira: null, sureMs: null, saman: 0 });
+      Object.assign(k, { durum: 'bekliyor', sira: null, sureMs: null, cezaMs: 0, saman: 0 });
     }
     Object.assign(oda, {
       durum: 'geri-sayim', tur: oda.tur + 1, sira: 0, etiket: yeniEtiket(), zorluk,
@@ -133,8 +145,12 @@ export class Odalar {
     const { oda, kayit } = this.#oynayan(oyuncu);
     if (!kayit) return hata(oyuncu, 'yaris-yok', 'Sürmekte olan bir yarışın yok');
     oda.sira += 1;
-    Object.assign(kayit, { durum: 'buldu', sira: oda.sira, sureMs: m.sureMs, saman: m.saman });
-    if (kayit.sira === 1) {
+    Object.assign(kayit, {
+      durum: 'buldu', varis: oda.sira, sureMs: m.sureMs, cezaMs: m.cezaMs, saman: m.saman,
+    });
+    siraVer(oda);
+    // İlk bulan anında duyurulur (kesin kazanan yarış bitince sira 1: ceza dahil en kısa süre).
+    if (oda.sira === 1) {
       this.#yay(oda, { t: 'kazanan', id: kayit.id, ad: kayit.ad, sureMs: m.sureMs });
     }
     return this.#guncelle(oda);
@@ -185,7 +201,7 @@ export class Odalar {
   #ekle(oda, oyuncu, ad) {
     oda.kayitlar.set(oyuncu.id, {
       id: oyuncu.id, ad, renk: bosRenk(oda), oyuncu,
-      durum: 'bekliyor', sira: null, sureMs: null, saman: 0,
+      durum: 'bekliyor', sira: null, varis: null, sureMs: null, cezaMs: 0, saman: 0,
     });
     this.uyelik.set(oyuncu.id, oda);
     this.#yay(oda, odaDurumu(oda));
