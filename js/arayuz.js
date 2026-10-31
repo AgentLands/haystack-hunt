@@ -20,6 +20,31 @@ export function paylasimMetni(sonuc) {
     + `${sayi.format(sonuc.kaldirilan)} saman · 📡 ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
 }
 
+let bildirimZamani = null;
+
+/** Tuvalin üstünde kısa bir bildirim gösterir (özellikler de kullanır). */
+export function bildir(metin, sure = 2200) {
+  const kutu = $('bildirim');
+  kutu.textContent = metin;
+  kutu.classList.add('gorunur');
+  clearTimeout(bildirimZamani);
+  bildirimZamani = setTimeout(() => kutu.classList.remove('gorunur'), sure);
+}
+
+/** Üst sıraya (ust-dugmeler) ya da alt sıraya (alt-dugmeler) düğme ekler. */
+export function dugmeEkle(yer, { metin, baslik, tikla }) {
+  const dugme = document.createElement('button');
+  dugme.type = 'button';
+  dugme.textContent = metin;
+  if (baslik) {
+    dugme.title = baslik;
+    dugme.setAttribute('aria-label', baslik);
+  }
+  dugme.addEventListener('click', tikla);
+  $(yer === 'ust' ? 'ust-dugmeler' : 'alt-dugmeler').append(dugme);
+  return dugme;
+}
+
 export function arayuzKur() {
   for (const d of document.querySelectorAll('[data-arac]')) {
     d.addEventListener('click', () => aracSec(d.dataset.arac));

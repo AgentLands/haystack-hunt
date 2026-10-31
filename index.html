@@ -11,6 +11,8 @@
   <header>
     <h1>Haystack Hunt</h1>
     <p id="etiket" class="etiket"></p>
+    <!-- Özellik modülleri küçük ikon düğmelerini buraya JS ile ekler (ses, istatistik...). -->
+    <div id="ust-dugmeler" class="dugme-sirasi"></div>
   </header>
 
   <section class="panel" aria-label="Durum">
@@ -26,10 +28,14 @@
   </nav>
 
   <main>
-    <canvas id="tarla" aria-label="Saman tarlası"></canvas>
+    <!-- Tuval kabı: özellikler tuvalin üstüne bindirme (yakınlaştırma düğmeleri vb.) ekler. -->
+    <div id="tarla-kap" class="tarla-kap">
+      <canvas id="tarla" aria-label="Saman tarlası"></canvas>
+      <div id="bildirim" class="bildirim" role="status" aria-live="polite"></div>
+    </div>
   </main>
 
-  <nav class="alt">
+  <nav class="alt" id="alt-dugmeler">
     <button id="gunun">Günün tarlası</button>
     <button id="yeni">Yeni tarla</button>
     <button id="pes" class="ikincil">Pes et, iğneyi göster</button>

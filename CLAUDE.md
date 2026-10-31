@@ -19,7 +19,9 @@ python3 -m http.server 8000   # elle oynamak için
 - `js/olaylar.js`: olay yolu ve **olay kataloğu** (başındaki yorum). Yeni olay eklersen
   kataloğa yaz.
 - `js/cizim.js`: tuval çizimi; özellikler `katmanEkle(islev, 'alt'|'ust')` ile katman ekler.
-- `js/girdi.js`, `js/arayuz.js`: işaretçi/klavye ve DOM arayüzü.
+- `js/girdi.js`, `js/arayuz.js`: işaretçi/klavye ve DOM arayüzü. Özellikler arayüze
+  `dugmeEkle('ust'|'alt', {...})` ve `bildir(metin)` ile eklenir; tuval üstü bindirmeler
+  `#tarla-kap` içine. index.html'i elle değiştirmek yerine bunları kullan.
 - `js/ana.js`: giriş; özellik modülleri burada birer satırla içe aktarılır.
 - `js/ozellik/`: her özellik kendi modülünde (ses, istatistik, efekt...). Mümkünse
   çekirdeği değiştirmeden olay dinleyerek ve katman ekleyerek çalışır.

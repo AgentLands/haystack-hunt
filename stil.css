@@ -22,6 +22,8 @@ body {
 header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; color: var(--vurgu); }
 .etiket { margin: 0; color: var(--soluk); font-size: 0.9rem; }
+.dugme-sirasi { display: flex; gap: 6px; margin-left: auto; }
+.dugme-sirasi button { padding: 6px 10px; }
 
 .panel {
   display: grid;
@@ -67,6 +69,26 @@ canvas {
   touch-action: none;
   cursor: crosshair;
 }
+
+.tarla-kap { position: relative; }
+.bildirim {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  background: rgba(20, 14, 8, 0.85);
+  border: 1px solid var(--vurgu);
+  color: var(--yazi);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: calc(100% - 24px);
+  text-align: center;
+}
+.bildirim.gorunur { opacity: 1; }
 
 .nasil { color: var(--soluk); margin-top: 8px; }
 .nasil summary { cursor: pointer; color: var(--yazi); }
