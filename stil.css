@@ -54,6 +54,10 @@ button {
   cursor: pointer;
 }
 button:hover { border-color: var(--vurgu); }
+button:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--vurgu);
+  outline-offset: 2px;
+}
 button[aria-pressed="true"] { background: var(--vurgu); color: var(--vurgu-yazi); border-color: var(--vurgu); }
 button.ikincil { color: var(--soluk); margin-left: auto; }
 kbd { font-size: 0.7rem; opacity: 0.7; margin-right: 4px; }

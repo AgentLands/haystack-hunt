@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Haystack Hunt</title>
+  <defs>
+    <linearGradient id="gok" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d2318"/><stop offset="1" stop-color="#1d1711"/>
+    </linearGradient>
+    <radialGradient id="parilti" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff3c4" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#e8b84a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#e8b84a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="saman" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8b84a"/><stop offset="1" stop-color="#a8741f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#gok)"/>
+  <g>
+    <circle cx="318" cy="196" r="120" fill="url(#parilti)"/>
+    <path d="M70 410 C 90 300, 190 220, 256 220 C 322 220, 422 300, 442 410 Z" fill="url(#saman)"/>
+    <g stroke="#7a4f12" stroke-width="5" stroke-linecap="round" opacity="0.55" fill="none">
+      <path d="M130 380 L170 320"/><path d="M190 395 L232 300"/><path d="M262 392 L290 292"/>
+      <path d="M330 390 L352 322"/><path d="M392 385 L372 336"/><path d="M160 300 L214 262"/>
+    </g>
+    <g stroke="#f3d27a" stroke-width="5" stroke-linecap="round" opacity="0.8" fill="none">
+      <path d="M110 395 L150 345"/><path d="M215 385 L258 316"/><path d="M300 380 L324 318"/>
+      <path d="M365 372 L398 330"/>
+    </g>
+    <path d="M70 410 H442 V430 H70 Z" fill="#7a4f12"/>
+    <g transform="rotate(35 318 196)">
+      <path d="M312 92 L324 92 L321 296 L315 296 Z" fill="#f4f1e6"/>
+      <ellipse cx="318" cy="112" rx="5" ry="11" fill="#1d1711"/>
+      <path d="M321 100 L323 296 L321 296 Z" fill="#b9c2c9"/>
+    </g>
+    <path d="M318 150 V176 M305 163 H331" stroke="#fff3c4" stroke-width="5" stroke-linecap="round"/>
+    <path d="M318 130 V222 M272 176 H364" stroke="#fff3c4" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  </g>
+</svg>
