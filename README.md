@@ -92,4 +92,5 @@ npx playwright@1.48.2 install chromium
 | `js/igne.js` | iğneyi saklama, derinlik |
 | `js/araclar.js` | el, tırmık, dedektör |
 | `js/cizim.js` | tuvale çizim |
+| `js/cizim/` | tarla boyası: uzak (1 px/hücre) ve yakın görünüm (saman çöpü dokulu alt piksel atlası) |
 | `js/oyun.js` | döngü, girdi, arayüz |

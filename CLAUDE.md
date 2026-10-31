@@ -19,6 +19,9 @@ python3 -m http.server 8000   # elle oynamak için
 - `js/olaylar.js`: olay yolu ve **olay kataloğu** (başındaki yorum). Yeni olay eklersen
   kataloğa yaz.
 - `js/cizim.js`: tuval çizimi; özellikler `katmanEkle(islev, 'alt'|'ust')` ile katman ekler.
+  Tarla boyası `js/cizim/`de: uzak görünüm hücre başına 1 piksel (`tarla-boya.js`, yalnız
+  değişen koni yeniden boyanır); yakınlaşınca (z > 1.15) dünya-sabit alt piksel atlası
+  (`yakin.js`: karolar, süre bütçesi; saf parçalar `alt-piksel.js`, `doku.js`, `karolar.js`).
 - `js/girdi.js`, `js/arayuz.js`: işaretçi/klavye ve DOM arayüzü. Özellikler arayüze
   `dugmeEkle('ust'|'alt', {...})` ve `bildir(metin)` ile eklenir; tuval üstü bindirmeler
   `#tarla-kap` içine. index.html'i elle değiştirmek yerine bunları kullan.
