@@ -19,6 +19,10 @@
  *    isYakit       çalışırken saniyede ek yakıt (varsayılan yakitTuketim / 2)
  *    kur(m)        yeni makinenin türe özgü alanlarını kurar (yuk vb.)
  *    kare(tarla, m) her kare (sürülmese de) çağrılır; ör. kepçedeki iğneyi taşır
+ *    giyilir       true: araç değil giyilen makine (sırt üfleyicisi); E ile takılınca çiftçi
+ *                  yürümeye devam eder, makine karakteri izler, sürüş yok, yakıt yalnız
+ *                  çalışırken (isYakit) harcanır. Çıkınca makine karakterin yerine bırakılır
+ *    yuruHizi      giyilirken yürüme hızının kesri (varsayılan 1; ağırlık için < 1)
  */
 const tanimlar = new Map();
 const ZORUNLU = ['ad', 'boy', 'en', 'azamiHiz', 'donus', 'yakitTuketim', 'calis'];
@@ -35,6 +39,7 @@ export function makineTanimla(tur, tanim) {
   const tam = {
     tirmanma: 2, isYaricap: 1.5, yaricap: (Math.max(tanim.boy, tanim.en) / 2) * 0.85,
     isYakit: tanim.yakitTuketim / 2, kur: () => {}, kare: () => {},
+    giyilir: false, yuruHizi: 1,
     ...tanim,
     tur,
   };

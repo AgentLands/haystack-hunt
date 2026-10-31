@@ -81,9 +81,10 @@ function gecilir(tarla, x0, y0, x1, y1, engeller) {
 /**
  * Bir yürüme adımı. (ix, iy): istek, her eksen -1..1 (boyu 1'i aşarsa kırpılır).
  * Eksenler ayrı denenir: biri tıkalıysa diğerinde kayılır. engeller: [{x, y, r}].
+ * hizOrani: hızın kesri (ör. sırt üfleyicisinin ağırlığı için < 1; varsayılan 1).
  * Dönüş: { engel: bir eksen tıkandı mı, adim: bu adımda ayak yere bastı mı, mesafe }.
  */
-export function karakterYuru(tarla, k, ix, iy, dt, engeller = []) {
+export function karakterYuru(tarla, k, ix, iy, dt, engeller = [], hizOrani = 1) {
   const boy = Math.hypot(ix, iy);
   const sonuc = { engel: false, adim: false, mesafe: 0 };
   if (boy < 0.05 || !(dt > 0)) {
@@ -92,7 +93,7 @@ export function karakterYuru(tarla, k, ix, iy, dt, engeller = []) {
   }
   const n = boy > 1 ? 1 / boy : 1;
   k.yon = Math.atan2(iy, ix);
-  const hiz = karakterHizi(k.z);
+  const hiz = karakterHizi(k.z) * hizOrani;
   const dx = ix * n * hiz * dt;
   const dy = iy * n * hiz * dt;
   const [x0, y0] = [k.x, k.y];

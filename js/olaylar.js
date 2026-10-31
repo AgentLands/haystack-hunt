@@ -37,6 +37,10 @@
  *                                                  civi: düşen çivi sayısı)
  *   igne-kepcede     { makine, x, y }              kepçe iğnenin katına indi, iğne kepçede
  *   civi-kepcede     { makine, x, y }              paslı çivi kepçeye takıldı
+ * Sırt üfleyicisi (giyilen makine; x, y hücre birimi):
+ *   ufleme           { x, y, yon, menzil }         Boşlukla üflerken ~10 Hz (kare başına değil);
+ *                                                  x, y namlunun noktası, yon radyan, menzil
+ *                                                  hücre (koni ±25°). Efekt ve ses için
  */
 const dinleyiciler = new Map();
 

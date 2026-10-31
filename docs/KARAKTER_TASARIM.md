@@ -96,6 +96,24 @@ güncelle.
   dedektör onu kepçede bulur, mıknatıs çekemez). Boşaltınca boşaltma noktasında açıkta
   yere düşer; oyuncu inip elle almalı. Paslı çiviler de aynı (iğnenin yanına düşer).
 
+## Sırt üfleyicisi (`js/kural/makineler/ufleyici.js`)
+- **Giyilen** makine (tanımda `giyilir: true`, `yuruHizi: 0.8`): E ile takılınca sürüş yok;
+  çiftçi normal WASD ile yürür (hızı %80: ağırlık), makine nesnesi her kare karakterin
+  x, y, yon, z'sine eşitlenir (`karakter.makine` doludur, `makine.surucu` true). E ile
+  çıkınca makine karakterin durduğu yere bırakılır (yeniden alınabilir). Giyilirken
+  tıkla-yürü yok (tıklama yok sayılır); sanal kol ve klavye çalışır; el/tırmık araçları
+  kullanılmaz. Ortak sürüş kodu (`surusAdim`) çağrılmaz; `oyun-makine.js` giyilen makine
+  için ayrı dal (`giyilenKare`) işletir.
+- Boşluk basılıyken (yakıt harcar: `isYakit` = 1/120 sn; yürürken harcamaz) namlu
+  noktasından (karakterin 1.8 hücre önü) başlayan koni (menzil 9 hücre, ±25°) içindeki her
+  hücreden kare başına en çok 1 kat alır; yakın hücre 48 kat/sn, menzil sonu 12 kat/sn;
+  yüksekliği 24'ü aşan hücrede hız `24 / yükseklik` ile çarpılır (yalnız yüzey).
+  Alınan kat, hücrenin namluya göre yönünde 10–13 hücre ötesine (koninin dışına) bırakılır;
+  tarla dışına düşen `kaldirilan`'a eklenir. İğne ve çiviler uçmaz; üstlerindeki saman
+  uçarsa açıkta kalırlar, üzerlerine saman yağarsa gömülürler.
+- Olaylar: `makine-calisti { makine, miktar }` (savrulan kat), `ufleme { x, y, yon,
+  menzil }` (~10 Hz; efekt ve ses için).
+
 ## Çizim
 - Karakter ve makineler `katmanEkle(..., 'ust')` ile, piksel uzayında (hücre * OLCEK) çizilir.
   Çizim modülü yalnız yukarıdaki verileri okur; kural koduna dokunmaz.
@@ -120,6 +138,7 @@ güncelle.
 - `makine-bin { makine }`, `makine-in { makine }`
 - `makine-calisti { makine, miktar }` (bu karede kaldırılan/itilen saman)
 - `makine-takildi { makine }`, `yakit-bitti { makine }`
+- `ufleme { x, y, yon, menzil }` (sırt üfleyicisi çalışırken ~10 Hz; x, y hücre birimi)
 - Eklenenler: `makine-yok { x, y }` (E ama yakında makine yok), `kepce-doldu { makine }`,
   `kepce-bosaltildi { makine, miktar, igne, civi, x, y }`, `igne-kepcede { makine, x, y }`,
   `civi-kepcede { makine, x, y }`. Tam katalog: `js/olaylar.js`.
