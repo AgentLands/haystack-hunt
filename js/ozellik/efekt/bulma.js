@@ -1,6 +1,7 @@
 /**
  * Bulma anı: iğne samandan çekilip havaya kalkar (yerdeki eski çizimi tarla yamasıyla
- * örtülür), altın ışık halkası ve ışıma yayılır; bitiş penceresi kısa bir gecikmeyle
+ * örtülür; oyundaki iğne modeliyle büyüyerek), önce keskin altın halka ve ışın patlaması,
+ * ardından altın ışık halkaları ve ışıma yayılır; bitiş penceresi kısa bir gecikmeyle
  * belirir ki efekt görünsün (pencere hemen açılır, yalnız görünüşü gecikir).
  */
 import { OLCEK, igneModeli, igneYariBoyu } from '../../cizim.js';
@@ -182,7 +183,7 @@ export function bulmaCiz(ctx, zaman, hareketli) {
     const yari = igneYariBoyu(eb) * olcek;
     const ux = mx + Math.cos(aci) * yari * (pir * 2 - 1);
     const uy = my - z + Math.sin(aci) * yari * (pir * 2 - 1);
-    yildizIsigi(ctx, ux, uy, 7, Math.sin(Math.PI * pir) * 0.9, t / 400);
+    yildizIsigi(ctx, ux, uy, 14 * eb, Math.sin(Math.PI * pir) * 0.85, t / 400);
   }
   ctx.restore();
 }

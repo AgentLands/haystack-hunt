@@ -16,7 +16,7 @@ export const DERI = '#e6b089';
 export const SAMAN_RENK = ['#f3d98a', '#e9c560', '#d8b85a'];
 const SAPKA = '#b9813a';
 const SAPKA_KOYU = '#93612a';
-const SIPER = '#6a4118';
+const SIPER = '#77491c';
 const TAC = '#e7c27a';
 const TAC_KOYU = '#c79c55';
 const BANT = '#9c2f1f';
@@ -68,17 +68,37 @@ export function bot(ctx, x, y, isik, dh) {
   celElips(ctx, x, y, 0.19, 0.11, BOT_ACIK, BOT, isik, dh, 0.3);
 }
 
-/** Kol: omuzdan ele kırmızı kol (gölge tarafı koyu) ve deri el. */
-export function kol(ctx, sx, sy, ex, ey, isik, dh) {
-  hatliCizgi(ctx, sx, sy, ex, ey, 0.19, GOMLEK_KOYU, dh);
-  const k = 0.032;
+/** Çizgi parçalarını tek yolda toplar (kayma: [dx, dy]). */
+function parcaYolu(ctx, parcalar, dx = 0, dy = 0) {
+  ctx.beginPath();
+  for (const [x1, y1, x2, y2] of parcalar) {
+    ctx.moveTo(x1 + dx, y1 + dy);
+    ctx.lineTo(x2 + dx, y2 + dy);
+  }
+}
+
+/**
+ * Kollar: omuzdan ele kırmızı kol (gölge tarafı koyu) ve deri el; kollar: [[sx, sy, ex, ey]].
+ * Hepsi birlikte çizilir (az çizim çağrısı).
+ */
+export function kollar(ctx, liste, isik, dh) {
+  ctx.lineCap = 'round';
+  parcaYolu(ctx, liste);
+  ctx.strokeStyle = DIS;
+  ctx.lineWidth = 0.19 + 2 * dh;
+  ctx.stroke();
+  ctx.strokeStyle = GOMLEK_KOYU;
+  ctx.lineWidth = 0.19;
+  ctx.stroke();
+  parcaYolu(ctx, liste, isik[0] * 0.032, isik[1] * 0.032);
   ctx.strokeStyle = GOMLEK;
   ctx.lineWidth = 0.12;
-  ctx.beginPath();
-  ctx.moveTo(sx + isik[0] * k, sy + isik[1] * k);
-  ctx.lineTo(ex + isik[0] * k, ey + isik[1] * k);
   ctx.stroke();
-  elipsYol(ctx, ex, ey, 0.105, 0.105);
+  ctx.beginPath();
+  for (const [, , ex, ey] of liste) {
+    ctx.moveTo(ex + 0.105, ey);
+    ctx.arc(ex, ey, 0.105, 0, IKI_PI);
+  }
   hatli(ctx, DERI, dh);
 }
 
@@ -99,9 +119,16 @@ export function tutam(ctx, x, y, aci, dh) {
 /** Gövde: kırmızı gömlekli omuzlar, sırtta mavi tulum yaması ve öne uzanan iki askı. */
 export function govde(ctx, isik, dh, detay = false) {
   celElips(ctx, -0.1, 0, 0.36, 0.56, GOMLEK, GOMLEK_KOYU, isik, dh, 0.16);
-  for (const v of [-1, 1]) {
-    hatliCizgi(ctx, -0.24, v * 0.2, 0.14, v * 0.31, 0.085, TULUM, dh * 0.8);
-    if (!detay) continue;
+  // Askılar (tek yolda iki bant); yakında öndeki düğmeler.
+  ctx.lineCap = 'round';
+  parcaYolu(ctx, [[-0.24, 0.2, 0.14, 0.31], [-0.24, -0.2, 0.14, -0.31]]);
+  ctx.strokeStyle = DIS;
+  ctx.lineWidth = 0.085 + 1.6 * dh;
+  ctx.stroke();
+  ctx.strokeStyle = TULUM;
+  ctx.lineWidth = 0.085;
+  ctx.stroke();
+  for (const v of detay ? [-1, 1] : []) {
     elipsYol(ctx, 0.14, v * 0.31, 0.035, 0.035);
     ctx.fillStyle = DUGME;
     ctx.fill();
@@ -172,6 +199,7 @@ export function oturanCiftci(ctx, cx, cy, isik) {
   elipsYol(ctx, cx - 0.2, cy, 0.13, 0.26);
   ctx.fillStyle = TULUM;
   ctx.fill();
-  for (const y of [-1, 1]) kol(ctx, cx + 0.02, cy + y * 0.38, cx + 0.62, cy + y * 0.29, isik, dh);
+  kollar(ctx, [-1, 1].map((y) => [cx + 0.02, cy + y * 0.38, cx + 0.62, cy + y * 0.29]), isik,
+    dh);
   sapka(ctx, cx + 0.06, cy, 0.36, isik, dh);
 }

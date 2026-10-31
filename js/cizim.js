@@ -92,13 +92,14 @@ function igneYolu(ctx, h, w, goz) {
 
 /**
  * Gümüş iğne modeli (dünya pikseli (x, y) merkezli, aci yönünde): gölge, ekran-sabit koyu
- * dış hat, gölge tarafı koyu gövde, ışık tarafında beyaz çizgi, arka uçta göz deliği.
+ * dış hat, ekranda en az ~2.4 px kalınlık (yakında boyla orantılı), gölge tarafı koyu
+ * gövde, ışık tarafında beyaz çizgi, arka uçta göz deliği.
  * olcek: havalanan iğne için büyütme. bulma ve balya işareti de bunu kullanır.
  */
 export function igneModeli(ctx, x, y, aci, olcek = 1) {
   const eb = ekranPikseli(ctx);
   const h = igneYariBoyu(eb) * olcek;
-  const w = 1.2 * eb * olcek;
+  const w = Math.max(1.2 * eb, h * 0.075) * olcek;
   const goz = Math.max(h * 0.24, 4 * eb);
   const lv = 0.6 * Math.sin(aci) - 0.8 * Math.cos(aci);
   const yan = lv < 0 ? -1 : 1;

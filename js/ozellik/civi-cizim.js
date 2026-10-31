@@ -61,10 +61,11 @@ export function civiCiz(ctx, civi) {
   ctx.rotate(civi.aci);
   const eb = ekranBirim(ctx);
   const h = civiYariBoyu(eb);
-  const w = 1.9 * eb;
+  const w = Math.max(1.9 * eb, h * 0.14);
   const { yol, bx, ux, uy } = govdeYolu(h, w);
   const bas = new Path2D();
-  bas.roundRect(-h - 2.4 * eb, -w * 2.3, 3 * eb, w * 4.6, eb);
+  const kal = Math.max(3 * eb, w * 0.9);
+  bas.roundRect(-h - kal * 0.8, -w * 2.3, kal, w * 4.6, kal * 0.35);
   // Gölge (dünyada sağ alta; yerel uzaya döndürülmüş kayma).
   const gx = 1.6 * eb;
   const gy = 2 * eb;
@@ -85,11 +86,12 @@ export function civiCiz(ctx, civi) {
   ctx.fillStyle = PAS;
   for (const [u, r] of [[0.25, 1.2], [0.62, 0.9]]) {
     ctx.beginPath();
-    ctx.arc(-h + 2 * h * u * DIRSEK * 1.4, -yan * w * 0.2, r * eb, 0, Math.PI * 2);
+    ctx.arc(-h + 2 * h * u * DIRSEK * 1.4, -yan * w * 0.2, r * Math.max(eb, w * 0.3), 0,
+      Math.PI * 2);
     ctx.fill();
   }
   ctx.beginPath();
-  ctx.arc(bx + (ux - bx) * 0.4, uy * 0.4, 1 * eb, 0, Math.PI * 2);
+  ctx.arc(bx + (ux - bx) * 0.4, uy * 0.4, Math.max(eb, w * 0.3), 0, Math.PI * 2);
   ctx.fill();
   disHat(ctx, bas, BAS, 1);
   ctx.restore();

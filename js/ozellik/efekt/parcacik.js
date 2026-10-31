@@ -143,12 +143,13 @@ export function parcaciklariCiz(ctx) {
     ctx.lineTo(x + dx, y + dy);
     ctx.stroke();
     // Işık (sol üst) tarafında ince açık çizgi: çöp yuvarlak sap gibi okunur.
-    const k = 0.45 * p.s[i];
-    ctx.lineWidth = 0.7 * p.s[i];
+    const k = 0.5 * p.s[i];
+    ctx.globalAlpha = alfa(i) * 0.75;
+    ctx.lineWidth = 0.55 * p.s[i];
     ctx.strokeStyle = '#fff0c0';
     ctx.beginPath();
-    ctx.moveTo(x - dx * 0.6 - k, y - dy * 0.6 - k);
-    ctx.lineTo(x + dx * 0.6 - k, y + dy * 0.6 - k);
+    ctx.moveTo(x - dx * 0.5 - k, y - dy * 0.5 - k);
+    ctx.lineTo(x + dx * 0.5 - k, y + dy * 0.5 - k);
     ctx.stroke();
   }
   ctx.globalCompositeOperation = 'lighter';

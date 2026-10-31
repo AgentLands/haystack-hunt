@@ -7,7 +7,7 @@
  * Poz matematiği karakter-poz.js'te; yalnız durum.karakter ve aracın adını okur.
  */
 import { donuk, ekranBirim, golgeKayma, isikYerel } from './ortak.js';
-import { bot, govde, kol, sapka, tutam } from './ciftci-parca.js';
+import { bot, govde, kollar, sapka, tutam } from './ciftci-parca.js';
 import { araciKur } from './arac-cizim.js';
 import { aracPozu, govdePozu, OMUZ } from './karakter-poz.js';
 import { boruCiz, havaDalgasi, sirtMotoru } from './ufleyici-cizim.js';
@@ -65,8 +65,7 @@ function ciftciCiz(ctx, k) {
   if (duzen) [sag, sol] = [duzen.sag, duzen.sol];
   else if (ap?.eller) [sag, sol] = ap.eller;
   else if (k.ufle) [sag, sol] = ufleBorusu(ctx, k, sol);
-  kol(ctx, ...omuz(poz, egilme, 1), ...sag, isik, dh);
-  kol(ctx, ...omuz(poz, egilme, -1), ...sol, isik, dh);
+  kollar(ctx, [[...omuz(poz, egilme, 1), ...sag], [...omuz(poz, egilme, -1), ...sol]], isik, dh);
   if (ap && ap.tutam >= 0) {
     const el = ap.tutam === 0 ? sag : sol;
     tutam(ctx, el[0], el[1], ap.tutam === 0 ? 2.6 : -2.6, dh);
