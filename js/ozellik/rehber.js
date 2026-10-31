@@ -111,4 +111,6 @@ link.href = new URL('./rehber.css', import.meta.url).href;
 document.head.append(link);
 
 dugmeEkle('ust', { metin: '?', baslik: 'Nasıl oynanır? Rehberi aç', tikla: rehberiAc });
-if (!goruldu()) rehberiAc();
+// Demo modunda (?demo=1, bot kendiliğinden oynar) izleyenin önünü kapatmasın.
+const demoModu = new URLSearchParams(location.search).get('demo') === '1';
+if (!goruldu() && !demoModu) rehberiAc();
