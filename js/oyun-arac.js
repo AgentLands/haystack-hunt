@@ -8,6 +8,7 @@ import {
   elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi, miknatisCek,
 } from './kural/araclar.js';
 import { alinabilirCivi, civiAl, parlayanCiviler } from './kural/civi.js';
+import { igneKonumu, tarlada } from './kural/igne.js';
 import { puanHesapla } from './kural/zorluk.js';
 import { yay } from './olaylar.js';
 
@@ -59,13 +60,13 @@ export function miknatisKullan(durum, p, zaman) {
   durum.miknatis -= 1;
   const cekti = miknatisCek(durum.tarla, p.x, p.y);
   yay('miknatis', { x: p.x, y: p.y, cekti, kalan: durum.miknatis });
-  if (cekti && !durum.tarla.igne.kepcede) igneParlat(durum, zaman);
+  if (cekti && tarlada(durum.tarla.igne)) igneParlat(durum, zaman);
 }
 
 export function igneParlat(durum, zaman) {
   durum.parilti = { bitis: zaman + PARILTI_SURE, sure: PARILTI_SURE };
   durum.sonrakiParilti = zaman + durum.pariltiAralik;
-  yay('parilti', { x: durum.tarla.igne.x, y: durum.tarla.igne.y });
+  yay('parilti', igneKonumu(durum.tarla));
 }
 
 export function civileriParlat(durum, zaman) {

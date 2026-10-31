@@ -5,3 +5,4 @@
  */
 import './traktor.js';
 import './ufleyici.js';
+import './balya.js';

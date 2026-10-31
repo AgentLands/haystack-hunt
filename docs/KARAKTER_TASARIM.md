@@ -63,6 +63,7 @@ güncelle.
   takili,        // tırmanma eşiğine takıldı (geri gidince / dönünce / ilerleyince biter)
   kilitli,       // iş aygıtı Boşluk bırakılana dek beklesin (ör. boşalttıktan sonra)
   icerik }       // traktör: { saman, igne: bool, civiler: [çivi] } (kepçenin içi)
+                 // balya: aynı biçim (haznenin içi; dolunca balyaya geçer)
 ```
 - Garaj: `durum.garaj = { x, y, kenar, yon, en }` (park sırasının ortası, dünya birimi;
   kenar 0 üst, 1 sağ, 2 alt, 3 sol; yon tarlaya bakan açı; en sıranın boyu). Kendi
@@ -113,6 +114,35 @@ güncelle.
   uçarsa açıkta kalırlar, üzerlerine saman yağarsa gömülürler.
 - Olaylar: `makine-calisti { makine, miktar }` (savrulan kat), `ufleme { x, y, yon,
   menzil }` (~10 Hz; efekt ve ses için).
+## Balya makinesi ve balyalar
+- Tanım `js/kural/makineler/balya.js`, balya kuralları `js/kural/balyalar.js`.
+- Traktörden hızlı (azami 20); tırmanma eşiği traktörünkü kadar (2): 1.5 düz tarladaki
+  serpintide (komşu farkı 2, geçişlerin ~%11'i) sürekli takılıyordu. "Yalnız alçak/orta
+  samanda iyi çalışır" kısıtı toplayıcının erişimiyle gelir: gövdenin altındaki samanın en
+  çok `TOPLAYICI_ERISIM` (20) kat üstündeki hücrelere uzanır, yüksek yığın duvarına girmez.
+- Boşluk basılıyken önündeki **toplayıcı şeridinden** (merkezden 3.1 önde, en 4.2, derinlik 2;
+  ~10 hücre) hücre başına 60 kat/sn alır. Saman haznede birikir (`yuk` = doluluk);
+  `BALYA_KAPASITE` (600) dolunca gövdenin 3.9 arkasına bir balya bırakır (yer doluysa yana
+  kayar). Balyadaki saman tarlada sayılır: `tarla.kaldirilan` artmaz.
+- Toplayıcı iğnenin (ya da paslı çivinin) katına inerse nesne hazneye girer (`kepcede =
+  true`, makineyle taşınır) ve o sırada oluşan balyaya paketlenir: `balyada` = balya kimliği,
+  x, y balyanın hücresi; derinlik sonsuz (görünmez, parlamaz, alınamaz). Oyuncuya söylenmez;
+  yalnız `igne-yutuldu` (ses/efekt: metalik tık) yayılır.
+- Balya verisi: `durum.balyalar` (= `tarla.balyalar`, aynı dizi):
+  `{ id, x, y, yon, acik, acilma, saman, igne: bool, civiler: [çivi] }`; x, y DÜNYA birimi,
+  çarpışma dairesi 0.8 (karakter ve makineler içinden geçemez).
+- İğnenin etkin konumu: `igne.js` `igneKonumu(tarla)` (balyadaysa balyanın yeri). Dedektör,
+  mıknatıs ve parıltı bunu okur; mıknatıs balyadaki iğneyi çekemez (boşa gider).
+  `tarlada(nesne)`: kepçede/haznede ya da balyada değil.
+- **Açma**: yürürken El seçiliyken, kenarına ≤ 1.5 hücre yakın ve yüzü dönük balyaya Boşluk
+  basılı tutulunca `acik = true`, `acilma` 1.5 sn'de 0→1 (bırakılırsa kaldığı yerde bekler).
+  1'e varınca saman balyanın çevresindeki halkaya (1.5–4 hücre) yayılır (yığın kayması
+  dağıtır), iğne ve çiviler balyanın yerinde açıkta kalır (z yayılan samanın üstünde,
+  gömülmez); balya listeden çıkar. Açtıktan sonra el, Boşluk bırakılana dek bekler
+  (`durum.elKilitli`; basılı tutmak yayılan samanı kazıp iğneyi kendiliğinden almasın).
+  İğneyi bulmak yine oyuncunun işi (bildirim yalnız "Balya açıldı").
+- Pes edince iğne balyada (ya da bir makinede) ise `js/ozellik/balya-isaret.js` balyanın
+  üstüne küçük bir iğne işareti ve halka çizer.
 
 ## Çizim
 - Karakter ve makineler `katmanEkle(..., 'ust')` ile, piksel uzayında (hücre * OLCEK) çizilir.
@@ -142,6 +172,8 @@ güncelle.
 - Eklenenler: `makine-yok { x, y }` (E ama yakında makine yok), `kepce-doldu { makine }`,
   `kepce-bosaltildi { makine, miktar, igne, civi, x, y }`, `igne-kepcede { makine, x, y }`,
   `civi-kepcede { makine, x, y }`. Tam katalog: `js/olaylar.js`.
+- Balya: `balya-birakildi { balya, makine }`, `igne-yutuldu { x, y }` (yalnız ses/efekt),
+  `civi-yutuldu { x, y }`, `balya-acildi { balya, igne, civiSayisi }`.
 
 ## Kod yerleşimi
 - `js/oyun.js` durum ve kare döngüsü; `js/oyun-karakter.js` yürüme + araç kullanımı;

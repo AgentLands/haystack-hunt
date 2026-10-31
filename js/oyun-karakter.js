@@ -1,6 +1,7 @@
 /**
  * Karakter karesi: kontrol.yon (ya da tıkla-yürü hedefi) ile yürüme, Boşlukla araç kullanımı
- * ve fare/dokunmayla erişimdeki hücrede araç kullanımı. Araç noktası: el ve tırmık
+ * (El ile yüzü dönük yakın balyaya basılı tutmak onu açar) ve fare/dokunmayla erişimdeki
+ * hücrede araç kullanımı. Araç noktası: el ve tırmık
  * karakterin önünde, dedektör ve mıknatıs karakterin durduğu yerde. durum.imlec geriye
  * uyum için bu noktayı (fare basılıysa fare noktasını) gösterir. DOM'a dokunmaz.
  */
@@ -9,6 +10,7 @@ import {
   karakterYuru, aracNoktasi, karakterNoktasi, erisimde, erisimeCek,
 } from './kural/karakter.js';
 import { makineEngeli } from './kural/makineler/surus.js';
+import { balyaEngelleri, acilacakBalya, balyaAcIlerlet } from './kural/balyalar.js';
 import {
   baslat, elKullan, tirmikKullan, dedektorKullan, miknatisKullan,
 } from './oyun-arac.js';
@@ -46,7 +48,7 @@ export function karakterKaresi(durum, dt, zaman) {
   const k = durum.karakter;
   const istek = yuruyusIstegi(k);
   if (istek.x || istek.y) baslat(durum, zaman);
-  const engeller = durum.makineler.map(makineEngeli);
+  const engeller = [...durum.makineler.map(makineEngeli), ...balyaEngelleri(durum.balyalar)];
   const s = karakterYuru(durum.tarla, k, istek.x, istek.y, dt, engeller);
   if (istek.hedefli && s.engel) kontrol.hedef = null; // engelde durur
   if (s.adim) yay('karakter-adim', { x: k.x, y: k.y, z: k.z });
@@ -58,6 +60,7 @@ function aracKaresi(durum, dt, zaman) {
   const kullan = kontrol.kullan && !durum.bitti;
   const yeni = kullan && !durum.oncekiKullan;
   durum.oncekiKullan = kontrol.kullan;
+  if (!kontrol.kullan) durum.elKilitli = false;
   const fare = durum.basili && !durum.bitti ? durum.fare : null;
   const nokta = aracYeri(durum);
   durum.imlec = fare || nokta;
@@ -65,6 +68,7 @@ function aracKaresi(durum, dt, zaman) {
   if (!k.kullaniyor) return false;
   baslat(durum, zaman);
   if (durum.arac === 'el') {
+    if (kullan && balyaAcKaresi(durum, dt)) return false;
     return (kullan && elKullan(durum, nokta)) || (fare !== null && elKullan(durum, fare));
   }
   if (durum.arac === 'tirmik') {
@@ -79,6 +83,23 @@ function aracKaresi(durum, dt, zaman) {
   // Dedektör ve mıknatıs: Boşluğa her basışta bir kez, karakterin durduğu yerde.
   if (yeni) (durum.arac === 'dedektor' ? dedektorKullan : miknatisKullan)(durum, nokta, zaman);
   return false;
+}
+
+/**
+ * El + Boşluk: yüzü dönük yakın bir balya varsa açmayı ilerletir (true; o kare kazılmaz).
+ * Açılınca 'balya-acildi' yayılır ve el, Boşluk bırakılana dek bekler (elKilitli): basılı
+ * tutmaya devam etmek yayılan samanı kazıp açıktaki iğneyi kendiliğinden almasın.
+ */
+function balyaAcKaresi(durum, dt) {
+  if (durum.elKilitli) return true;
+  const balya = acilacakBalya(durum.balyalar, durum.karakter);
+  if (!balya) return false;
+  const acildi = balyaAcIlerlet(durum.tarla, balya, dt);
+  if (acildi) {
+    durum.elKilitli = true;
+    yay('balya-acildi', acildi);
+  }
+  return true;
 }
 
 /**

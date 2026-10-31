@@ -41,6 +41,14 @@
  *   ufleme           { x, y, yon, menzil }         Boşlukla üflerken ~10 Hz (kare başına değil);
  *                                                  x, y namlunun noktası, yon radyan, menzil
  *                                                  hücre (koni ±25°). Efekt ve ses için
+ * Balya makinesi ve balyalar (balya.x, y dünya; diğer x, y hücre birimi):
+ *   balya-birakildi  { balya, makine }             hazne doldu, arkaya balya bırakıldı
+ *   igne-yutuldu     { x, y }                      iğne toplayıcıya girdi (yalnız ses/efekt:
+ *                                                  metalik tık; oyuncuya açıkça söylenmez)
+ *   civi-yutuldu     { x, y }                      paslı çivi toplayıcıya girdi (aynı tık)
+ *   balya-acildi     { balya, igne, civiSayisi }   El ile açıldı: saman çevreye döndü, iğne
+ *                                                  (igne: true ise) ve çiviler balyanın
+ *                                                  yerinde açıkta; balya listeden çıktı
  */
 const dinleyiciler = new Map();
 

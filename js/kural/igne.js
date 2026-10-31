@@ -1,6 +1,7 @@
 /**
- * İğne: tarlada nereye gizlendiği, hangi hücreleri kapladığı ve ne kadar gömülü olduğu.
- * İğnenin z değeri yerden yüksekliğidir; hücrede z kat ya da daha az saman kalınca görünür.
+ * İğne: tarlada nereye gizlendiği, hangi hücreleri kapladığı, ne kadar gömülü olduğu ve
+ * etkin konumu (kepçede ya da balyadaysa taşıyanın yeri). İğnenin z değeri yerden
+ * yüksekliğidir; hücrede z kat ya da daha az saman kalınca görünür.
  */
 import { GENISLIK, YUKSEKLIK, icinde } from './boyut.js';
 
@@ -44,11 +45,31 @@ export function igneHucreleri(igne) {
 }
 
 /**
+ * Nesne (iğne ya da çivi) tarlada mı: makinenin içinde (kepcede: traktör kepçesi ya da
+ * balya makinesinin haznesi) ya da bir balyada (balyada: balya kimliği) değil.
+ */
+export function tarlada(nesne) {
+  return !nesne.kepcede && !nesne.balyada;
+}
+
+/**
+ * İğnenin etkin konumu (hücre birimi): balyadaysa balyanın yeri, değilse iğnenin x, y'si
+ * (kepçedeki ya da haznedeki iğneyi makinenin kare kancası taşır). Dedektör, mıknatıs ve
+ * parıltı bunu okur.
+ */
+export function igneKonumu(tarla) {
+  const { igne } = tarla;
+  const balya = igne.balyada ? tarla.balyalar.find((b) => b.id === igne.balyada) : null;
+  if (balya) return { x: balya.x - 0.5, y: balya.y - 0.5 };
+  return { x: igne.x, y: igne.y };
+}
+
+/**
  * Gömülü bir nesnenin ({x, y, z, aci}: iğne ya da çivi) üstündeki en ince saman katı.
- * Makine kepçesindeki nesne (kepcede) tarlada değildir: derinliği sonsuz sayılır.
+ * Makinedeki (kepcede) ya da balyadaki (balyada) nesne tarlada değildir: derinliği sonsuz.
  */
 export function nesneDerinligi(tarla, nesne) {
-  if (nesne.kepcede) return Infinity;
+  if (!tarlada(nesne)) return Infinity;
   let enAz = Infinity;
   for (const i of igneHucreleri(nesne)) {
     enAz = Math.min(enAz, Math.max(0, tarla.h[i] - nesne.z));

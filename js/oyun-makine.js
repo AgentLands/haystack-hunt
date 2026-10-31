@@ -11,12 +11,14 @@ import { yukseklik } from './kural/tarla.js';
 import { makineTanimi } from './kural/makineler/kayit.js';
 import { surusAdim, yakitHarca, makineEngeli } from './kural/makineler/surus.js';
 import { binilebilir, inmeYeri } from './kural/makineler/binme.js';
+import { balyaEngelleri } from './kural/balyalar.js';
 import { baslat } from './oyun-arac.js';
 import { yay } from './olaylar.js';
 
-/** Sürülen makine dışındaki engeller: diğer makineler ve (yürüyorsa) karakter. */
+/** Sürülen makine dışındaki engeller: diğer makineler, balyalar ve (yürüyorsa) karakter. */
 function engeller(durum, haric) {
   const liste = durum.makineler.filter((m) => m !== haric).map(makineEngeli);
+  liste.push(...balyaEngelleri(durum.balyalar));
   const k = durum.karakter;
   if (!k.makine) liste.push({ x: k.x, y: k.y, r: KARAKTER_YARICAP });
   return liste;

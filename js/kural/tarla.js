@@ -15,6 +15,8 @@ const CAPRAZ_ESIK = 4;
 /**
  * Tohumdan yeni tarla kurar: birkaç saman yığını, serpinti, gizli iğne ve paslı çiviler.
  * Yığın ölçüleri, iğne derinliği ve çivi sayısı zorluğa bağlıdır (varsayılan Normal).
+ * balyalar: balya makinesinin bıraktığı balyalar (kural/balyalar.js; oyun bunu
+ * durum.balyalar olarak da görür).
  */
 export function tarlaKur(tohum, zorluk) {
   const ad = zorlukAdi(zorluk);
@@ -47,7 +49,9 @@ export function tarlaKur(tohum, zorluk) {
       doku[i] = samanDokusu(doku, x, y, zar());
     }
   }
-  const tarla = { tohum, zorluk: ad, h, doku, igne: null, civiler: [], kaldirilan: 0 };
+  const tarla = {
+    tohum, zorluk: ad, h, doku, igne: null, civiler: [], kaldirilan: 0, balyalar: [],
+  };
   for (let k = 0; k < 600 && cokert(tarla); k++);
   tarla.igne = igneSakla(tarla, zar, ayar.igne);
   tarla.civiler = civileriSakla(tarla, ayar.civi);

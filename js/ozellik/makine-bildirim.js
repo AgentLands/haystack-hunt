@@ -1,6 +1,7 @@
 /**
- * Makine bildirimleri: binme/inme, takılma, yakıt, kepçe dolu/boşaltıldı ve kepçeye takılan
- * iğne/çivi için kısa bildirimler (arayuz.js bildir). Yalnız olay dinler.
+ * Makine bildirimleri: binme/inme, takılma, yakıt, kepçe dolu/boşaltıldı, kepçeye takılan
+ * iğne/çivi ve balya açılması için kısa bildirimler (arayuz.js bildir). Yalnız olay dinler.
+ * Balyaya giren iğne bilerek bildirilmez (igne-yutuldu yalnız ses/efekt içindir).
  */
 import { dinle } from '../olaylar.js';
 import { bildir } from '../arayuz.js';
@@ -24,3 +25,13 @@ dinle('kepce-bosaltildi', ({ igne, civi }) => {
 dinle('igne-kepcede', () => bildir('Kepçede bir şey parladı… iğne kepçede! Kenarda boşalt.',
   3600));
 dinle('civi-kepcede', () => bildir('Kepçeye paslı bir çivi takıldı.'));
+dinle('balya-acildi', () => bildir('Balya açıldı'));
+
+// İlk balyada bir kez: balyanın nasıl açıldığını söyle.
+let balyaIpucu = false;
+dinle('oyun-basladi', () => { balyaIpucu = false; });
+dinle('balya-birakildi', () => {
+  if (balyaIpucu) return;
+  balyaIpucu = true;
+  bildir('Balya bırakıldı. Açmak için in, El ile balyaya dön, Boşluğu basılı tut.', 3600);
+});
