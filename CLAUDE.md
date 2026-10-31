@@ -23,7 +23,8 @@ python3 -m http.server 8000   # elle oynamak için
   değişen koni yeniden boyanır); yakınlaşınca (z > 1.15) dünya-sabit alt piksel atlası
   (`yakin.js`: karolar, süre bütçesi; saf parçalar `alt-piksel.js`, `doku.js`, `karolar.js`).
 - `js/girdi.js`, `js/arayuz.js`: işaretçi/klavye ve DOM arayüzü. Özellikler arayüze
-  `dugmeEkle('ust'|'alt', {...})` ve `bildir(metin)` ile eklenir; tuval üstü bindirmeler
+  `dugmeEkle('ust'|'alt', {...})` ve `bildir(metin)` ile eklenir ('alt' = menü kartının
+  bağlantı satırı, `js/ozellik/menu.js`); ikonlar `js/ozellik/ikon.js`; tuval üstü bindirmeler
   `#tarla-kap` içine. index.html'i elle değiştirmek yerine bunları kullan.
 - `js/ana.js`: giriş; özellik modülleri burada birer satırla içe aktarılır.
 - `js/ozellik/`: her özellik kendi modülünde (ses, istatistik, efekt...). Mümkünse

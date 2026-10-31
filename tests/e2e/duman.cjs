@@ -2,7 +2,9 @@
  * Tarayıcı duman testi: kendi statik sunucusunu açar, Chromium'da çiftçiyle oynar
  * (klavyeyle traktöre yürü, bin, kepçeyle saman al, in; dedektör; iğneye yürü, Boşlukla
  * kazıp bul), sayfa hatası olmadığını ve telefon genişliğinde yatay taşma olmadığını
- * denetler. Ekran görüntüsü için: --ekran KLASOR
+ * denetler. ?tohum= verilince açılış menüsü atlanır (doğrudan o tarla); menü ayrıca tohumsuz
+ * açılışta denetlenir (açık, klavye oyuna gitmiyor, "Günün tarlası" kapatıyor, ≡ yeniden açıyor).
+ * Ekran görüntüsü için: --ekran KLASOR
  *   node tests/e2e/duman.cjs [--ekran /yol]
  */
 const http = require('node:http');
@@ -42,6 +44,31 @@ function durumOku(sayfa) {
       kaldirilan: tarla.kaldirilan,
     };
   });
+}
+
+/** Tohumsuz açılış: menü açık mı, klavye oyuna gidiyor mu, düğmeler kapatıp açıyor mu. */
+async function menuDenetle(sayfa, kok, ekranAl) {
+  const sorunlar = [];
+  await sayfa.goto(kok);
+  await sayfa.waitForTimeout(600);
+  await ekranAl('0-menu.png');
+  const acik = () => sayfa.evaluate(() => document.getElementById('menu').open);
+  if (!(await acik())) sorunlar.push('açılış menüsü açılmadı');
+  const once = await durumOku(sayfa);
+  await sayfa.keyboard.down('d');
+  await sayfa.waitForTimeout(400);
+  await sayfa.keyboard.up('d');
+  if ((await durumOku(sayfa)).k.x !== once.k.x) sorunlar.push('menü açıkken klavye oyuna gitti');
+  await sayfa.click('#gunun');
+  await sayfa.waitForTimeout(400);
+  if (await acik()) sorunlar.push('"Günün tarlası" menüyü kapatmadı');
+  await sayfa.click('#menu-ac');
+  await sayfa.waitForTimeout(300);
+  if (!(await acik())) sorunlar.push('≡ düğmesi menüyü açmadı');
+  await sayfa.keyboard.press('Escape');
+  await sayfa.waitForTimeout(300);
+  if (await acik()) sorunlar.push('Esc menüyü kapatmadı');
+  return sorunlar;
 }
 
 /** Klavyeyle (WASD) hedefe yürür; takılırsa önündeki samanı Boşlukla kazarak ilerler. */
@@ -90,16 +117,17 @@ async function yuru(sayfa, hedefAl, yakinlik, ekranAl) {
   const ekran = ekranIdx > 0 ? process.argv[ekranIdx + 1] : null;
   const ekranAl = (sayfa, ad) => (ekran ? sayfa.screenshot({ path: path.join(ekran, ad) }) : null);
   const sunucu = await sunucuAc();
-  const adres = `http://127.0.0.1:${sunucu.address().port}/?tohum=deneme`;
+  const kok = `http://127.0.0.1:${sunucu.address().port}/`;
+  const adres = `${kok}?tohum=deneme`;
   const tarayici = await chromium.launch();
   const hatalar = [];
   const sayfa = await tarayici.newPage({ viewport: { width: 1040, height: 1000 } });
   sayfa.on('pageerror', (e) => hatalar.push(e.message));
   sayfa.on('console', (m) => { if (m.type() === 'error') hatalar.push(m.text()); });
+  const sorunlar = await menuDenetle(sayfa, kok, (ad) => ekranAl(sayfa, ad));
   await sayfa.goto(adres);
   await sayfa.waitForTimeout(800);
   await ekranAl(sayfa, '1-baslangic.png');
-  const sorunlar = [];
   // Traktöre yürü, bin, ileri sürüp kepçeyle saman al, in.
   await yuru(sayfa, (s) => [s.m.x, s.m.y], 3.6);
   await sayfa.keyboard.press('e');

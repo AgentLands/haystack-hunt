@@ -13,6 +13,7 @@ import {
 import { gununEtiketi } from '../kural/rastgele.js';
 import { pencereKur } from './istatistik-pencere.js';
 import './fis.js';
+import { ikon } from './ikon.js';
 
 function depoAc() {
   try {
@@ -36,7 +37,7 @@ const guncelle = (yeni) => {
 
 const pencere = pencereKur(() => ozet(ist));
 dugmeEkle('ust', {
-  metin: 'Defter', ikon: 'defter', baslik: 'İstatistik', tikla: () => pencere.ac(),
+  metin: 'Defter', baslik: 'İstatistik', ikon: ikon('defter'), tikla: () => pencere.ac(),
 });
 
 const bilgi = document.getElementById('istatistik-bitis');

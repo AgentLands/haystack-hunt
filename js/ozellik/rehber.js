@@ -7,6 +7,7 @@
  */
 import { dugmeEkle } from '../arayuz.js';
 import { YON_TUSLARI } from '../girdi.js';
+import { ikon } from './ikon.js';
 
 const ANAHTAR = 'haystack-hunt:rehber-goruldu';
 // Her adım: başlık, hangi aracı vurgulayacağı, klavye ve dokunmatik için tek cümlelik metin.
@@ -134,5 +135,7 @@ link.rel = 'stylesheet';
 link.href = new URL('./rehber.css', import.meta.url).href;
 document.head.append(link);
 
-dugmeEkle('ust', { metin: '?', baslik: 'Nasıl oynanır? Rehberi aç', tikla: rehberiAc });
+dugmeEkle('ust', {
+  metin: 'Rehber', baslik: 'Nasıl oynanır? Rehberi aç', ikon: ikon('soru'), tikla: rehberiAc,
+});
 if (!goruldu()) rehberiAc();

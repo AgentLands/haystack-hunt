@@ -9,6 +9,7 @@ const KABUK = [
   './', './belirtec.css', './stil.css', './stil-hud.css', './stil-telefon.css', './js/ana.js',
   './manifest.webmanifest',
   './font/alfa-slab-one.woff2', './font/bree-serif.woff2', './font/courier-prime-bold.woff2',
+  './ikon/arayuz.svg',
 ];
 const ICE_AKTAR = /(?:from\s*|import\s*\(?\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
 

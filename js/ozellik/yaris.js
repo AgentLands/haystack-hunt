@@ -16,6 +16,7 @@ import {
   hayaletKatmaniKur, hayaletKonum, hayaletSil, hayaletTemizle, hayaletKonumlari,
 } from './yaris-hayalet.js';
 import { haritaKaynagiKur } from './kamera-arayuz.js';
+import { ikon, metinDegistir } from './ikon.js';
 
 const TABLO_ARALIGI = 250;
 
@@ -32,16 +33,18 @@ document.head.append(stil);
 
 const benimKaydim = () => (y.oda ? y.oda.oyuncular.find((k) => k.id === y.benim) : null);
 const oynuyorum = () => benimKaydim()?.durum === 'oynuyor';
-const yarisSuruyor = () => Boolean(y.oda) && (y.oda.durum === 'geri-sayim' || oynuyorum());
+/** Yarış geri sayımda ya da bu oyuncu oynuyorken true (menü zorluğu kilitler). */
+export const yarisSuruyor = () => Boolean(y.oda) && (y.oda.durum === 'geri-sayim' || oynuyorum());
 
 const dugme = dugmeEkle('alt', {
-  metin: 'Yarış', baslik: 'Çevrimiçi yarış: oda kur ya da katıl', tikla: yarisAc,
+  metin: 'Yarış', baslik: 'Çevrimiçi yarış: oda kur ya da katıl', ikon: ikon('bayrak'),
+  tikla: yarisAc,
 });
 
 function guncelle() {
   pencereGoster(y.oda, y.benim);
   tabloGuncelle(y.oda, y.benim);
-  dugme.textContent = y.oda ? `Yarış · ${y.oda.kod}` : 'Yarış';
+  metinDegistir(dugme, y.oda ? `Yarış · ${y.oda.kod}` : 'Yarış');
 }
 
 function sayac(metin, sure = 0) {

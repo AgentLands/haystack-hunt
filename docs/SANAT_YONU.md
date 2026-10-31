@@ -50,7 +50,14 @@ Alternatif (daha "boyalı tabela"): başlıkta Rye (OFL, ≈ 50 KB); önermiyoru
 - Liste (≈ 22): el, tirmik, dedektor, miknatis, ses-acik, ses-kapali, defter (istatistik),
   soru (rehber), bayrak (yarış), menu (üç saman çöpü), buyutec-arti, buyutec-eksi, cerceve
   (sığdır), igne, civi, balya, traktor, ufleyici, balya-makinesi, kurdele (rekor; 🏆 yerine),
-  gunes (seri; 🔥 yerine), tik/kutu (çözüldü), kopyala, damla (yakıt).
+  gunes (seri; 🔥 yerine), tik/kutu (çözüldü), kopyala, damla (yakıt), kapat (×).
+- Uygulama: `ikon/arayuz.svg` (26 sembol, 24 ve 48 px'te denetlendi). JS'te
+  `ikon(ad, { boy })` (`js/ozellik/ikon.js`) aria-hidden bir `<svg><use/></svg>` döndürür;
+  `ikonDegistir(svg, ad)` ikonu değiştirir (ses aç/kapa), `metinDegistir(dugme, metin)`
+  ikonlu düğmenin yazısını ikonu silmeden değiştirir. `dugmeEkle(..., { ikon: ikon('defter') })`.
+- Uygulama ikonu (`ikon/ikon.svg`, `ikon-maskable.svg`): kraft zemin, dikişli etiket
+  çerçevesi, saman yığınından çıkan ipli iğne; düz renk, gradyansız. PNG'ler ve
+  `favicon.ico` (16/32/48, çerçevesiz sade sürüm) bu SVG'lerden Chromium ile üretildi.
 
 ### 4 HUD yerleşimi (tuval ekranın çoğunu kaplar)
 ```
@@ -97,6 +104,17 @@ Alternatif (daha "boyalı tabela"): başlıkta Rye (OFL, ≈ 50 KB); önermiyoru
   Nasıl oynanır. Kart yalnız ilk açılışta ve Menü'de görünür; "Günün tarlası" basınca kart
   aşağı kayıp kaybolur, süre ilk hamlede başlar (bugünkü gibi).
 - Pes et: menüde, kırmızı metin bağlantısı + "Emin misin? İğnenin yeri gösterilecek." onayı.
+- Uygulama (`js/ozellik/menu.js`, `menu.css`, logo `menu-logo.js`): `<dialog id="menu">`.
+  `#gunun`, `#yeni`, `#pes` (pes onayındaki "Evet" düğmesi) ve `#alt-dugmeler` (bağlantı
+  satırı; `dugmeEkle('alt')` ile eklenenler buraya düşer) DOM'da karta taşınır, kimlikleri
+  ve tıklama davranışları aynıdır. Kart URL'de **`?tohum=` yoksa** ilk açılışta açılır;
+  `?tohum=` doğrudan o tarlayı oynatır (paylaşılan tarla, yeniden yükleme, duman testi).
+  ≡ (`#menu-ac`, başlığın başına eklenir) ve Esc yeniden açar. Açıkken klavye oyuna gitmez
+  ve oyun saati durur. Yeni tarla açılınca ya da pes edilince kapanır; zorluk damgası kartı
+  açık bırakır (süren tarlada onay ister, yarışta kilitlidir).
+- "Nasıl oynanır" defteri (`js/ozellik/yardim.js`, içerik `yardim-icerik.js`; sayılar kural
+  modüllerinden okunur): Yürüme · Aletler · Makineler · İpuçları · Puan sekmeleri;
+  dokunmatikte tuş adları yerine kol, Kullan, Bin/İn yazılır.
 
 
 ## Oyun içi görseller
