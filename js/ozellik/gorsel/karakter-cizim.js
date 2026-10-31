@@ -1,38 +1,25 @@
 /**
- * Çiftçi karakter çizimi (kuş bakışı): tepeden hasır şapka, omuzlar, yürürken sallanan
- * kollar ve botlar, yön yönüne dönük, sağ alta düşen gölge; saman yüksekliği (z) arttıkça
- * hafifçe büyür. Araca göre küçük hareket: el eğilir, tırmık/dedektör/mıknatıs sallanır;
- * sırt üfleyicisine binmişken sırtta motor ve elde boru görünür.
- * Yalnız durum.karakter verisini (ve aracın adını) okur; kural koduna dokunmaz.
+ * Çiftçi karakter çizimi (kuş bakışı, "boyalı oyuncak"): ekran-sabit dış hatlı, iki tonlu
+ * gövde, sırtta tulum, kırmızı kollar, koyu hasır şapka (önde siper), yürürken adım vurgulu
+ * döngü (karşı fazlı kollar, önde/arkada botlar), beklerken nefes; araca göre belirgin poz
+ * (el: öne eğilip kürek, tırmık: sap yayı, dedektör: tarama, mıknatıs: ileri uzatma).
+ * Gölge dünya ekseninde sabit, yükseklikle kayar. Sırt üfleyicisinde motor ve boru görünür.
+ * Poz matematiği karakter-poz.js'te; yalnız durum.karakter ve aracın adını okur.
  */
-import {
-  IKI_PI, GOLGE_RENGI, donuk, doldur, elips, golgeKayma, isikYerel, serit,
-} from './ortak.js';
-import { DERI, GOMLEK, GOMLEK_KOYU, TULUM, sapka } from './ciftci-parca.js';
+import { donuk, ekranBirim, golgeKayma, isikYerel } from './ortak.js';
+import { bot, govde, kollar, sapka, tutam } from './ciftci-parca.js';
 import { araciKur } from './arac-cizim.js';
+import { aracPozu, govdePozu, OMUZ } from './karakter-poz.js';
 import { boruCiz, havaDalgasi, sirtMotoru } from './ufleyici-cizim.js';
 
 /** Çiftçi, yakın kamerada seçilsin diye çarpışma dairesinden biraz büyük çizilir. */
 const GORSEL_BOY = 1.35;
-
-const BOT = '#5b3d27';
-const BOT_ACIK = '#8a6244';
-
-function bot(ctx, x, y) {
-  elips(ctx, x, y, 0.34, 0.2);
-  doldur(ctx, BOT);
-  elips(ctx, x + 0.06, y - 0.04, 0.2, 0.1);
-  doldur(ctx, BOT_ACIK);
-}
-
-/** Kol: omuzdan ele kalın çizgi (kol) ve eldeki eldiven/yumruk. */
-function kol(ctx, sx, sy, ex, ey) {
-  serit(ctx, sx, sy, ex, ey, 0.3, GOMLEK_KOYU);
-  serit(ctx, sx, sy, (sx + ex) / 2, (sy + ey) / 2, 0.26, GOMLEK);
-  ctx.beginPath();
-  ctx.arc(ex, ey, 0.14, 0, IKI_PI);
-  doldur(ctx, DERI);
-}
+/** Şapka kenar yarıçapı ve ileri kayması (yerel birim). */
+const SAPKA_R = 0.38;
+const SAPKA_X = 0.08;
+/** Ekranda birim başına bu kadar pikselden fazlası varsa ince ayrıntı çizilir. */
+const DETAY_PIKSEL = 34;
+const GOLGE = 'rgba(40, 22, 8, 0.21)';
 
 /** Dörtgen Bezier üzerinde t noktası. */
 function egri(p0, p1, p2, t) {
@@ -41,58 +28,61 @@ function egri(p0, p1, p2, t) {
     u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]];
 }
 
+/** Burulmuş/kaymış gövde uzayındaki omuz noktası (karakter uzayında). */
+function omuz(poz, egilme, v) {
+  const c = Math.cos(poz.burulma);
+  const s = Math.sin(poz.burulma);
+  const [x, y] = [OMUZ[0], OMUZ[1] * v];
+  return [egilme + x * c - y * s, poz.yanal + x * s + y * c];
+}
+
+/** Sırttaki üfleyici: hortum ve namlu; sağ el hortumu tutar. */
+function ufleBorusu(ctx, k, sol) {
+  const boru = [[-0.7, 0.3], [0.5, 0.95], [1.9, 0.4]];
+  if (k.ufleCalisiyor) boru[2][1] += Math.sin(k.t * 60) * 0.02;
+  boruCiz(ctx, boru, false);
+  if (k.ufleCalisiyor) havaDalgasi(ctx, k.t, 2.0, 0.4, 1.9);
+  return [egri(boru[0], boru[1], boru[2], 0.5), sol];
+}
+
 /** Gövde, kollar, ayaklar, araç ve şapkayı yerel uzayda çizer. */
 function ciftciCiz(ctx, k) {
-  const { t, sal, arac, kullan, ufle, isik } = k;
-  const egilme = !ufle && arac === 'el' && kullan ? 0.1 : 0;
-  const duzen = ufle ? null : araciKur(arac, kullan, t);
-  const dur = k.yuruyor ? 0.12 : 0.3;
-  bot(ctx, dur + sal, 0.27);
-  bot(ctx, dur - sal, -0.27);
+  const { poz, ap, isik } = k;
+  const eb = ekranBirim(ctx);
+  const dh = eb * 1.2;
+  k.detay = 1 / eb > DETAY_PIKSEL;
+  const egilme = ap ? ap.egilme : 0;
+  if (poz.botlar) for (const [x, y] of poz.botlar) bot(ctx, x, y + poz.yanal * 0.5, isik, dh);
+  const duzen = ap ? araciKur(k.arac, ap, k.kullan, k.t, dh) : null;
   if (duzen) duzen.ciz(ctx);
-  const burulma = k.yuruyor ? sal * 0.2 : 0;
   ctx.save();
-  ctx.translate(egilme, 0);
-  ctx.rotate(burulma);
-  elips(ctx, -0.1, 0, 0.44 - egilme * 0.6, 0.74);
-  doldur(ctx, GOMLEK);
-  ctx.strokeStyle = GOMLEK_KOYU;
-  ctx.lineWidth = 0.05;
-  ctx.beginPath();
-  for (const y of [-0.5, -0.25, 0, 0.25, 0.5]) {
-    ctx.moveTo(-0.4, y);
-    ctx.lineTo(0.25, y);
-  }
-  ctx.stroke();
-  // Tulum askısı: sırtta çapraz iki bant.
-  serit(ctx, -0.38, -0.36, 0.1, 0.36, 0.1, TULUM);
-  serit(ctx, -0.38, 0.36, 0.1, -0.36, 0.1, TULUM);
-  if (ufle) sirtMotoru(ctx, t, k.ufleCalisiyor, isik);
+  ctx.translate(egilme, poz.yanal);
+  ctx.rotate(poz.burulma);
+  govde(ctx, isik, dh, k.detay);
+  if (k.ufle) sirtMotoru(ctx, k.t, k.ufleCalisiyor, isik);
   ctx.restore();
-  let sag = [-sal * 0.9, 0.8];
-  let sol = [sal * 0.9, -0.8];
-  if (duzen) {
-    sag = duzen.sag;
-    sol = duzen.sol;
-  } else if (ufle) {
-    const boru = [[-0.7, 0.3], [0.5, 0.95], [1.9, 0.4]];
-    const titre = k.ufleCalisiyor ? Math.sin(t * 60) * 0.02 : 0;
-    boru[2][1] += titre;
-    boruCiz(ctx, [boru[0], boru[1], boru[2]], false);
-    sag = egri(boru[0], boru[1], boru[2], 0.5);
-    sol = [sal * 0.9, -0.8];
-    if (k.ufleCalisiyor) havaDalgasi(ctx, t, 2.0, 0.4, 1.9);
-  } else if (egilme) {
-    const kaz = Math.sin(t * 10) * 0.2;
-    sag = [0.75 + kaz, 0.3];
-    sol = [0.75 - kaz, -0.3];
+  let [sag, sol] = poz.eller;
+  if (duzen) [sag, sol] = [duzen.sag, duzen.sol];
+  else if (ap?.eller) [sag, sol] = ap.eller;
+  else if (k.ufle) [sag, sol] = ufleBorusu(ctx, k, sol);
+  kollar(ctx, [[...omuz(poz, egilme, 1), ...sag], [...omuz(poz, egilme, -1), ...sol]], isik, dh);
+  if (ap && ap.tutam >= 0) {
+    const el = ap.tutam === 0 ? sag : sol;
+    tutam(ctx, el[0], el[1], ap.tutam === 0 ? 2.6 : -2.6, dh);
   }
-  kol(ctx, 0, 0.6, sag[0], sag[1]);
-  kol(ctx, 0, -0.6, sol[0], sol[1]);
-  // Kenarın altından görünen yüz yönü belli eder.
-  elips(ctx, 0.4 + egilme, 0, 0.2, 0.23);
-  doldur(ctx, DERI);
-  sapka(ctx, -0.04 + egilme, 0, 0.45, isik);
+  const sr = SAPKA_R * (ap ? ap.sapka : 1);
+  sapka(ctx, SAPKA_X + egilme * 1.4, poz.yanal * 0.6, sr, isik, dh, k.detay);
+}
+
+/** Yumuşak kenarlı tek gölge (iki katman): dünya ekseninde, dönmez. */
+function golgeCiz(ctx) {
+  ctx.fillStyle = GOLGE;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 0.66, 0.56, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 0.52, 0.43, 0, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 /**
@@ -100,25 +90,20 @@ function ciftciCiz(ctx, k) {
  * 'dedektor' | 'miknatis' (durum.arac).
  */
 export function karakterCiz(ctx, karakter, zaman, arac = 'el') {
+  const t = zaman / 1000;
+  const yon = karakter.yon || 0;
   const olcek = GORSEL_BOY * (1 + (karakter.z || 0) / 400);
-  const yuruyor = !!karakter.hareketli;
   const ufleMakine = karakter.makine?.tur === 'ufleyici' ? karakter.makine : null;
+  const kullan = !!karakter.kullaniyor && !ufleMakine;
+  const poz = govdePozu(karakter.adimFaz || 0, !!karakter.hareketli, t);
   const k = {
-    t: zaman / 1000,
-    sal: yuruyor ? Math.sin((karakter.adimFaz || 0) * IKI_PI) * 0.36 : 0,
-    arac,
-    yuruyor,
-    kullan: !!karakter.kullaniyor,
+    t, arac, kullan, poz,
+    ap: ufleMakine ? null : aracPozu(arac, kullan, t),
     ufle: !!ufleMakine,
     ufleCalisiyor: !!ufleMakine?.calisiyor && ufleMakine.yakit > 0,
-    isik: isikYerel(karakter.yon || 0),
+    isik: isikYerel(yon),
   };
   const [gx, gy] = golgeKayma((karakter.z || 0) * 0.5);
-  donuk(ctx, karakter.x + gx * olcek, karakter.y + gy * olcek, karakter.yon || 0, olcek, (c) => {
-    elips(c, 0, 0, 0.75, 0.8);
-    doldur(c, GOLGE_RENGI);
-    elips(c, 0.1, 0, 0.45, 0.7);
-    doldur(c, GOLGE_RENGI);
-  });
-  donuk(ctx, karakter.x, karakter.y, karakter.yon || 0, olcek, (c) => ciftciCiz(c, k));
+  donuk(ctx, karakter.x + gx * olcek * 0.8, karakter.y + gy * olcek * 0.8, 0, olcek, golgeCiz);
+  donuk(ctx, karakter.x, karakter.y, yon, olcek * poz.olcek, (c) => ciftciCiz(c, k));
 }

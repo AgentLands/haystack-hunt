@@ -1,9 +1,10 @@
 /**
  * Bulma anı: iğne samandan çekilip havaya kalkar (yerdeki eski çizimi tarla yamasıyla
- * örtülür), altın ışık halkası ve ışıma yayılır; bitiş penceresi kısa bir gecikmeyle
+ * örtülür; oyundaki iğne modeliyle büyüyerek), önce keskin altın halka ve ışın patlaması,
+ * ardından altın ışık halkaları ve ışıma yayılır; bitiş penceresi kısa bir gecikmeyle
  * belirir ki efekt görünsün (pencere hemen açılır, yalnız görünüşü gecikir).
  */
-import { OLCEK } from '../../cizim.js';
+import { OLCEK, igneModeli, igneYariBoyu } from '../../cizim.js';
 import { yildizIsigi } from './isiltilar.js';
 
 const KALKIS = 700;
@@ -46,15 +47,23 @@ export function bulmaSifirla() {
   document.getElementById('bitis').classList.remove('efekt-gecikme');
 }
 
-/** İğnenin yerdeki izini kaplayan döndürülmüş dikdörtgen (piksel). */
+/** 1 ekran pikselinin dünya boyu. */
+function ekranPikseli(ctx) {
+  const m = ctx.getTransform();
+  return 1 / Math.hypot(m.a, m.b);
+}
+
+/** İğnenin yerdeki izini (gölgesi ve dış hattıyla) kaplayan döndürülmüş dikdörtgen. */
 function igneYolu(ctx, igne) {
   const mx = (igne.x + 0.5) * OLCEK;
   const my = (igne.y + 0.5) * OLCEK;
+  const eb = ekranPikseli(ctx);
+  const h = igneYariBoyu(eb) + 4 * eb;
   ctx.beginPath();
   ctx.save();
-  ctx.translate(mx + 0.75, my + 0.75);
+  ctx.translate(mx + eb, my + eb);
   ctx.rotate(igne.aci);
-  ctx.rect(-OLCEK * 2.2 - 3, -3.5, OLCEK * 4.4 + 6, 7);
+  ctx.rect(-h, -6 * eb, 2 * h, 12 * eb);
   ctx.restore();
 }
 
@@ -87,30 +96,37 @@ function yamayiSer(ctx) {
   ctx.restore();
 }
 
-function igneCiz(ctx, x, y, aci, olcek) {
-  const dx = Math.cos(aci) * OLCEK * 2.2 * olcek;
-  const dy = Math.sin(aci) * OLCEK * 2.2 * olcek;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = '#9aa3b0';
-  ctx.lineWidth = 2.6 * olcek;
-  cizgi(ctx, x - dx, y - dy, x + dx, y + dy);
-  ctx.strokeStyle = '#eef2f7';
-  ctx.lineWidth = 1.6 * olcek;
-  cizgi(ctx, x - dx, y - dy, x + dx, y + dy);
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 0.9 * olcek;
-  cizgi(ctx, x - dx * 0.7, y - dy * 0.7, x + dx * 0.1, y + dy * 0.1);
-  ctx.strokeStyle = '#7d8794';
-  ctx.lineWidth = 0.8 * olcek;
-  ctx.beginPath();
-  ctx.ellipse(x + dx * 0.82, y + dy * 0.82, 1.6 * olcek, 0.8 * olcek, aci, 0, Math.PI * 2);
-  ctx.stroke();
-}
-
 function cizgi(ctx, x1, y1, x2, y2) {
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
+  ctx.stroke();
+}
+
+/**
+ * Bulma anının ilk yarım saniyesi: ekran-sabit keskin altın halka hızla açılır, ortada
+ * sekiz ışınlı patlama söner (çizim 'lighter' karışımda).
+ */
+function parlamaHalkasi(ctx, mx, my, t, eb) {
+  const v = t / 520;
+  if (v >= 1) return;
+  const a = 1 - v;
+  ctx.strokeStyle = `rgba(255, 236, 160, ${(0.95 * a).toFixed(3)})`;
+  ctx.lineWidth = (2 + 4 * a) * eb;
+  ctx.beginPath();
+  ctx.arc(mx, my, (10 + 70 * (1 - a * a)) * eb, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 2.2 * eb;
+  ctx.strokeStyle = `rgba(255, 250, 225, ${a.toFixed(3)})`;
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const aci = (i * Math.PI) / 4 + 0.2;
+    const ic = (8 + 30 * v) * eb;
+    const dis = ic + (i % 2 ? 10 : 22) * a * eb;
+    ctx.moveTo(mx + Math.cos(aci) * ic, my + Math.sin(aci) * ic);
+    ctx.lineTo(mx + Math.cos(aci) * dis, my + Math.sin(aci) * dis);
+  }
   ctx.stroke();
 }
 
@@ -130,14 +146,15 @@ export function bulmaCiz(ctx, zaman, hareketli) {
   const aci = igne.aci + fark * kalk;
   yamayiSer(ctx);
   ctx.save();
-  ctx.globalAlpha = 0.45 * (1 - kalk * 0.5);
+  const eb = ekranPikseli(ctx);
+  ctx.globalAlpha = 0.4 * (1 - kalk * 0.5);
   ctx.strokeStyle = 'rgb(30, 18, 6)';
   ctx.lineCap = 'round';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3 * eb;
   const gx = mx + z * 0.5;
   const gy = my + z * 0.5;
-  const dx = Math.cos(aci) * OLCEK * 2.2;
-  const dy = Math.sin(aci) * OLCEK * 2.2;
+  const dx = Math.cos(aci) * igneYariBoyu(eb);
+  const dy = Math.sin(aci) * igneYariBoyu(eb);
   cizgi(ctx, gx - dx, gy - dy, gx + dx, gy + dy);
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'lighter';
@@ -160,13 +177,16 @@ export function bulmaCiz(ctx, zaman, hareketli) {
     ctx.lineWidth = 1.8;
     ctx.stroke();
   }
+  parlamaHalkasi(ctx, mx, my, t, eb);
   ctx.globalCompositeOperation = 'source-over';
-  igneCiz(ctx, mx, my - z, aci, 1 + 0.35 * kalk);
+  const olcek = 1 + 0.45 * kalk;
+  igneModeli(ctx, mx, my - z, aci, olcek);
   const pir = (t % 1500) / 1500;
   if (t > KALKIS * 0.6) {
-    const ux = mx + Math.cos(aci) * OLCEK * 2.6 * (pir * 2 - 1);
-    const uy = my - z + Math.sin(aci) * OLCEK * 2.6 * (pir * 2 - 1);
-    yildizIsigi(ctx, ux, uy, 7, Math.sin(Math.PI * pir) * 0.9, t / 400);
+    const yari = igneYariBoyu(eb) * olcek;
+    const ux = mx + Math.cos(aci) * yari * (pir * 2 - 1);
+    const uy = my - z + Math.sin(aci) * yari * (pir * 2 - 1);
+    yildizIsigi(ctx, ux, uy, 14 * eb, Math.sin(Math.PI * pir) * 0.85, t / 400);
   }
   ctx.restore();
 }

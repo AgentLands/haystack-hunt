@@ -1,45 +1,42 @@
 /**
  * Pes edince iğne bir balyadaysa (ya da bir makinenin içindeyse) yerini gösteren küçük
- * işaret: balyanın üstüne çapraz gümüş iğne ve nabız gibi atan beyaz halka; balyadaki paslı
- * çiviler için turuncu nokta. Üst katmanda balya çiziminden sonra çizilir; balyaCiz'e
- * dokunmaz, yalnız durumu okur.
+ * işaret: balyanın üstüne oyundaki gümüş iğne modeli ve nabız gibi atan beyaz halka;
+ * balyadaki paslı çiviler için dış hatlı turuncu nokta. Üst katmanda balya çiziminden sonra
+ * çizilir; balyaCiz'e dokunmaz, yalnız durumu okur.
  */
-import { katmanEkle, OLCEK } from '../cizim.js';
+import { katmanEkle, OLCEK, igneModeli } from '../cizim.js';
 import { igneKonumu, tarlada } from '../kural/igne.js';
 
-function cizgi(ctx, x1, y1, x2, y2) {
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-}
-
+/** Balyadaki iğne: nabız gibi atan ekran-sabit kalınlıkta beyaz halka ve gümüş iğne modeli. */
 function igneIsareti(ctx, x, y, aci, zaman) {
+  const m = ctx.getTransform();
+  const eb = 1 / Math.hypot(m.a, m.b);
   const nabiz = 0.5 + 0.5 * Math.sin(zaman / 180);
-  ctx.strokeStyle = `rgba(255, 255, 255, ${(0.45 + 0.5 * nabiz).toFixed(2)})`;
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(42, 26, 13, 0.55)';
+  ctx.lineWidth = 4 * eb;
   ctx.beginPath();
   ctx.arc(x, y, OLCEK * (2.4 + 0.5 * nabiz), 0, Math.PI * 2);
   ctx.stroke();
-  const dx = Math.cos(aci) * OLCEK * 1.6;
-  const dy = Math.sin(aci) * OLCEK * 1.6;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(20, 14, 8, 0.7)';
-  ctx.lineWidth = 3;
-  cizgi(ctx, x - dx, y - dy, x + dx, y + dy);
-  ctx.strokeStyle = '#e6ebf2';
-  ctx.lineWidth = 1.6;
-  cizgi(ctx, x - dx, y - dy, x + dx, y + dy);
+  ctx.strokeStyle = `rgba(255, 255, 255, ${(0.5 + 0.5 * nabiz).toFixed(2)})`;
+  ctx.lineWidth = 2 * eb;
+  ctx.stroke();
+  igneModeli(ctx, x, y, aci, 1.1);
 }
 
 katmanEkle((ctx, durum, zaman) => {
   if (!durum.goster || !durum.tarla) return;
   const { tarla } = durum;
+  const m = ctx.getTransform();
+  const eb = 1 / Math.hypot(m.a, m.b);
   for (const civi of tarla.civiler) {
     if (civi.alindi || tarlada(civi)) continue;
-    ctx.fillStyle = 'rgba(214, 110, 40, 0.95)';
     ctx.beginPath();
-    ctx.arc((civi.x + 0.5) * OLCEK + 2, (civi.y + 0.5) * OLCEK + 2, 2.2, 0, Math.PI * 2);
+    ctx.arc((civi.x + 0.5) * OLCEK + 2, (civi.y + 0.5) * OLCEK + 2, Math.max(1.6, 5 * eb), 0,
+      Math.PI * 2);
+    ctx.strokeStyle = '#2a1a0d';
+    ctx.lineWidth = 2.4 * eb;
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(214, 110, 40, 0.95)';
     ctx.fill();
   }
   if (tarlada(tarla.igne)) return;
