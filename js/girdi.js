@@ -6,7 +6,7 @@ import { ekrandanHucre } from './kural/gorunum.js';
 import { gorunum } from './gorunum.js';
 import { bas, surukle, birak, imlecCikti, aracSec } from './oyun.js';
 
-export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor' };
+export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor', 4: 'miknatis' };
 
 const onleyiciler = [];
 

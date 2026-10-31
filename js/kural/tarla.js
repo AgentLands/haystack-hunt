@@ -4,26 +4,34 @@
  */
 import { uretec } from './rastgele.js';
 import { igneSakla } from './igne.js';
+import { civileriSakla } from './civi.js';
 import { GENISLIK, YUKSEKLIK } from './boyut.js';
+import { zorlukAdi, zorlukAl } from './zorluk.js';
 
 /** Komşuyla yükseklik farkı bundan büyükse saman kayar. */
 export const ESIK = 3;
 const CAPRAZ_ESIK = 4;
 
-/** Tohumdan yeni tarla kurar: birkaç saman yığını, serpinti ve gizli iğne. */
-export function tarlaKur(tohum) {
+/**
+ * Tohumdan yeni tarla kurar: birkaç saman yığını, serpinti, gizli iğne ve paslı çiviler.
+ * Yığın ölçüleri, iğne derinliği ve çivi sayısı zorluğa bağlıdır (varsayılan Normal).
+ */
+export function tarlaKur(tohum, zorluk) {
+  const ad = zorlukAdi(zorluk);
+  const ayar = zorlukAl(ad);
+  const { taban, ek, r, t: tepe } = ayar.yigin;
   const zar = uretec(tohum);
   const n = GENISLIK * YUKSEKLIK;
   const h = new Uint16Array(n);
   const doku = new Uint8Array(n);
   const yiginlar = [];
-  const yiginSayisi = 6 + Math.floor(zar() * 4);
+  const yiginSayisi = taban + Math.floor(zar() * ek);
   for (let k = 0; k < yiginSayisi; k++) {
     yiginlar.push({
       x: GENISLIK * (0.15 + 0.7 * zar()),
       y: YUKSEKLIK * (0.18 + 0.64 * zar()),
-      r: 14 + zar() * 20,
-      t: 50 + zar() * 60,
+      r: r[0] + zar() * r[1],
+      t: tepe[0] + zar() * tepe[1],
     });
   }
   for (let y = 0; y < YUKSEKLIK; y++) {
@@ -39,9 +47,10 @@ export function tarlaKur(tohum) {
       doku[i] = samanDokusu(doku, x, y, zar());
     }
   }
-  const tarla = { tohum, h, doku, igne: null, kaldirilan: 0 };
+  const tarla = { tohum, zorluk: ad, h, doku, igne: null, civiler: [], kaldirilan: 0 };
   for (let k = 0; k < 600 && cokert(tarla); k++);
-  tarla.igne = igneSakla(tarla, zar);
+  tarla.igne = igneSakla(tarla, zar, ayar.igne);
+  tarla.civiler = civileriSakla(tarla, ayar.civi);
   tarla.baslangicToplam = toplamSaman(tarla);
   return tarla;
 }

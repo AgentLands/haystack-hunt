@@ -5,14 +5,19 @@
  * Olay kataloğu (ad → veri):
  *   oyun-basladi   { durum }                       yeni tarla kuruldu
  *   ilk-hamle      { zaman }                       süre başladı
- *   arac-secildi   { arac }                        'el' | 'tirmik' | 'dedektor'
+ *   arac-secildi   { arac }                        'el' | 'tirmik' | 'dedektor' | 'miknatis'
  *   kazildi        { x, y, miktar }                el bu karede saman aldı (miktar > 0)
  *   tirmiklandi    { x, y, dx, dy, disari }        tırmık bir adım itti
  *   dedektor       { x, y, seviye, kalan }         dedektör okundu
  *   dedektor-bos   { x, y }                        hak kalmadan dedektör denendi
- *   parilti        { x, y }                        iğne güneşte parladı
+ *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
+ *   civi-parladi   { x, y }                        yüzeye yakın paslı çivi parladı (turuncu)
+ *   civi-alindi    { x, y, ceza }                  el paslı çivi aldı; ceza ms süreye eklendi
+ *   miknatis       { x, y, cekti, kalan }          mıknatıs kullanıldı; cekti: iğne menzildeydi
+ *   miknatis-bos   { x, y }                        hak kalmadan mıknatıs denendi
  *   igne-gorundu   { x, y }                        iğne ilk kez açığa çıktı
- *   bulundu        { sonuc }                       iğne alındı (sonuc: oyun.js sonucOlustur)
+ *   bulundu        { sonuc }                       iğne alındı (sonuc: oyun.js sonucOlustur;
+ *                                                  zorluk, puan, cezaMs, miknatis* alanlarıyla)
  *   pes-edildi     { durum }                       oyuncu pes etti, iğne gösterildi
  *   kare           { zaman, durum }                her kare, çizimden hemen önce
  */

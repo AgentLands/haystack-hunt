@@ -29,6 +29,8 @@
     <button data-arac="el" aria-pressed="true"><kbd>1</kbd> El</button>
     <button data-arac="tirmik" aria-pressed="false"><kbd>2</kbd> Tırmık</button>
     <button data-arac="dedektor" aria-pressed="false"><kbd>3</kbd> Dedektör</button>
+    <button data-arac="miknatis" aria-pressed="false"><kbd>4</kbd> Mıknatıs
+      <span id="miknatis-hak" class="hak">1</span></button>
   </nav>
 
   <main>
@@ -50,15 +52,23 @@
     <ul>
       <li><b>El</b>: basılı tut, altındaki samanı tarladan alırsın. Açılan çukura yamaçtan saman kayar.</li>
       <li><b>Tırmık</b>: sürükle, samanı o yöne itersin. Tarlanın dışına ittiğin saman gider.</li>
-      <li><b>Dedektör</b>: 3 hakkın var. Dokunduğun yere iğneye ne kadar yakın olduğunu yazar.</li>
+      <li><b>Dedektör</b>: sınırlı hakkın var (Kolay 5, Normal 3, Zor 2). Dokunduğun yere iğneye
+        ne kadar yakın olduğunu yazar.</li>
+      <li><b>Mıknatıs</b>: iğne dokunduğun yerin 10 adım yakınındaysa onu yüzeye doğru çeker ve
+        iğne hemen parlar; değilse boşa gider (Kolay'da 2, diğerlerinde 1 hak).</li>
       <li>İğne yüzeye yakınsa güneşte arada bir parlar; gözünü tarladan ayırma.</li>
       <li>İğne açığa çıkınca üstüne elle bas, al.</li>
+      <li>Tarlada <b>paslı çiviler</b> de var: onlar turuncu-kızıl parlar. Elle çivi alırsan
+        süreye 10 sn eklenir. Dedektör ve mıknatıs çivileri görmez.</li>
+      <li><b>Puan</b> = zorluk çarpanı (×1/×2/×3) × (1000 − 2 × saniye − saman/100 − 50 × hak),
+        en az 100 × çarpan.</li>
     </ul>
   </details>
 
   <dialog id="bitis">
     <h2>İğneyi buldun! 🪡</h2>
     <p id="sonuc"></p>
+    <p id="puan" class="puan"></p>
     <div class="dugmeler">
       <button id="paylas">Sonucu kopyala</button>
       <button id="tekrar">Yeni tarla</button>

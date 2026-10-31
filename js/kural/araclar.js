@@ -1,14 +1,17 @@
 /**
  * Oyuncu araçları: el (samanı tarladan alır), tırmık (samanı sürüklendiği yöne iter;
- * tarla dışına itilen saman gider) ve dedektör (sınırlı hak, sıcak/soğuk ipucu).
+ * tarla dışına itilen saman gider), dedektör (sınırlı hak, sıcak/soğuk ipucu) ve
+ * mıknatıs (sınırlı hak; yakındaki iğneyi yüzeye doğru çeker). İkisi de yalnız iğneyi görür.
  */
 import { GENISLIK, icinde } from './boyut.js';
-import { igneAcikMi } from './igne.js';
+import { igneAcikMi, igneDerinligi } from './igne.js';
 
 export const EL_YARICAP = 2.5;
 export const TIRMIK_YARICAP = 4;
 export const TIRMIK_ADIM = 5;
 export const DEDEKTOR_HAKKI = 3;
+export const MIKNATIS_MENZIL = 10;
+export const MIKNATIS_CEKIS = 15;
 
 export const SEVIYELER = [
   { mesafe: 6, ad: 'Yanıyor!', renk: '#ff4d4f' },
@@ -74,4 +77,15 @@ export function dedektorOku(tarla, cx, cy) {
 export function igneyiAlabilirMi(tarla, cx, cy) {
   const yakin = Math.hypot(cx - tarla.igne.x, cy - tarla.igne.y) <= EL_YARICAP + 1.5;
   return yakin && igneAcikMi(tarla);
+}
+
+/**
+ * Mıknatıs: iğne (cx, cy)'ye MIKNATIS_MENZIL hücreden yakınsa onu MIKNATIS_CEKIS kat yukarı
+ * çeker (en çok yüzeye kadar). Menzildeyse true (açıktaki iğne yerinde kalır), değilse false.
+ */
+export function miknatisCek(tarla, cx, cy) {
+  const { igne } = tarla;
+  if (Math.hypot(cx - igne.x, cy - igne.y) > MIKNATIS_MENZIL) return false;
+  igne.z += Math.min(MIKNATIS_CEKIS, igneDerinligi(tarla));
+  return true;
 }

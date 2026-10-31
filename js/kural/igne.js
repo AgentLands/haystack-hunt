@@ -4,15 +4,20 @@
  */
 import { GENISLIK, YUKSEKLIK, icinde } from './boyut.js';
 
-/** Yeterince yüksek bir hücreye, yığının alt yarısına doğru iğne saklar. */
-export function igneSakla(tarla, zar) {
+const NORMAL_IGNE = { alt: 0.05, aralik: 0.45 };
+
+/**
+ * Yeterince yüksek bir hücreye iğne saklar; gömülme yüksekliği yığının
+ * (alt + zar * aralik) kesridir (Normal: alt yarısına doğru).
+ */
+export function igneSakla(tarla, zar, { alt, aralik } = NORMAL_IGNE) {
   const kenar = 12;
   for (let deneme = 0; deneme < 5000; deneme++) {
     const x = kenar + Math.floor(zar() * (GENISLIK - 2 * kenar));
     const y = kenar + Math.floor(zar() * (YUKSEKLIK - 2 * kenar));
     const yuk = tarla.h[y * GENISLIK + x];
     if (yuk >= 40) {
-      return { x, y, z: Math.floor(yuk * (0.05 + 0.45 * zar())), aci: zar() * Math.PI };
+      return { x, y, z: Math.floor(yuk * (alt + aralik * zar())), aci: zar() * Math.PI };
     }
   }
   let enIyi = 0;
@@ -38,13 +43,18 @@ export function igneHucreleri(igne) {
   return [...kume];
 }
 
-/** Üstündeki en ince saman katı; 0 ise iğnenin bir kısmı açıkta. */
-export function igneDerinligi(tarla) {
+/** Gömülü bir nesnenin ({x, y, z, aci}: iğne ya da çivi) üstündeki en ince saman katı. */
+export function nesneDerinligi(tarla, nesne) {
   let enAz = Infinity;
-  for (const i of igneHucreleri(tarla.igne)) {
-    enAz = Math.min(enAz, Math.max(0, tarla.h[i] - tarla.igne.z));
+  for (const i of igneHucreleri(nesne)) {
+    enAz = Math.min(enAz, Math.max(0, tarla.h[i] - nesne.z));
   }
   return enAz;
+}
+
+/** Üstündeki en ince saman katı; 0 ise iğnenin bir kısmı açıkta. */
+export function igneDerinligi(tarla) {
+  return nesneDerinligi(tarla, tarla.igne);
 }
 
 export function igneAcikMi(tarla) {
