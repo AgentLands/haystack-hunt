@@ -1,117 +1,139 @@
 /**
- * İstatistik penceresi: kartlar (oynanan, bulma %, en iyi, seri) ve son 10 bulunan tarlanın
- * süreleriyle küçük çubuk grafik (div'lerle). Kendi stilini <style> ile getirir.
+ * İstatistik penceresi, "tarla defteri": çizgili sayfada oynanan tarla çetelesi, bulma
+ * oranı cümlesi, daire içine alınmış en iyi süre ve son bulma sürelerinin kurşun kalem
+ * çubukları. Stil istatistik.css'te; burada yalnız DOM kurulur.
  */
 import { sureMetni, sayi } from '../arayuz.js';
+import { pencereHazirla, stilYukle } from './pencere.js';
 
-const STIL = `
-#istatistik-pencere { width: min(420px, calc(100vw - 32px)); }
-.ist-kartlar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
-.ist-kart { background: var(--zemin); border: 1px solid var(--cizgi); border-radius: 10px;
-  padding: 8px 12px; display: flex; flex-direction: column; min-width: 0; }
-.ist-kart strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; color: var(--vurgu); }
-.ist-kart small { color: var(--soluk); font-size: 0.75rem; }
-.ist-baslik { margin: 14px 0 6px; font-size: 0.85rem; color: var(--soluk); }
-.ist-grafik { display: flex; align-items: flex-end; gap: 4px; height: 110px;
-  border-bottom: 1px solid var(--cizgi); padding-top: 4px; }
-.ist-sutun { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column;
-  justify-content: flex-end; align-items: center; gap: 2px; }
-.ist-sutun span { font-size: 0.62rem; color: var(--soluk); font-variant-numeric: tabular-nums;
-  white-space: nowrap; }
-.ist-sutun i { display: block; width: 100%; min-height: 3px; border-radius: 3px 3px 0 0;
-  background: var(--cizgi); }
-.ist-sutun.en-iyi i { background: var(--vurgu); }
-.ist-bos { color: var(--soluk); font-size: 0.85rem; margin: 0; }
-.ist-alt { color: var(--soluk); font-size: 0.85rem; margin: 12px 0; }
-.ist-alt b { color: var(--yazi); }
-`;
+const CETELE_TAVAN = 40;
 
-function kart(deger, ad, not) {
-  const kutu = document.createElement('div');
-  kutu.className = 'ist-kart';
-  const buyuk = document.createElement('strong');
-  buyuk.textContent = deger;
-  const baslik = document.createElement('span');
-  baslik.className = 'baslik';
-  baslik.textContent = ad;
-  kutu.append(baslik, buyuk);
-  if (not) {
-    const kucuk = document.createElement('small');
-    kucuk.textContent = not;
-    kutu.append(kucuk);
+function eleman(etiket, sinif, metin) {
+  const e = document.createElement(etiket);
+  if (sinif) e.className = sinif;
+  if (metin !== undefined) e.textContent = metin;
+  return e;
+}
+
+/** n çizgilik çetele: dörtlü demetler ve çaprazı (beşli demet), en çok CETELE_TAVAN çizgi. */
+function cetele(n) {
+  const kap = eleman('div', 'defter-cetele');
+  kap.setAttribute('role', 'img');
+  kap.setAttribute('aria-label', `${n} tarla oynandı`);
+  const cizgi = Math.min(n, CETELE_TAVAN);
+  for (let kalan = cizgi; kalan > 0; kalan -= 5) {
+    const demet = eleman('span', kalan >= 5 ? 'demet tam' : 'demet');
+    for (let i = 0; i < Math.min(kalan, 4); i += 1) demet.append(document.createElement('i'));
+    kap.append(demet);
   }
-  return kutu;
+  if (n > CETELE_TAVAN) {
+    kap.append(eleman('span', 'defter-fazla', `+${sayi.format(n - CETELE_TAVAN)}`));
+  }
+  return kap;
+}
+
+/** Elle çizilmiş iğne: boş durumun küçük çizimi. */
+function igneCizimi() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 64 24');
+  svg.setAttribute('class', 'defter-igne');
+  svg.setAttribute('aria-hidden', 'true');
+  const yol = document.createElementNS(ns, 'path');
+  yol.setAttribute('d', 'M4 20 L58 6 M52 4.5 C56 3.5 60 5 60 8 M5 19.5 C8 15 14 14 17 17');
+  svg.append(yol);
+  return svg;
+}
+
+function bosGrafik() {
+  const kap = eleman('div', 'defter-bos');
+  kap.append(igneCizimi(),
+    eleman('p', '', 'Henüz iğne bulunmadı. İlk iğneni bul, grafik burada belirir.'));
+  return kap;
 }
 
 function grafik(sureler) {
-  if (sureler.length === 0) {
-    const bos = document.createElement('p');
-    bos.className = 'ist-bos';
-    bos.textContent = 'Henüz bulunmuş tarla yok; ilk iğneni bul, grafik burada belirsin.';
-    return bos;
-  }
+  if (sureler.length === 0) return bosGrafik();
   const en = Math.max(...sureler.map((s) => s.sureMs));
   const enIyi = Math.min(...sureler.map((s) => s.sureMs));
-  const kap = document.createElement('div');
-  kap.className = 'ist-grafik';
+  const kap = eleman('div', 'defter-grafik');
   kap.setAttribute('role', 'img');
   kap.setAttribute('aria-label', 'Son oyunların süreleri: '
     + sureler.map((s) => sureMetni(s.sureMs)).join(', '));
   for (const { etiket, sureMs } of sureler) {
-    const sutun = document.createElement('div');
-    sutun.className = `ist-sutun${sureMs === enIyi ? ' en-iyi' : ''}`;
+    const sutun = eleman('div', sureMs === enIyi ? 'sutun en-iyi' : 'sutun');
     sutun.title = `${etiket} · ${sureMetni(sureMs)}`;
-    const yazi = document.createElement('span');
-    yazi.textContent = sureMetni(sureMs);
-    const cubuk = document.createElement('i');
-    cubuk.style.height = `${Math.max(4, Math.round((sureMs / en) * 80))}%`;
-    sutun.append(yazi, cubuk);
+    const cubuk = eleman('i');
+    cubuk.style.setProperty('--boy', `${Math.max(5, Math.round((sureMs / en) * 100))}%`);
+    sutun.append(eleman('span', 'sayi', sureMetni(sureMs)), cubuk);
     kap.append(sutun);
   }
   return kap;
 }
 
+function bulmaCumlesi(o) {
+  if (o.oynanan === 0) return '';
+  const oran = o.bulmaYuzde === null ? '' : `Bulma oranı %${o.bulmaYuzde}: `;
+  return `${oran}${o.bulunan} iğne bulundu, ${o.pesEdilen} kez pes edildi.`;
+}
+
+function enIyiSure(o) {
+  const kap = eleman('div', 'defter-en-iyi');
+  kap.append(eleman('span', 'etiket', 'En iyi süre'));
+  const daire = eleman('strong', 'sayi daire', o.enIyiMs === null ? '–' : sureMetni(o.enIyiMs));
+  kap.append(daire);
+  if (o.ortalamaMs !== null) {
+    kap.append(eleman('span', 'etiket', `ortalama ${sureMetni(o.ortalamaMs)}`));
+  }
+  return kap;
+}
+
+function bugunSatiri(o) {
+  const satir = eleman('p', 'defter-bugun');
+  const kutu = eleman('span', o.bugunCozuldu ? 'kutu isaretli' : 'kutu');
+  kutu.setAttribute('aria-hidden', 'true');
+  satir.append(kutu, o.bugunCozuldu ? 'Bugünün tarlası çözüldü.' : 'Bugünün tarlası bekliyor.');
+  return satir;
+}
+
 /** Pencereyi kurar; ozetAl() güncel özeti verir. Döner: { ac }. */
 export function pencereKur(ozetAl) {
-  const stil = document.createElement('style');
-  stil.textContent = STIL;
-  document.head.append(stil);
-
+  stilYukle('./istatistik.css');
   const pencere = document.createElement('dialog');
   pencere.id = 'istatistik-pencere';
-  const baslik = document.createElement('h2');
-  baslik.textContent = 'İstatistik 📊';
-  const govde = document.createElement('div');
-  const kapat = document.createElement('button');
+  pencere.className = 'kagit-pencere pencere defter';
+  pencere.setAttribute('aria-labelledby', 'defter-baslik');
+  const baslik = eleman('h2', '', 'Tarla defteri');
+  baslik.id = 'defter-baslik';
+  const govde = eleman('div', 'defter-govde');
+  const kapat = eleman('button', 'dugme-metin', 'Kapat');
   kapat.type = 'button';
-  kapat.textContent = 'Kapat';
   kapat.addEventListener('click', () => pencere.close());
-  const dugmeler = document.createElement('div');
-  dugmeler.className = 'dugmeler';
+  const dugmeler = eleman('div', 'dugmeler');
   dugmeler.append(kapat);
   pencere.append(baslik, govde, dugmeler);
-  pencere.addEventListener('click', (olay) => { if (olay.target === pencere) pencere.close(); });
+  pencereHazirla(pencere, { dis: true });
   document.body.append(pencere);
 
   function doldur() {
     const o = ozetAl();
-    const kartlar = document.createElement('div');
-    kartlar.className = 'ist-kartlar';
-    kartlar.append(
-      kart(sayi.format(o.oynanan), 'Oynanan tarla', `${o.bulunan} bulundu · ${o.pesEdilen} pes`),
-      kart(o.bulmaYuzde === null ? '–' : `%${o.bulmaYuzde}`, 'Bulma oranı'),
-      kart(o.enIyiMs === null ? '–' : sureMetni(o.enIyiMs), 'En iyi süre',
-        o.ortalamaMs === null ? '' : `ortalama ${sureMetni(o.ortalamaMs)}`),
-      kart(`${o.seri} gün`, 'Günün tarlası serisi', `en uzun ${o.enUzunSeri} gün`),
-    );
-    const altBaslik = document.createElement('p');
-    altBaslik.className = 'ist-baslik';
-    altBaslik.textContent = `Son ${o.sonSureler.length || 10} bulma süresi`;
-    const alt = document.createElement('p');
-    alt.className = 'ist-alt';
-    alt.innerHTML = `Bugünün tarlası: <b>${o.bugunCozuldu ? '✅ çözüldü' : '⬜ henüz değil'}</b>`
-      + ` · kaldırılan saman: <b>${sayi.format(o.toplamSaman)}</b>`;
-    govde.replaceChildren(kartlar, altBaslik, grafik(o.sonSureler), alt);
+    const etiket = eleman('p', 'etiket', 'Oynanan tarla ');
+    etiket.append(eleman('b', 'sayi', sayi.format(o.oynanan)));
+    const sol = eleman('div', 'defter-sol');
+    sol.append(etiket, cetele(o.oynanan));
+    const satir1 = eleman('div', 'defter-satir');
+    satir1.append(sol);
+    if (o.enIyiMs !== null) satir1.append(enIyiSure(o));
+    const cumle = eleman('p', 'defter-cumle', bulmaCumlesi(o));
+    const seri = o.enUzunSeri === 0 ? null : eleman('p', 'defter-seri',
+      `Günün tarlası serisi: ${o.seri} gün (en uzun ${o.enUzunSeri}).`);
+    const saman = o.toplamSaman === 0 ? null : eleman('p', 'defter-saman',
+      `Toplam kaldırılan saman: ${sayi.format(o.toplamSaman)}`);
+    const altBaslik = o.sonSureler.length
+      ? eleman('p', 'defter-baslik', `Son ${o.sonSureler.length} bulma süresi`) : null;
+    govde.replaceChildren(...[satir1, cumle.textContent ? cumle : null, seri, bugunSatiri(o), saman,
+      altBaslik,
+      grafik(o.sonSureler)].filter(Boolean));
   }
 
   return { ac() { doldur(); pencere.showModal(); } };

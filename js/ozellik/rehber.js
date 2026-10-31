@@ -1,6 +1,7 @@
 /**
- * İlk açılış rehberi: oyunu ilk kez açana 6 adımlık, atlanabilir bir bindirme (yürüme,
- * El / Tırmık / Dedektör, traktör, güneş parıltısı). Görüldüğü localStorage'ta tutulur.
+ * İlk açılış rehberi: oyunu ilk kez açana 8 adımlık, atlanabilir kâğıt not (yürüme, El /
+ * Tırmık / Dedektör, traktör, üfleyici, balya makinesi, güneş parıltısı); metin girdiye
+ * göre (klavye ya da dokunmatik). Görüldüğü localStorage'ta tutulur.
  * Üst sıradaki "?" düğmesi rehberi yeniden açar. Bindirme tuvale tıklamayı engellemez:
  * tuvale ilk dokunuşta, hareket tuşlarında ya da 1-4 tuşlarında kendiliğinden kapanır.
  */
@@ -8,24 +9,36 @@ import { dugmeEkle } from '../arayuz.js';
 import { YON_TUSLARI } from '../girdi.js';
 
 const ANAHTAR = 'haystack-hunt:rehber-goruldu';
+// Her adım: başlık, hangi aracı vurgulayacağı, klavye ve dokunmatik için tek cümlelik metin.
 const ADIMLAR = [
   { arac: null, baslik: 'Çiftçi',
-    metin: 'WASD ya da oklarla yürü; telefonda sanal kolu kullan ya da gideceğin yere dokun. '
-      + 'Samanın üstünde yavaşlarsın.' },
+    klavye: 'WASD ya da oklarla yürü.',
+    dokunmatik: 'Kolu sürükle ya da gideceğin yere dokun.' },
   { arac: 'el', baslik: 'El',
-    metin: 'Boşluğu basılı tut: önündeki samanı alırsın. Yakındaki bir yere basılı tutarak da '
-      + 'kazabilirsin. Açılan çukura yamaçtan saman kayar.' },
+    klavye: 'Boşluğu basılı tut, önündeki samanı alırsın.',
+    dokunmatik: 'Kullan düğmesini basılı tut, önündeki samanı alırsın.' },
   { arac: 'tirmik', baslik: 'Tırmık',
-    metin: 'Boşluk basılıyken yürü: samanı yürüdüğün yöne itersin. Tarlanın dışına ittiğin '
-      + 'saman gider.' },
+    klavye: 'Boşluk basılıyken yürü, samanı önüne katıp tarlanın dışına itersin.',
+    dokunmatik: 'Kullan basılıyken kolu it, samanı tarlanın dışına itersin.' },
   { arac: 'dedektor', baslik: 'Dedektör',
-    metin: 'Boşluğa bas: durduğun yerin iğneye ne kadar yakın olduğunu yazar. Hakkın sınırlı.' },
+    klavye: 'Boşluğa bas, iğneye ne kadar yakın olduğun yazılır; hakkın sınırlı.',
+    dokunmatik: 'Kullan\'a bas, iğneye ne kadar yakın olduğun yazılır; hakkın sınırlı.' },
   { arac: null, baslik: 'Kepçeli traktör',
-    metin: 'Garajdaki traktöre yaklaş, E ile bin. W/S gaz, A/D dön, Boşluk kepçe. Dolu kepçeyi '
-      + 'tarla kenarında Boşlukla boşalt. Yakıtı sınırlı!' },
+    klavye: 'Garajdaki traktöre yaklaş, E ile bin; W/S gaz, A/D dön, Boşluk kepçe.',
+    dokunmatik: 'Traktöre yaklaş, Bin\'e bas; kolla sür, Kullan kepçeyi çalıştırır.' },
+  { arac: null, baslik: 'Sırt üfleyicisi',
+    klavye: 'E ile tak, Boşlukla samanı önüne savur; yakıtı sınırlı.',
+    dokunmatik: 'Bin\'e basıp tak, Kullan ile samanı önüne savur; yakıtı sınırlı.' },
+  { arac: null, baslik: 'Balya makinesi',
+    klavye: 'Samanı balyalar ama iğneyi de yutabilir; balyayı El ile aç.',
+    dokunmatik: 'Samanı balyalar ama iğneyi de yutabilir; balyayı El ile aç.' },
   { arac: null, baslik: 'Güneş parıltısı',
-    metin: 'İğne yüzeye yakınsa güneşte arada bir parlar. Açığa çıkınca yanına git, Boşlukla al.' },
+    klavye: 'İğne yüzeye yakınsa güneşte parlar; açığa çıkınca yanına gidip al.',
+    dokunmatik: 'İğne yüzeye yakınsa güneşte parlar; açığa çıkınca yanına gidip al.' },
 ];
+
+/** Ana işaretçi parmaksa (dokunmatik) metinler kol / Bin / Kullan diye yazılır. */
+const dokunmatikMi = () => window.matchMedia('(pointer: coarse)').matches;
 
 function goruldu() {
   try {
@@ -78,11 +91,13 @@ function ciz() {
   });
   const baslik = Object.assign(document.createElement('h2'), { textContent: a.baslik });
   baslik.id = 'rehber-baslik';
-  const metin = Object.assign(document.createElement('p'), { textContent: a.metin });
+  const metin = Object.assign(document.createElement('p'), {
+    textContent: dokunmatikMi() ? a.dokunmatik : a.klavye,
+  });
   const dugmeler = document.createElement('div');
   dugmeler.className = 'rehber-dugmeler';
   const atla = Object.assign(document.createElement('button'), {
-    type: 'button', textContent: 'Atla', className: 'ikincil',
+    type: 'button', textContent: 'Atla', className: 'dugme-metin',
   });
   atla.addEventListener('click', kapat);
   const ileri = Object.assign(document.createElement('button'), {
@@ -92,7 +107,7 @@ function ciz() {
     if (son) kapat();
     else { adim += 1; ciz(); }
   });
-  ileri.classList.add('rehber-ileri');
+  ileri.classList.add('rehber-ileri', 'dugme-birincil');
   dugmeler.append(atla, ileri);
   kutu.append(sayac, baslik, metin, dugmeler);
   vurguyuKaldir();

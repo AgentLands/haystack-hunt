@@ -17,6 +17,8 @@ dialog#bitis[open].efekt-gecikme,
 dialog#bitis[open].efekt-gecikme::backdrop {
   animation: efekt-belir 0.35s ease-out 0.6s both;
 }
+/* Fişin damgası, fiş belirdikten sonra (gecikme 0.6 sn + belirme 0.35 sn) basılır. */
+dialog#bitis[open].efekt-gecikme .fis-damga { animation-delay: 1s; }
 @keyframes efekt-belir {
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
   to { opacity: 1; transform: none; }
@@ -24,6 +26,7 @@ dialog#bitis[open].efekt-gecikme::backdrop {
 @media (prefers-reduced-motion: reduce) {
   dialog#bitis[open].efekt-gecikme,
   dialog#bitis[open].efekt-gecikme::backdrop { animation-name: efekt-sade; }
+  dialog#bitis[open].efekt-gecikme .fis-damga { animation: none; }
   @keyframes efekt-sade { from { opacity: 0; } to { opacity: 1; } }
 }`;
 

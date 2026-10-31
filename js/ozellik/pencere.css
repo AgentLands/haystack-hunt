@@ -1,0 +1,230 @@
+/*
+ * Ortak kâğıt pencere (pencere.js yükler): masaya bırakılmış, hafif eğik kâğıt kart; üstte
+ * ip deliği ve ipi, sağ üstte ×, altta sağa yaslı düğmeler (birincil en sağda). Bitiş
+ * "kantar fişi" de burada. Renkler yalnız belirteçlerden (belirtec.css).
+ */
+.pencere {
+  --delik-golge: color-mix(in srgb, var(--ahsap-koyu) 55%, transparent);
+  --ip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 44'%3E%3Cpath d='M15 41 C1 30 3 5 15 3 C27 5 29 30 15 41' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  width: min(420px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 40px);
+  padding: 36px 22px 18px;
+  overflow: visible;
+  rotate: -0.6deg;
+}
+.pencere::before,
+.pencere::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+}
+.pencere::before {
+  top: 12px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--ahsap-koyu);
+  border: 2px solid var(--kraft-koyu);
+  box-shadow: inset 1px 2px 0 var(--delik-golge);
+}
+.pencere::after {
+  top: -26px;
+  width: 30px;
+  height: 44px;
+  margin-left: -15px;
+  background: var(--kraft-koyu);
+  -webkit-mask: var(--ip) center / 100% 100% no-repeat;
+  mask: var(--ip) center / 100% 100% no-repeat;
+}
+.pencere h2 {
+  margin: 0 40px 12px 0;
+  padding-bottom: 8px;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  border-bottom: 2px dashed var(--kraft-koyu);
+}
+.pencere p { line-height: 1.4; }
+.pencere [hidden] { display: none !important; }
+
+.pencere-kapat {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--murekkep);
+  background: none;
+  border: 2px solid transparent;
+  border-radius: var(--yaricap);
+  cursor: pointer;
+}
+.pencere-kapat svg { width: 20px; height: 20px; }
+.pencere-kapat:hover { background: var(--kraft); border-color: var(--murekkep); }
+
+.pencere .dugmeler,
+.fis .dugmeler {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.pencere .dugme-birincil, .pencere .dugme-ikincil,
+.fis .dugme-birincil, .fis .dugme-ikincil { font-size: 0.95rem; }
+
+/* Kantar fişi: delikli kenarlı kâğıt şerit, üstünde eğik damga. */
+dialog.fis-pencere {
+  width: min(350px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow: visible;
+  background: none;
+  border: none;
+  box-shadow: none;
+  rotate: 0.8deg;
+  filter: drop-shadow(var(--golge-buyuk));
+}
+.fis {
+  --delik: 6px;
+  position: relative;
+  padding: 34px 22px 20px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-mask:
+    radial-gradient(circle var(--delik) at 50% 0, #0000 96%, #000) top / 18px 51% repeat-x,
+    radial-gradient(circle var(--delik) at 50% 100%, #0000 96%, #000) bottom / 18px 51% repeat-x;
+  mask:
+    radial-gradient(circle var(--delik) at 50% 0, #0000 96%, #000) top / 18px 51% repeat-x,
+    radial-gradient(circle var(--delik) at 50% 100%, #0000 96%, #000) bottom / 18px 51% repeat-x;
+}
+.fis [hidden] { display: none !important; }
+.fis:focus { outline: none; }
+.fis-ust {
+  margin: 0;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--murekkep-soluk);
+}
+.fis h2 {
+  margin: 2px 40px 4px 0;
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+.fis-no {
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--murekkep-soluk);
+  border-bottom: 2px dashed var(--kraft-koyu);
+}
+.fis-ozet { margin: 0 0 6px; line-height: 1.4; }
+.fis-satirlar { margin: 8px 0 0; padding: 0; }
+.fis-satirlar > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+.fis-satirlar dt { display: flex; flex: 1; align-items: baseline; gap: 6px; }
+.fis-satirlar dt::after {
+  content: '';
+  flex: 1;
+  border-bottom: 2px dotted var(--kraft-koyu);
+  translate: 0 -3px;
+}
+.fis-satirlar dd {
+  margin: 0;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 1.02rem;
+  font-variant-numeric: tabular-nums;
+}
+.fis-toplam {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 10px 0 0;
+  padding-top: 6px;
+  border-top: 4px double var(--murekkep);
+}
+.fis-toplam span { font-family: var(--yazi-baslik); font-size: 1.15rem; letter-spacing: 0.06em; }
+.fis-toplam strong { font-size: 2.5rem; line-height: 1.1; }
+.fis-notlar { display: grid; gap: 4px; margin-top: 12px; }
+.fis-notlar:empty { display: none; }
+.fis-not {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--civit);
+  font-style: italic;
+  rotate: -0.8deg;
+}
+.fis-not::before {
+  content: '';
+  flex: none;
+  width: 20px;
+  height: 20px;
+  background: currentColor;
+  -webkit-mask: var(--ikon) center / contain no-repeat;
+  mask: var(--ikon) center / contain no-repeat;
+}
+.fis-not.rekor {
+  --ikon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='9' r='5.5'/%3E%3Cpath d='M8.5 13.5 6.5 21 12 18.5 17.5 21 15.5 13.5'/%3E%3C/svg%3E");
+  color: var(--damga);
+  font-weight: 700;
+}
+.fis-not.seri {
+  --ikon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1'/%3E%3C/svg%3E");
+}
+.fis .dugmeler { margin-top: 18px; }
+
+/* Damga: yüzeye vurulur (büyükten oturur), mürekkep eşit basmaz. */
+.fis-damga {
+  --leke: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 -.75'/%3E%3C/filter%3E%3Crect width='120' height='60' filter='url(%23f)'/%3E%3C/svg%3E");
+  position: absolute;
+  top: 52px;
+  right: 18px;
+  z-index: 1;
+  padding: 2px 10px 0;
+  font-family: var(--yazi-baslik);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--damga);
+  border: 3px solid var(--damga);
+  border-radius: var(--yaricap);
+  outline: 1.5px solid var(--damga);
+  outline-offset: 2px;
+  opacity: 0.92;
+  rotate: -13deg;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  -webkit-mask: var(--leke) center / 120px 60px;
+  mask: var(--leke) center / 120px 60px;
+}
+dialog#bitis[open] .fis-damga {
+  animation: damga-vur 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25) 0.2s both;
+}
+@keyframes damga-vur {
+  from { opacity: 0; scale: 2.4; }
+  60% { opacity: 0.95; scale: 0.94; }
+  to { opacity: 0.92; scale: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog#bitis[open] .fis-damga { animation: none; }
+  .pencere-kapat { transition: none; }
+}

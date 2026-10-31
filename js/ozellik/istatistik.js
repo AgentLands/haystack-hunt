@@ -1,7 +1,7 @@
 /**
  * İstatistik, seri ve paylaşım: olayları dinleyip oyuncu istatistiklerini localStorage'ta
- * tutar (erişim yoksa bellekte), 📊 düğmesi ve penceresini ekler, bitiş penceresine
- * "Yeni rekor!" / "Seri" bilgisi koyar, paylaşım metnine okuma emojileri ve bağlantı ekler.
+ * tutar (erişim yoksa bellekte), "Defter" düğmesi ve penceresini ekler, bitiş fişine
+ * "Yeni rekor!" / "Seri" notu koyar, paylaşım metnine okuma emojileri ve bağlantı ekler.
  * Saf kısımlar js/kural/istatistik.js içindedir.
  */
 import { dinle } from '../olaylar.js';
@@ -12,6 +12,7 @@ import {
 } from '../kural/istatistik.js';
 import { gununEtiketi } from '../kural/rastgele.js';
 import { pencereKur } from './istatistik-pencere.js';
+import './fis.js';
 
 function depoAc() {
   try {
@@ -34,29 +35,28 @@ const guncelle = (yeni) => {
 };
 
 const pencere = pencereKur(() => ozet(ist));
-dugmeEkle('ust', { metin: '📊', baslik: 'İstatistik', tikla: () => pencere.ac() });
+dugmeEkle('ust', {
+  metin: 'Defter', ikon: 'defter', baslik: 'İstatistik', tikla: () => pencere.ac(),
+});
 
-const bilgi = document.createElement('div');
-bilgi.id = 'istatistik-bitis';
-bilgi.style.cssText = 'margin: 8px 0 16px; display: grid; gap: 4px; font-size: 0.95rem;';
-document.getElementById('sonuc').after(bilgi);
+const bilgi = document.getElementById('istatistik-bitis');
 
-function satir(metin, vurgulu) {
-  const p = document.createElement('div');
+function not(metin, tur) {
+  const p = document.createElement('p');
+  p.className = `fis-not ${tur}`;
   p.textContent = metin;
-  if (vurgulu) p.style.cssText = 'color: var(--vurgu); font-weight: 600;';
   return p;
 }
 
 function bitisBilgisi(sonuc, rapor) {
   const satirlar = [];
   if (rapor.rekor) {
-    satirlar.push(satir(`🏆 Yeni rekor! (önceki en iyi ${sureMetni(rapor.oncekiEnIyiMs)})`, true));
+    satirlar.push(not(`Yeni rekor! Önceki en iyi ${sureMetni(rapor.oncekiEnIyiMs)}.`, 'rekor'));
   } else if (rapor.tohumRekoru) {
-    satirlar.push(satir('🏆 Bu tarlada yeni rekor!', true));
+    satirlar.push(not('Bu tarlada yeni rekor.', 'rekor'));
   }
-  if (rapor.gunluk) satirlar.push(satir(`🔥 Günün tarlası çözüldü · Seri: ${rapor.seri} gün`));
-  else if (rapor.seri > 0) satirlar.push(satir(`🔥 Seri: ${rapor.seri} gün`));
+  if (rapor.gunluk) satirlar.push(not(`Günün tarlası çözüldü. Seri: ${rapor.seri} gün.`, 'seri'));
+  else if (rapor.seri > 0) satirlar.push(not(`Seri: ${rapor.seri} gün.`, 'seri'));
   bilgi.replaceChildren(...satirlar);
 }
 

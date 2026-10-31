@@ -75,13 +75,27 @@
     </ul>
   </details>
 
-  <dialog id="bitis">
-    <h2>İğneyi buldun! 🪡</h2>
-    <p id="sonuc"></p>
-    <p id="puan" class="puan"></p>
-    <div class="dugmeler">
-      <button id="paylas">Sonucu kopyala</button>
-      <button id="tekrar">Yeni tarla</button>
+  <dialog id="bitis" class="fis-pencere" aria-labelledby="fis-baslik">
+    <div class="fis kagit-pencere" tabindex="-1" autofocus>
+      <p class="fis-ust">Tarla kantarı</p>
+      <h2 id="fis-baslik">Kantar fişi</h2>
+      <p id="fis-no" class="fis-no sayi"></p>
+      <span class="fis-damga" aria-hidden="true">Bulundu</span>
+      <p id="sonuc" class="fis-ozet"></p>
+      <dl class="fis-satirlar">
+        <div><dt>Süre</dt><dd id="fis-sure"></dd></div>
+        <div><dt>Kaldırılan saman</dt><dd id="fis-saman"></dd></div>
+        <div><dt>Dedektör</dt><dd id="fis-dedektor"></dd></div>
+        <div><dt>Mıknatıs</dt><dd id="fis-miknatis"></dd></div>
+        <div id="fis-civi-satir" hidden><dt>Çivi cezası</dt><dd id="fis-civi"></dd></div>
+        <div><dt>Zorluk</dt><dd id="fis-zorluk"></dd></div>
+      </dl>
+      <p class="fis-toplam"><span>PUAN</span><strong id="puan" class="sayi"></strong></p>
+      <div id="istatistik-bitis" class="fis-notlar"></div>
+      <div class="dugmeler">
+        <button id="paylas" class="dugme-ikincil">Sonucu kopyala</button>
+        <button id="tekrar" class="dugme-birincil">Yeni tarla</button>
+      </div>
     </div>
   </dialog>
 

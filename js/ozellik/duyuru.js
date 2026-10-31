@@ -3,7 +3,7 @@
  * Dedektör sonucu, iğnenin görünmesi, parıltı, bulma ve pes etme sesli okunur.
  */
 import { dinle } from '../olaylar.js';
-import { sureMetni } from '../arayuz.js';
+import { sureMetni, sayi } from '../arayuz.js';
 
 const bolge = document.createElement('div');
 bolge.id = 'duyuru';
@@ -23,12 +23,13 @@ function duyur(metin) {
 
 dinle('oyun-basladi', ({ durum }) => duyur(`Yeni tarla: ${durum.etiket}. İğneyi ara.`));
 dinle('dedektor', ({ seviye, kalan }) => duyur(
-  `Dedektör: ${seviye.ad}. ${kalan} hakkın kaldı.`,
+  `Dedektör: ${seviye.ad.replace(/!$/, '')}. ${kalan} hakkın kaldı.`,
 ));
 dinle('dedektor-bos', () => duyur('Dedektör hakkın bitti.'));
 dinle('igne-gorundu', () => duyur('İğne açığa çıktı. Üstüne elle bas.'));
 dinle('parilti', () => duyur('Güneşte bir şey parladı.'));
 dinle('bulundu', ({ sonuc }) => duyur(
-  `İğneyi buldun. ${sureMetni(sonuc.sureMs)} sürdü, ${sonuc.kaldirilan} saman kaldırıldı.`,
+  `İğneyi buldun. ${sureMetni(sonuc.sureMs)} sürdü, `
+  + `${sayi.format(sonuc.kaldirilan)} saman kaldırıldı.`,
 ));
 dinle('pes-edildi', () => duyur('Pes ettin, iğne gösterildi.'));

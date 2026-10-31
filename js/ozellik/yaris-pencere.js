@@ -1,34 +1,41 @@
 /**
- * Yarış penceresi: giriş görünümü (ad, oda kur, kodla katıl) ve oda görünümü (kod, oyuncu
- * listesi/sıralama, Başlat/Rövanş, Ayrıl). Yalnız DOM; eylemler pencereKur'a verilir.
+ * Yarış penceresi (etiket kartı): giriş görünümü (ad, oda kur, kodla katıl) ve oda görünümü
+ * (kod, oyuncu listesi/sıralama, Başlat/Rövanş, Ayrıl). Yalnız DOM; eylemler pencereKur'a verilir.
  */
 import { oyuncuSatiri, sirala } from './yaris-cizim.js';
+import { pencereHazirla } from './pencere.js';
 
 const AD_ANAHTARI = 'haystack-hunt.yaris.ad';
 const SABLON = `
   <h2>Yarış</h2>
   <form class="yaris-giris" data-gorunum="giris">
     <label>Adın <input name="ad" maxlength="16" autocomplete="nickname"></label>
-    <div class="dugmeler"><button type="submit" value="kur">Oda kur</button></div>
+    <div class="dugmeler">
+      <button type="submit" value="kur" class="dugme-birincil">Oda kur</button>
+    </div>
     <p class="yaris-ayrac">ya da koduyla bir odaya katıl</p>
     <div class="yaris-katil">
       <input name="kod" maxlength="4" placeholder="KOD" autocomplete="off"
         autocapitalize="characters" spellcheck="false" aria-label="Oda kodu">
-      <button type="submit" value="katil">Katıl</button>
+      <button type="submit" value="katil" class="dugme-ikincil">Katıl</button>
     </div>
   </form>
   <section data-gorunum="oda">
-    <p class="yaris-kod">Oda kodu <strong data-ref="kod"></strong></p>
+    <div class="yaris-kod">
+      <span>Oda kodu</span>
+      <strong data-ref="kod" class="sayi"></strong>
+    </div>
     <p class="yaris-bilgi" data-ref="bilgi"></p>
     <ol class="yaris-liste" data-ref="liste"></ol>
-    <p class="yaris-not">Diğer oyuncuların çiftçileri ve makineleri yalnız görüntüdür: herkes
-      kendi tarlasında kazar.</p>
+    <p class="yaris-not">Diğer oyuncular yalnız görüntüdür; herkes kendi tarlasında kazar.</p>
     <div class="dugmeler">
-      <button type="button" data-ref="baslat">Başlat</button>
-      <button type="button" data-ref="ayril" class="ikincil">Odadan ayrıl</button>
+      <button type="button" data-ref="ayril" class="dugme-metin tehlike">Odadan ayrıl</button>
+      <button type="button" data-ref="baslat" class="dugme-birincil">Başlat</button>
     </div>
   </section>
-  <form method="dialog" class="yaris-kapat"><button>Kapat</button></form>`;
+  <form method="dialog" class="yaris-kapat">
+    <button class="dugme-metin">Kapat</button>
+  </form>`;
 
 let pencere = null;
 const ref = (ad) => pencere.querySelector(`[data-ref="${ad}"]`);
@@ -54,8 +61,9 @@ function adKaydet(ad) {
 export function pencereKur(eylemler) {
   pencere = document.createElement('dialog');
   pencere.id = 'yaris-pencere';
-  pencere.className = 'yaris-pencere';
+  pencere.className = 'kagit-pencere pencere yaris-pencere';
   pencere.innerHTML = SABLON;
+  pencereHazirla(pencere);
   document.body.append(pencere);
   const giris = pencere.querySelector('.yaris-giris');
   giris.elements.ad.value = kayitliAd();

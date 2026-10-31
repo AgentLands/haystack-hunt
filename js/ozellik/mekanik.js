@@ -49,12 +49,7 @@ dinle('miknatis', ({ cekti, kalan }) => {
 dinle('miknatis-bos', () => bildir('Mıknatıs hakkın kalmadı.'));
 dinle('civi-alindi', ({ ceza }) => bildir(`Paslı çivi! +${ceza / 1000} sn`));
 
-dinle('bulundu', ({ sonuc }) => {
-  const ayar = zorlukAl(sonuc.zorluk);
-  const ceza = sonuc.cezaMs > 0 ? ` · çivi cezası +${sonuc.cezaMs / 1000} sn` : '';
-  $('puan').textContent = `Puan: ${sayi.format(sonuc.puan)} (${ayar.ad} ×${ayar.carpan}`
-    + ` · mıknatıs ${sonuc.miknatisKullanilan}/${sonuc.miknatisHakki}${ceza})`;
-});
+// Bitiş fişi (puan dahil) js/ozellik/fis.js'te doldurulur.
 
 paylasimEkiKaydet((sonuc) => (typeof sonuc.puan === 'number'
   ? `🏅 ${sayi.format(sonuc.puan)} puan · ${zorlukAl(sonuc.zorluk).ad}` : ''));

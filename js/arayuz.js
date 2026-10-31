@@ -87,9 +87,9 @@ export function arayuzKur() {
     }
   });
   dinle('bulundu', ({ sonuc }) => {
-    $('sonuc').textContent = `${sureMetni(sonuc.sureMs)} sürede, `
-      + `${sayi.format(sonuc.kaldirilan)} saman kaldırarak ve `
-      + `${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki} dedektörle buldun.`;
+    $('sonuc').textContent = `${sureMetni(sonuc.sureMs)} sürede buldun. `
+      + `${sayi.format(sonuc.kaldirilan)} saman kaldırdın, `
+      + `dedektörü ${sonuc.dedektorKullanilan} kez kullandın.`;
     $('bitis').showModal();
   });
   dinle('kare', ({ zaman, durum }) => {

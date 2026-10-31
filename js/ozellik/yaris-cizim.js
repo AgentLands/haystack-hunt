@@ -20,7 +20,7 @@ export function sirala(oyuncular) {
 
 export function durumMetni(k) {
   switch (k.durum) {
-    case 'buldu': return `${k.sira}. · ${sureMetni(k.sureMs)}`;
+    case 'buldu': return `${k.sira}. sıra · ${sureMetni(k.sureMs)}`;
     case 'oynuyor': return `${sayi.format(k.saman)} saman`;
     case 'pes': return 'pes etti';
     case 'ayrildi': return 'ayrıldı';
@@ -47,6 +47,7 @@ export function oyuncuSatiri(etiket, k, benimId) {
 
 let tablo = null;
 let sayac = null;
+let damga = null;
 
 function kapEkle(sinif) {
   const div = document.createElement('div');
@@ -71,14 +72,19 @@ export function tabloGuncelle(oda, benimId) {
     benimId)));
 }
 
-/** Geri sayım bindirmesi: metin (3, 2, 1, Başla!) ya da null (gizle). */
+/** Geri sayım bindirmesi: metin (3, 2, 1, Başla!) ya da null (gizle); damga gibi basılır. */
 export function sayacGoster(metin) {
-  sayac ??= kapEkle('yaris-sayac');
+  if (!sayac) {
+    sayac = kapEkle('yaris-sayac');
+    damga = document.createElement('span');
+    damga.className = 'yaris-damga sayi';
+    sayac.append(damga);
+  }
   sayac.hidden = metin === null;
   if (metin !== null) {
-    sayac.textContent = String(metin);
-    sayac.classList.remove('vurus');
-    void sayac.offsetWidth;
-    sayac.classList.add('vurus');
+    damga.textContent = String(metin);
+    damga.classList.remove('vurus');
+    void damga.offsetWidth;
+    damga.classList.add('vurus');
   }
 }

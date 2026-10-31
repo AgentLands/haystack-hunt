@@ -1,0 +1,150 @@
+/*
+ * "Tarla defteri" (istatistik-pencere.js): çizgili kâğıt, sol kenarda kırmızı boşluk çizgisi,
+ * çetele, daire içine alınmış en iyi süre ve kurşun kalem taramalı çubuklar.
+ */
+#istatistik-pencere {
+  --satir: 28px;
+  --kursun: var(--murekkep-soluk);
+  --cizgi: color-mix(in srgb, var(--civit) 20%, transparent);
+  width: min(430px, calc(100vw - 32px));
+  max-height: calc(100dvh - 24px);
+  padding-left: 46px;
+  background-image:
+    linear-gradient(90deg, transparent 33px, var(--damga) 33px, var(--damga) 35px, transparent 35px),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--satir) - 1px),
+      var(--cizgi) calc(var(--satir) - 1px) var(--satir)),
+    var(--kagit-doku);
+  background-position: 0 0, 0 70px, 0 0;
+}
+#istatistik-pencere h2 { border-bottom-color: var(--damga); }
+.defter-govde { display: grid; gap: 10px; line-height: var(--satir); }
+.defter-govde p { margin: 0; line-height: inherit; }
+.defter-satir { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.defter-sol { flex: 1; min-width: 0; }
+.defter .etiket { font-size: 0.85rem; color: var(--murekkep-soluk); line-height: 1.3; }
+.defter .sol .etiket b, .defter-sol .etiket b { font-size: 1.25rem; color: var(--murekkep); }
+
+/* Çetele: dört dikey çizgi ve onları kesen beşinci. */
+.defter-cetele {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 10px;
+  min-height: 30px;
+}
+.defter-cetele .demet { position: relative; display: flex; gap: 4px; height: 26px; }
+.defter-cetele i {
+  display: block;
+  width: 2.5px;
+  height: 100%;
+  background: var(--kursun);
+  border-radius: 2px;
+}
+.defter-cetele i:nth-child(odd) { rotate: 1.5deg; }
+.defter-cetele i:nth-child(even) { rotate: -1deg; height: 94%; }
+.defter-cetele .demet.tam::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 52%;
+  height: 2.5px;
+  background: var(--kursun);
+  border-radius: 2px;
+  rotate: -24deg;
+}
+.defter-fazla { font-family: var(--yazi-sayi); font-weight: 700; align-self: center; }
+.defter-cumle { color: var(--murekkep); }
+
+/* En iyi süre: kalemle daire içine alınmış. */
+.defter-en-iyi { display: grid; justify-items: center; gap: 2px; padding-top: 2px; }
+.defter-en-iyi .daire {
+  display: inline-block;
+  padding: 6px 12px 4px;
+  font-size: 1.45rem;
+  line-height: 1.2;
+  color: var(--murekkep);
+  border: 3px solid var(--damga);
+  border-radius: 52% 48% 55% 45% / 58% 50% 50% 42%;
+  rotate: -4deg;
+}
+
+.defter-seri, .defter-saman { color: var(--murekkep); }
+.defter-bugun { display: flex; align-items: center; gap: 10px; }
+.kutu {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--kursun);
+  border-radius: 2px;
+}
+.kutu.isaretli::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: -8px;
+  width: 8px;
+  height: 20px;
+  border: solid var(--cayir);
+  border-width: 0 4px 4px 0;
+  rotate: 38deg;
+}
+.defter-baslik { margin-top: 4px !important; font-size: 0.9rem; color: var(--murekkep-soluk); }
+
+/* Kurşun kalem çubukları: taramalı dolgu, elle çizilmiş kenar. */
+.defter-grafik {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding-top: 4px;
+  border-bottom: 2px solid var(--kursun);
+}
+.defter-grafik .sutun {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+}
+.defter-grafik span { font-size: 0.62rem; line-height: 1.2; color: var(--murekkep-soluk); white-space: nowrap; }
+.defter-grafik i {
+  display: block;
+  width: 100%;
+  height: var(--boy);
+  min-height: 4px;
+  border: 2px solid var(--kursun);
+  border-bottom: none;
+  border-radius: 3px 2px 0 0;
+  background: repeating-linear-gradient(135deg, var(--kursun) 0 1.5px, transparent 1.5px 6px);
+}
+.defter-grafik .sutun:nth-child(3n) i { rotate: 0.7deg; }
+.defter-grafik .sutun:nth-child(3n + 1) i { rotate: -0.6deg; }
+.defter-grafik .en-iyi i {
+  border-color: var(--damga);
+  background: repeating-linear-gradient(135deg, var(--damga) 0 2px, transparent 2px 6px);
+}
+.defter-grafik .en-iyi span { color: var(--damga); font-size: 0.7rem; }
+
+.defter-bos { display: flex; align-items: center; gap: 12px; color: var(--murekkep-soluk); }
+.defter-bos p { flex: 1; font-size: 0.95rem; }
+.defter-igne {
+  flex: none;
+  width: 64px;
+  height: 24px;
+  fill: none;
+  stroke: var(--kursun);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+@media (max-width: 420px) {
+  #istatistik-pencere { padding-right: 16px; padding-left: 44px; }
+  .defter-satir { gap: 6px; }
+  .defter-en-iyi { justify-items: start; padding-left: 4px; }
+}
+.defter-cetele:empty { display: none; }
