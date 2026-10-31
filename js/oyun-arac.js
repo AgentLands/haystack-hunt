@@ -12,7 +12,7 @@ import { igneKonumu, tarlada } from './kural/igne.js';
 import { puanHesapla } from './kural/zorluk.js';
 import { yay } from './olaylar.js';
 
-export const PARILTI_SURE = 800;
+export const PARILTI_SURE = 1200;
 
 /** İlk hamlede süreyi başlatır (yürümek, araç ya da makine). */
 export function baslat(durum, zaman) {

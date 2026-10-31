@@ -116,7 +116,8 @@ export const TRAKTOR = makineTanimla('traktor', {
   yaricap: 1.7,
   azamiHiz: 15,
   donus: 2.4,
-  tirmanma: 2,
+  // Yerleşmiş yığın yamacı kadar (tarla.js ESIK 3): yığına tırmanır, taze kesik duvarına değil.
+  tirmanma: 3,
   yakitTuketim: 1 / 260,
   isYaricap: KEPCE_YARICAP,
   isNoktasi: kepceNoktasi,

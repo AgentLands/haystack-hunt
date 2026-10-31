@@ -119,11 +119,11 @@ async function yuru(sayfa, hedefAl, yakinlik, ekranAl) {
   await sayfa.keyboard.press('e');
   await sayfa.waitForTimeout(100);
   if ((await durumOku(sayfa)).k.binik) sorunlar.push('traktörden inilemedi');
-  // Dedektör: durduğu yerde bir hak.
+  // Dedektör: durduğu yerde bir hak (Normal 4 haktan 3 kalır).
   await sayfa.keyboard.press('3');
   await sayfa.keyboard.press('Space');
   await sayfa.waitForTimeout(100);
-  if ((await durumOku(sayfa)).dedektor !== 2) sorunlar.push('dedektör kullanılmadı');
+  if ((await durumOku(sayfa)).dedektor !== 3) sorunlar.push('dedektör kullanılmadı');
   // İğneye yürü, el ile Boşluğu basılı tutup kaz.
   await sayfa.keyboard.press('1');
   const vardi = await yuru(sayfa, (s) => [s.igne.x + 0.5, s.igne.y + 0.5], 1.6,
