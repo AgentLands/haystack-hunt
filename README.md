@@ -40,8 +40,10 @@ node sunucu/sunucu.js --port 8080          # sonra http://localhost:8080 (LAN'da
 
 - **Yarış** düğmesi → adını yaz, **Oda kur** (4 harfli kod çıkar) ya da kodla **Katıl**;
   odada en çok 8 kişi. Kurucu **Başlat** deyince 3-2-1 geri sayımla herkese aynı tarla açılır.
-- Yarışta diğerlerinin imleçleri renkli noktalarla, sağ üstte canlı tablo görünür; iğneyi
-  bulan ya da pes eden bitirir, herkes bitince sıralama çıkar; kurucu **Rövanş** açabilir.
+- Yarışta diğer oyuncuların çiftçileri (bindikleri makineyle birlikte) oyuncu renginde halka
+  ve ad etiketiyle, mini haritada renkli noktalarla görünür; sağ üstte canlı tablo vardır.
+  Bunlar yalnız görsel "hayalet"tir: herkes kendi tarlasında kazar, başkasının makinesi
+  senin tarlanı etkilemez. İğneyi bulan ya da pes eden bitirir, herkes bitince sıralama çıkar; kurucu **Rövanş** açabilir.
 - Oyun sunucusuz (ör. `python3 -m http.server`) açıldıysa Yarış "Sunucu bulunamadı" der;
   tek kişilik oyun etkilenmez. İleti biçimi: `sunucu/PROTOKOL.md`.
 

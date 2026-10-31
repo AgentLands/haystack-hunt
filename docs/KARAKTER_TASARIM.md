@@ -107,6 +107,14 @@ güncelle.
   bir hareket isteği (yön ya da yeni tıkla-yürü hedefi) takibi geri getirir. Tekerlek ve
   +/− takip sürerken takibin yakınlığını değiştirir. Ok tuşu ve Boşluk+sürükle kaydırma yok.
 
+## Yarış (çevrimiçi)
+- Yarışta `durum.karakter` (konum, yön, hareketli, kullaniyor, bindiği makine türü/yönü/yükü)
+  ve `durum.arac` ~8 Hz, yalnız değişince `imlec` iletisiyle sunucuya gider
+  (`js/ozellik/yaris-konum.js`; biçim `sunucu/PROTOKOL.md`). Diğer oyuncular
+  `js/ozellik/yaris-hayalet.js`'te `karakterCiz`/`makineCiz` ile çizilen **görsel
+  hayaletlerdir** (120 ms gecikmeli ara değer, oyuncu renginde halka + ad etiketi); yerel
+  tarlayı etkilemezler. Mini harita (`kamera-arayuz.js`) onları renkli nokta gösterir.
+
 ## Yeni olaylar (olaylar.js kataloğuna eklenir)
 - `karakter-adim { x, y, z }` (adım sesi/izi için, ~her adımda bir)
 - `makine-bin { makine }`, `makine-in { makine }`

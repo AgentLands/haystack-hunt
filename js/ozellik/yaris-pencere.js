@@ -21,6 +21,8 @@ const SABLON = `
     <p class="yaris-kod">Oda kodu <strong data-ref="kod"></strong></p>
     <p class="yaris-bilgi" data-ref="bilgi"></p>
     <ol class="yaris-liste" data-ref="liste"></ol>
+    <p class="yaris-not">Diğer oyuncuların çiftçileri ve makineleri yalnız görüntüdür: herkes
+      kendi tarlasında kazar.</p>
     <div class="dugmeler">
       <button type="button" data-ref="baslat">Başlat</button>
       <button type="button" data-ref="ayril" class="ikincil">Odadan ayrıl</button>

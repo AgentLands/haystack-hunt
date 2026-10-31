@@ -1,9 +1,8 @@
 /**
- * Yarış görünümü: diğer oyuncuların imleçleri (tuval 'ust' katmanı, renkli nokta + ad),
- * tuvalin sağ üstündeki canlı skor tablosu, 3-2-1 geri sayım bindirmesi ve oyuncu
- * sıralama/durum metinleri (pencere de kullanır).
+ * Yarış görünümü: tuvalin sağ üstündeki canlı skor tablosu, 3-2-1 geri sayım bindirmesi ve
+ * oyuncu renk/sıralama/durum metinleri (pencere de kullanır). Diğer oyuncuların çiftçileri
+ * tuvalde yaris-hayalet.js ile çizilir.
  */
-import { katmanEkle, OLCEK } from '../cizim.js';
 import { sayi, sureMetni } from '../arayuz.js';
 
 export const RENKLER = [
@@ -44,43 +43,6 @@ export function oyuncuSatiri(etiket, k, benimId) {
   deger.textContent = durumMetni(k);
   satir.append(nokta, ad, deger);
   return satir;
-}
-
-/** imlecleriAl(durum) → [{ x, y, ad, renk }] (hücre koordinatı). */
-export function imlecKatmaniKur(imlecleriAl) {
-  katmanEkle((ctx, durum) => {
-    const liste = imlecleriAl(durum);
-    if (!liste.length) return;
-    const gorunen = ctx.canvas.clientWidth;
-    const k = gorunen > 0 ? ctx.canvas.width / gorunen : 1;
-    ctx.save();
-    ctx.font = `bold ${Math.round(12 * k)}px system-ui, sans-serif`;
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'left';
-    for (const imlec of liste) imlecCiz(ctx, imlec, k);
-    ctx.restore();
-  }, 'ust');
-}
-
-function imlecCiz(ctx, { x, y, ad, renk: r }, k) {
-  const px = (x + 0.5) * OLCEK;
-  const py = (y + 0.5) * OLCEK;
-  ctx.fillStyle = r;
-  ctx.strokeStyle = 'rgba(20, 14, 8, 0.9)';
-  ctx.lineWidth = 2 * k;
-  ctx.beginPath();
-  ctx.arc(px, py, 5 * k, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  const en = ctx.measureText(ad).width + 10 * k;
-  const boy = 18 * k;
-  let lx = px + 9 * k;
-  if (lx + en > ctx.canvas.width) lx = px - 9 * k - en;
-  const ly = Math.max(boy / 2, py - 10 * k);
-  ctx.fillStyle = 'rgba(20, 14, 8, 0.8)';
-  ctx.fillRect(lx, ly - boy / 2, en, boy);
-  ctx.fillStyle = r;
-  ctx.fillText(ad, lx + 5 * k, ly);
 }
 
 let tablo = null;

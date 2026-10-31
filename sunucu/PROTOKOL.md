@@ -14,10 +14,31 @@ Sunucu 15 sn'de bir ping atar; yanıt gelmeyen bağlantı düşer.
 | `kur` | `ad` | Yeni oda kurar; kuran kurucu olur. |
 | `katil` | `oda` (4 harf), `ad` | Odaya katılır (lobide ya da yarış bittikten sonra). |
 | `baslat` | `zorluk?` | Yalnız kurucu; oda `lobi` ya da `bitti` iken (rövanş). `zorluk`: `kolay`, `normal` (varsayılan) ya da `zor`; kurucunun seçimi. |
-| `imlec` | `x`, `y` (hücre, tam sayı ya da ikisi `null`), `saman` | Yarışta ~5 Hz. |
+| `imlec` | Çiftçi konumu (aşağıda): `x`, `y`, `yon?`, `hareketli?`, `arac?`, `makine?`, `kullan?`, `saman` | Yarışta ~8 Hz, yalnız değişince. |
 | `bulundu` | `sureMs` (yarış başından), `saman` | İğne alındı. |
 | `pes` | — | Oyuncu pes etti. |
 | `ayril` | — | Odadan çık (bağlantıyı kapatmak da aynıdır). |
+
+### Konum iletisi (`imlec`)
+
+Oyun artık fare imleci değil, yürüyen bir çiftçidir; `imlec` iletisi (adı geriye uyum için
+korundu) çiftçinin konumunu ve bindiği makineyi taşır. Alanlar:
+
+| Alan | Anlam | Doğrulama |
+| --- | --- | --- |
+| `x`, `y` | Merkez, **dünya** birimi (tarla 240×160; hücre i, [i, i+1)); makinedeyken makinenin konumu | Sayı, 0..1024, 2 ondalığa yuvarlanır. İkisi `null` ise oyuncunun çiftçisi gizlenir. |
+| `yon` | Bakış yönü, radyan (0 = doğu, y aşağı pozitif) | Sayı; (-π, π]'ye sarılıp 2 ondalığa yuvarlanır. Yoksa 0. |
+| `hareketli` | Bu karede yürüdü/sürüldü mü | Bool; yoksa `false`. |
+| `kullan` | Aracı/iş aygıtını kullanıyor mu (Boşluk) | Bool; yoksa `false`. |
+| `arac` | Seçili araç | `el`, `tirmik`, `dedektor`, `miknatis`; yoksa `el`. |
+| `makine` | `null` (yürüyor) ya da `{ tur, yon, yuk? }` | `tur`: `traktor`, `balya`, `ufleyici`; `yon` açı gibi; `yuk` 0..1 (kepçe/balya doluluğu). |
+| `saman` | Kaldırdığı saman (kat) | Tam sayı, 0..10⁸. |
+
+Eski biçim (yalnız `x`, `y`, `saman`) geçerlidir; eksik alanlar varsayılanla doldurulur. Biçimsiz
+alan tüm iletiyi `hata{kod:'gecersiz'}` yapar ve yayılmaz. Gönderen ~8 Hz'i (125 ms) aşmaz ve
+yalnız değişince yollar; alıcı gelen konumları ~120 ms geriden doğrusal ara değerler.
+Diğer oyuncuların çiftçisi ve makinesi yalnız **görsel hayalettir**: herkes kendi tarlasında
+kazar, başkasının makinesi yerel tarlayı etkilemez.
 
 `ad` temizlenir: denetim/biçim karakterleri ve `<>` atılır, boşluklar tekleşir, en çok 16
 karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'}` döner.
@@ -30,7 +51,7 @@ karakter. Bilinmeyen alanlar yok sayılır; biçimsiz ileti `hata{kod:'gecersiz'
 | `oda` | `kod`, `kurucu`, `durum`, `tur`, `oyuncular[]` | Odanın tam durumu; her değişiklikte. |
 | `geri-sayim` | `n` (3, 2, 1) | Başlat'tan sonra saniyede bir. |
 | `basla` | `etiket`, `zorluk`, `tur` | Herkes aynı anda `yeniOyun(etiket, zorluk)` açar; aynı etiket + zorluk = aynı tarla. |
-| `imlec` | `id`, `x`, `y`, `saman` | Başka bir oyuncunun imleci (kendi imlecin gelmez). |
+| `imlec` | `id` + temizlenmiş konum alanlarının hepsi | Başka bir oyuncunun çiftçisi (kendi konumun gelmez). |
 | `kazanan` | `id`, `ad`, `sureMs` | İğneyi ilk bulan. |
 | `hata` | `kod`, `mesaj` | Reddedilen istek; `mesaj` Türkçe, gösterilebilir. |
 

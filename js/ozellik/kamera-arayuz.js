@@ -1,7 +1,8 @@
 /**
  * Kamera arayüzü: tuval kabının sağ altında +, −, ⤢ düğmeleri; sol altta (yakınken görünen)
  * mini harita: tarlanın küçük hâli, görünür alan dikdörtgeni; tıklayınca/sürükleyince oraya gider
- * (karakter takibi, oyuncu yeniden hareket edene dek bırakılır).
+ * (karakter takibi, oyuncu yeniden hareket edene dek bırakılır). Haritada yerel çiftçi parlak
+ * bir nokta; yarıştaki diğer oyuncular haritaKaynagiKur ile verilen renkli küçük noktalardır.
  */
 import { gorunum, gorunumAyarla } from '../gorunum.js';
 import { gorunurAlan, merkezle, YAKIN_EN_AZ, YAKIN_EN_COK } from '../kural/gorunum.js';
@@ -10,6 +11,23 @@ import { katmanEkle, tarlaResmi } from '../cizim.js';
 
 const EN = 120;
 const BOY = 80;
+
+let haritaKaynagi = () => [];
+
+/** Mini haritaya diğer oyuncuları ekler: islev(durum) → [{ x, y, renk }] (dünya birimi). */
+export function haritaKaynagiKur(islev) {
+  haritaKaynagi = islev;
+}
+
+function noktaCiz(ctx, x, y, renk, yaricap) {
+  ctx.beginPath();
+  ctx.arc((x / GENISLIK) * EN, (y / YUKSEKLIK) * BOY, yaricap, 0, Math.PI * 2);
+  ctx.fillStyle = renk;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(20, 14, 8, 0.9)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
 
 function dugmeYap(metin, baslik, tikla) {
   const d = document.createElement('button');
@@ -45,7 +63,7 @@ function miniHaritaKur(kap, elleKaydirildi) {
     if (harita.hasPointerCapture(e.pointerId)) git(e);
   });
   kap.append(harita);
-  return function ciz() {
+  return function ciz(durum) {
     harita.hidden = gorunum.z <= YAKIN_EN_AZ + 1e-6;
     if (harita.hidden || !tarlaResmi) return;
     ctx.imageSmoothingEnabled = false;
@@ -63,6 +81,9 @@ function miniHaritaKur(kap, elleKaydirildi) {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(x + 0.75, y + 0.75, w - 1.5, h - 1.5);
+    for (const o of haritaKaynagi(durum)) noktaCiz(ctx, o.x, o.y, o.renk, 2.5);
+    const k = durum.karakter;
+    if (k) noktaCiz(ctx, k.x, k.y, '#fff7a8', 3.5);
   };
 }
 
@@ -77,11 +98,11 @@ export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir, elleKaydiril
   kap.append(sira);
   const haritaCiz = miniHaritaKur(kap, elleKaydirildi);
   // Her kare, çizimden sonra (ust katman) düğme durumları ve mini harita tazelenir.
-  katmanEkle(() => {
+  katmanEkle((ctx, durum) => {
     arti.disabled = gorunum.z >= YAKIN_EN_COK - 1e-6;
     const sigmis = gorunum.z <= YAKIN_EN_AZ + 1e-6;
     eksi.disabled = sigmis;
     sigdirDugme.disabled = sigmis;
-    haritaCiz();
+    haritaCiz(durum);
   }, 'ust');
 }

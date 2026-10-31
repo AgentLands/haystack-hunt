@@ -1,23 +1,27 @@
 /**
  * Yarış modu (çevrimiçi): alt sıraya "Yarış" düğmesi ekler; sunucuya bağlanıp oda kurar ya
- * da katılır, geri sayımdan sonra herkes aynı etiketle yeniOyun açar. Yarışta imleç ve
- * kaldırılan saman ~5 Hz gönderilir, bulundu/pes sunucuya bildirilir; diğerlerinin imleçleri
- * ve canlı tablo yaris-cizim.js'de. Yarış sürerken yerel yeni tarla düğmeleri onay ister.
+ * da katılır, geri sayımdan sonra herkes aynı etiketle yeniOyun açar. Yarışta çiftçinin
+ * konumu/makinesi ve kaldırılan saman ~8 Hz (yalnız değişince) gönderilir, bulundu/pes
+ * sunucuya bildirilir; diğerlerinin çiftçileri yaris-hayalet.js'de, canlı tablo
+ * yaris-cizim.js'de. Yarış sürerken yerel yeni tarla düğmeleri onay ister.
  */
 import { dinle } from '../olaylar.js';
 import { yeniOyun, durumAl } from '../oyun.js';
 import { dugmeEkle, bildir } from '../arayuz.js';
-import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { baglan } from './yaris-baglanti.js';
 import { pencereKur, pencereAc, pencereKapat, pencereGoster } from './yaris-pencere.js';
-import { imlecKatmaniKur, tabloGuncelle, sayacGoster, renk } from './yaris-cizim.js';
+import { tabloGuncelle, sayacGoster, renk } from './yaris-cizim.js';
+import { konumIletisi, GONDERIM_ARALIGI } from './yaris-konum.js';
+import {
+  hayaletKatmaniKur, hayaletKonum, hayaletSil, hayaletTemizle, hayaletKonumlari,
+} from './yaris-hayalet.js';
+import { haritaKaynagiKur } from './kamera-arayuz.js';
 
-const GONDERIM_ARALIGI = 200;
 const TABLO_ARALIGI = 250;
 
 const y = {
   baglanti: null, baglaniyor: false, benim: null, oda: null, etiket: null, basladi: 0,
-  imlecler: new Map(), sonGonderim: 0, sonImlec: '', tabloKirli: false, sonTablo: 0,
+  sonGonderim: 0, sonImlec: '', tabloKirli: false, sonTablo: 0,
   sayacZamani: null,
 };
 
@@ -29,7 +33,6 @@ document.head.append(stil);
 const benimKaydim = () => (y.oda ? y.oda.oyuncular.find((k) => k.id === y.benim) : null);
 const oynuyorum = () => benimKaydim()?.durum === 'oynuyor';
 const yarisSuruyor = () => Boolean(y.oda) && (y.oda.durum === 'geri-sayim' || oynuyorum());
-const sinirla = (n, cok) => Math.max(0, Math.min(cok - 1, n));
 
 const dugme = dugmeEkle('alt', {
   metin: 'Yarış', baslik: 'Çevrimiçi yarış: oda kur ya da katıl', tikla: yarisAc,
@@ -49,7 +52,7 @@ function sayac(metin, sure = 0) {
 
 function sifirla() {
   Object.assign(y, { baglanti: null, oda: null, etiket: null });
-  y.imlecler.clear();
+  hayaletTemizle();
   sayac(null);
   guncelle();
 }
@@ -72,8 +75,8 @@ const ISLEYICILER = {
   oda(m) {
     const onceki = y.oda ? y.oda.durum : null;
     y.oda = m;
-    for (const id of y.imlecler.keys()) {
-      if (!m.oyuncular.some((k) => k.id === id && k.durum === 'oynuyor')) y.imlecler.delete(id);
+    for (const { id } of hayaletKonumlari()) {
+      if (!m.oyuncular.some((k) => k.id === id && k.durum === 'oynuyor')) hayaletSil(id);
     }
     guncelle();
     if (m.durum === 'bitti' && onceki === 'yaris') bitisGoster();
@@ -84,7 +87,7 @@ const ISLEYICILER = {
   },
   basla(m) {
     Object.assign(y, { etiket: m.etiket, basladi: performance.now(), sonImlec: '' });
-    y.imlecler.clear();
+    hayaletTemizle();
     yeniOyun(m.etiket, m.zorluk || 'normal');
     sayac('Başla!', 700);
   },
@@ -93,12 +96,7 @@ const ISLEYICILER = {
     if (!kayit) return;
     kayit.saman = m.saman;
     y.tabloKirli = true;
-    if (m.x === null) {
-      y.imlecler.delete(m.id);
-      return;
-    }
-    const eski = y.imlecler.get(m.id);
-    y.imlecler.set(m.id, { hx: m.x, hy: m.y, x: eski ? eski.x : m.x, y: eski ? eski.y : m.y });
+    hayaletKonum(m.id, m, performance.now());
   },
   kazanan(m) {
     bildir(m.id === y.benim ? 'Kazandın! İğneyi ilk sen buldun.' : `${m.ad} iğneyi buldu!`,
@@ -152,17 +150,18 @@ pencereKur({
   },
 });
 
-imlecKatmaniKur((durum) => {
+const hayaletBilgisi = (id, durum) => {
+  const kayit = y.oda && durum.etiket === y.etiket
+    ? y.oda.oyuncular.find((k) => k.id === id) : null;
+  return kayit ? { ad: kayit.ad, renk: renk(kayit.renk) } : null;
+};
+hayaletKatmaniKur(hayaletBilgisi);
+haritaKaynagiKur((durum) => {
   if (!y.oda || durum.etiket !== y.etiket) return [];
-  const liste = [];
-  for (const [id, im] of y.imlecler) {
-    const kayit = y.oda.oyuncular.find((k) => k.id === id);
-    if (!kayit) continue;
-    im.x += (im.hx - im.x) * 0.3;
-    im.y += (im.hy - im.y) * 0.3;
-    liste.push({ x: im.x, y: im.y, ad: kayit.ad, renk: renk(kayit.renk) });
-  }
-  return liste;
+  return hayaletKonumlari().flatMap(({ id, x, y: yy }) => {
+    const b = hayaletBilgisi(id, durum);
+    return b ? [{ x, y: yy, renk: b.renk }] : [];
+  });
 });
 
 dinle('kare', ({ zaman, durum }) => {
@@ -172,13 +171,12 @@ dinle('kare', ({ zaman, durum }) => {
   }
   if (!oynuyorum() || durum.etiket !== y.etiket) return;
   if (zaman - y.sonGonderim < GONDERIM_ARALIGI) return;
-  const im = durum.imlec;
-  const x = im ? sinirla(im.x, GENISLIK) : null;
-  const yy = im ? sinirla(im.y, YUKSEKLIK) : null;
-  const anahtar = `${x},${yy},${durum.tarla.kaldirilan}`;
+  const ileti = konumIletisi(durum);
+  if (!ileti) return;
+  const anahtar = JSON.stringify(ileti);
   if (anahtar === y.sonImlec) return;
   Object.assign(y, { sonImlec: anahtar, sonGonderim: zaman });
-  y.baglanti.gonder({ t: 'imlec', x, y: yy, saman: durum.tarla.kaldirilan });
+  y.baglanti.gonder(ileti);
 });
 
 dinle('bulundu', ({ sonuc }) => {

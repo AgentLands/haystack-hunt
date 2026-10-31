@@ -90,8 +90,28 @@ test('iki oyuncu: kur, katıl, başlat, imleç, bulundu, pes, rövanş', async (
 
   a.gonder({ t: 'imlec', x: 10, y: 20, saman: 55 });
   const im = await b.bekle('imlec');
-  assert.deepEqual(im, { t: 'imlec', id: a.merhaba.id, x: 10, y: 20, saman: 55 });
+  assert.deepEqual(im, {
+    t: 'imlec', id: a.merhaba.id, x: 10, y: 20, yon: 0, hareketli: false, arac: 'el',
+    makine: null, kullan: false, saman: 55,
+  }, 'eski biçimdeki (yalnız x, y, saman) ileti varsayılanlarla yayılır');
   assert.equal(a.iletiler.some((m) => m.t === 'imlec'), false, 'kendi imleci geri gelmez');
+
+  a.gonder({
+    t: 'imlec', x: 100.456, y: 50.2, yon: 7, hareketli: true, kullan: true, arac: 'tirmik',
+    makine: { tur: 'traktor', yon: -1.234, yuk: 0.5 }, saman: 70,
+  });
+  const konum = await b.bekle('imlec', (m) => m.saman === 70);
+  assert.deepEqual(konum, {
+    t: 'imlec', id: a.merhaba.id, x: 100.46, y: 50.2, yon: 0.72, hareketli: true,
+    arac: 'tirmik', makine: { tur: 'traktor', yon: -1.23, yuk: 0.5 }, kullan: true, saman: 70,
+  });
+  const nOnce = b.iletiler.length;
+  a.gonder({ t: 'imlec', x: 1, y: 1, arac: 'bomba', saman: 1 });
+  assert.equal((await a.bekle('hata', (m) => m.kod === 'gecersiz')).kod, 'gecersiz');
+  assert.equal(b.iletiler.length, nOnce, 'geçersiz konum yayılmaz');
+  a.gonder({ t: 'imlec', x: null, y: null, saman: 71 });
+  assert.deepEqual(await b.bekle('imlec', (m) => m.saman === 71),
+    { t: 'imlec', id: a.merhaba.id, x: null, y: null, saman: 71 });
 
   b.gonder({ t: 'bulundu', sureMs: 4321, saman: 900 });
   const kazanan = await a.bekle('kazanan');
@@ -191,8 +211,10 @@ test('doğrulama: ad, oda kodu, ileti kalıpları, hız sınırı', () => {
   assert.equal(adTemizle(42), null);
   assert.equal(kodTemizle(' abcd '), 'ABCD');
   assert.equal(kodTemizle('AB1D'), null);
-  assert.deepEqual(iletiCoz('{"t":"imlec","x":3.4,"y":5,"saman":1,"fazla":true}').ileti,
-    { t: 'imlec', x: 3, y: 5, saman: 1 });
+  assert.deepEqual(iletiCoz('{"t":"imlec","x":3.4,"y":5,"saman":1,"fazla":true}').ileti, {
+    t: 'imlec', x: 3.4, y: 5, yon: 0, hareketli: false, arac: 'el', makine: null,
+    kullan: false, saman: 1,
+  });
   assert.ok(iletiCoz('{"t":"imlec","x":-1,"y":5,"saman":1}').hata);
   assert.ok(iletiCoz('{"t":"bulundu","sureMs":"1","saman":1}').hata);
   assert.ok(iletiCoz('{"t":"__proto__"}').hata);
@@ -209,4 +231,24 @@ test('WebSocket çerçeveleri: RFC 6455 örneği, maskesiz çerçeve reddi', () 
   assert.deepEqual([c.fin, c.kod, c.yuk.toString(), c.toplam], [true, 1, 'Hello', 11]);
   assert.equal(cerceveCoz(maskeli.subarray(0, 6)), null);
   assert.equal(cerceveCoz(Buffer.from([0x81, 0x05, 72, 101, 108, 108, 111])).hata, 1002);
+});
+
+test('doğrulama: konum iletisinin yön, araç ve makine alanları', () => {
+  const coz = (ek) => iletiCoz(JSON.stringify({ t: 'imlec', x: 5, y: 6, saman: 0, ...ek }));
+  assert.equal(coz({ yon: 10 }).ileti.yon, -2.57, 'açı (-π, π] aralığına sarılır');
+  assert.equal(coz({ yon: Math.PI }).ileti.yon, 3.14);
+  assert.deepEqual(coz({ makine: { tur: 'ufleyici', yon: 1 } }).ileti.makine,
+    { tur: 'ufleyici', yon: 1 }, 'yuk isteğe bağlı');
+  assert.deepEqual(coz({ makine: null }).ileti.makine, null);
+  for (const arac of ['el', 'tirmik', 'dedektor', 'miknatis']) {
+    assert.equal(coz({ arac }).ileti.arac, arac);
+  }
+  const bozuklar = [
+    { x: 5000 }, { y: -0.01 }, { x: '5' }, { x: null }, { yon: 'sag' }, { yon: 1e9 },
+    { hareketli: 1 }, { kullan: 'evet' }, { arac: 'kazma' }, { arac: null },
+    { makine: 'traktor' }, { makine: [] }, { makine: { tur: 'tank', yon: 0 } },
+    { makine: { tur: 'balya' } }, { makine: { tur: 'balya', yon: 0, yuk: 2 } },
+    { makine: { tur: 'balya', yon: 0, yuk: 'x' } },
+  ];
+  for (const b of bozuklar) assert.ok(coz(b).hata, JSON.stringify(b));
 });

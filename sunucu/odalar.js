@@ -1,7 +1,7 @@
 /**
- * Yarış odaları: oda kur/katıl/ayrıl, kurucunun başlatması, 3-2-1 geri sayım, imleç
- * yayını, bulundu/pes ile sıralama ve yarışın bitişi. Ağ katmanını bilmez: her oyuncu
- * { id, gonder(metin) } nesnesidir; iletiler dogrulama.js'den temizlenmiş gelir.
+ * Yarış odaları: oda kur/katıl/ayrıl, kurucunun başlatması, 3-2-1 geri sayım, çiftçi konumu
+ * yayını ('imlec' iletisi), bulundu/pes ile sıralama ve yarışın bitişi. Ağ katmanını bilmez:
+ * her oyuncu { id, gonder(metin) } nesnesidir; iletiler dogrulama.js'den temizlenmiş gelir.
  * İleti biçimleri: sunucu/PROTOKOL.md.
  */
 import { randomInt } from 'node:crypto';
@@ -120,7 +120,7 @@ export class Odalar {
     const { oda, kayit } = this.#oynayan(oyuncu);
     if (!kayit) return;
     kayit.saman = m.saman;
-    this.#yay(oda, { t: 'imlec', id: kayit.id, x: m.x, y: m.y, saman: m.saman }, kayit.id);
+    this.#yay(oda, { ...m, id: kayit.id }, kayit.id);
   }
 
   bulundu(oyuncu, m) {
