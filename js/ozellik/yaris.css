@@ -1,0 +1,95 @@
+/* Yarış modu: pencere, tuval üstü canlı tablo ve geri sayım bindirmesi (js/ozellik/yaris.js). */
+.yaris-pencere { width: min(380px, calc(100vw - 32px)); }
+.yaris-pencere [hidden] { display: none !important; }
+.yaris-pencere label { display: flex; flex-direction: column; gap: 4px; color: var(--soluk); }
+.yaris-pencere input {
+  font: inherit;
+  color: var(--yazi);
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 0;
+}
+.yaris-pencere input:focus { outline: 2px solid var(--vurgu); outline-offset: 1px; }
+.yaris-pencere .dugmeler { margin-top: 10px; }
+.yaris-ayrac { color: var(--soluk); font-size: 0.85rem; margin: 16px 0 6px; }
+.yaris-katil { display: flex; gap: 8px; }
+.yaris-katil input {
+  width: 7em;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: bold;
+}
+.yaris-kod { margin: 0 0 4px; color: var(--soluk); }
+.yaris-kod strong {
+  color: var(--vurgu);
+  font-size: 1.6rem;
+  letter-spacing: 0.2em;
+  margin-left: 6px;
+  user-select: all;
+}
+.yaris-bilgi { margin: 4px 0 10px; }
+.yaris-liste { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.yaris-liste .yaris-satir {
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.yaris-satir { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.yaris-satir.ben .yaris-ad { font-weight: bold; }
+.yaris-nokta {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px rgba(20, 14, 8, 0.9);
+}
+.yaris-ad { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yaris-deger { color: var(--soluk); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.yaris-kapat { margin-top: 14px; text-align: right; }
+
+.yaris-tablo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: min(210px, 46%);
+  background: rgba(20, 14, 8, 0.78);
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  display: grid;
+  gap: 3px;
+  pointer-events: none;
+}
+.yaris-tablo[hidden] { display: none; }
+/* Kısa bildirimler (bildir) tablonun üstünde kalsın; dar ekranda üst üste gelebilirler. */
+.tarla-kap > .bildirim { z-index: 2; }
+.yaris-tablo-baslik { color: var(--vurgu); font-weight: bold; font-size: 0.75rem; }
+
+.yaris-sayac {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(3rem, 14vw, 8rem);
+  font-weight: 800;
+  color: var(--vurgu);
+  -webkit-text-stroke: 0.06em var(--vurgu-yazi);
+  paint-order: stroke fill;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+.yaris-sayac[hidden] { display: none; }
+.yaris-sayac.vurus { animation: yaris-vurus 0.6s ease-out; }
+@keyframes yaris-vurus {
+  from { transform: scale(1.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  .yaris-tablo { font-size: 0.7rem; padding: 4px 6px; }
+}
