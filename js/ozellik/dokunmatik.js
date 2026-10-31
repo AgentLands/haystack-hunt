@@ -1,8 +1,9 @@
 /**
- * Dokunmatik denetim: tuval kabının sol altında sanal kol, sağ altında "Kullan" ve "Bin/İn"
- * düğmeleri. Yalnız kaba işaretçili cihazda (ya da ilk dokunuşta, ya da ?dokunmatik=1) kurulur;
- * masaüstünde DOM'a hiçbir şey eklenmez. Yalnız js/kontrol.js'e yazar. Kipte gövdeye
- * `dokunmatik` sınıfı eklenir; mini harita/kamera düğmesi/bildirim yerleşimi o sınıfla CSS'tedir.
+ * Dokunmatik denetim: kumanda (sanal kol solda, "Kullan" ve "Bin/İn" düğmeleri sağda). Yalnız
+ * kaba işaretçili cihazda (ya da ilk dokunuşta, ya da ?dokunmatik=1) kurulur; masaüstünde
+ * DOM'a hiçbir şey eklenmez. Yalnız js/kontrol.js'e yazar. Kumanda gövde ızgarasında main'in
+ * ardına eklenir: dikey ekranda tuvalin altındaki ahşap tablada, yatayda tuvalin alt
+ * köşelerinde durur (dokunmatik.css). Kipte gövdeye `dokunmatik` sınıfı eklenir.
  */
 import { kontrol, yonAyarla, kullanAyarla } from '../kontrol.js';
 import { kolYonu } from '../kural/kol.js';
@@ -84,7 +85,8 @@ function dugmeKur(kap, sinif, metin, baslik, basla, birak) {
 
 function kur() {
   if (document.body.classList.contains('dokunmatik')) return;
-  const kap = document.getElementById('tarla-kap');
+  const kap = ogeYap('kumanda');
+  document.querySelector('main').after(kap);
   document.head.append(stil);
   document.body.classList.add('dokunmatik');
   kolKur(kap);
@@ -95,18 +97,9 @@ function kur() {
     () => kullanAyarla(true, 'dokunmatik'), () => kullanAyarla(false, 'dokunmatik'));
 }
 
-/** Yatay telefonda tarla ilk görünümde ekrana gelsin (üstündeki paneller yer kaplar). */
-function tarlayiGoster() {
-  const kap = document.getElementById('tarla-kap');
-  if (matchMedia('(orientation: landscape) and (max-height: 600px)').matches) {
-    kap.scrollIntoView({ block: 'center' });
-  }
-}
-
 const zorla = new URLSearchParams(location.search).get('dokunmatik') === '1';
 if (zorla || matchMedia('(pointer: coarse)').matches) {
   kur();
-  window.addEventListener('load', tarlayiGoster, { once: true });
 } else {
   // Kaba işaretçi bildirmeyen ama dokunuşla oynanan cihazlar için ilk dokunuşta kur.
   window.addEventListener('touchstart', kur, { once: true, passive: true });

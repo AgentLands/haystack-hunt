@@ -1,0 +1,292 @@
+/*
+ * HUD: tuvalin üst kenarına iğnelenmiş tabela (oyun adı), lot etiketi (tarla numarası,
+ * zorluk), kâğıt etiketler (süre, kaldırılan saman), sağ üstte ikon düğmeleri; alt kenara
+ * oturan alet rafı (4 kart, seçili olan kalkık ve saman sarısı, haklar nokta dizisi) ve
+ * makineye binince rafın yerini alan makine kartı. Telefon yerleşimi stil-telefon.css'te.
+ */
+.hud-baslik,
+.panel,
+.araclar {
+  z-index: 3;
+  pointer-events: none; /* aradaki boşluk tuvale tıklamayı engellemesin */
+}
+.hud-baslik > *,
+.panel > *,
+.araclar > * { pointer-events: auto; }
+
+/* Ortak kâğıt yüzeyi: lifli kâğıt, mürekkep kenar, keskin gölge. */
+.logo,
+.etiket,
+.hud-etiket,
+.makine-karti {
+  color: var(--murekkep);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+}
+.logo,
+.etiket,
+.hud-etiket,
+.arac-kart,
+.makine-karti {
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+}
+
+/* Raptiye: kâğıdı tuvale tutturan kırmızı başlı iğne. */
+.hud-etiket::before,
+.etiket::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--damga);
+  border: 2px solid var(--murekkep);
+}
+
+/* Üst sıra: tabela + lot etiketi solda, ikon düğmeleri sağda. */
+.hud-baslik {
+  align-self: start;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'logo . dugme' 'etiket . dugme';
+  align-items: start;
+  margin-top: -22px;
+  padding: 0 12px 0 14px;
+}
+.logo {
+  grid-area: logo;
+  justify-self: start;
+  position: relative;
+  margin: 0;
+  padding: 9px 24px 8px;
+  font-family: var(--yazi-baslik);
+  font-weight: 400;
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--damga);
+  background-color: var(--kraft);
+  transform: rotate(-1.4deg);
+}
+/* Tabelanın iki ucundaki çivi başları. */
+.logo::before,
+.logo::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--murekkep);
+  box-shadow: inset 1px 1px 0 var(--kraft-koyu);
+}
+.logo::before { left: 7px; }
+.logo::after { right: 7px; }
+.etiket {
+  grid-area: etiket;
+  justify-self: start;
+  position: relative;
+  margin: 7px 0 0 26px;
+  padding: 5px 9px 3px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background-color: var(--kagit);
+  transform: rotate(0.9deg);
+}
+.etiket:empty { display: none; }
+.dugme-sirasi { grid-area: dugme; display: flex; gap: 8px; margin-top: 2px; }
+.dugme-sirasi .dugme-ikon { font-size: 1.1rem; line-height: 1; }
+
+/* Süre ve saman: üst ortada iki kâğıt etiket. */
+.panel { align-self: start; justify-self: center; display: flex; gap: 14px; margin-top: -18px; }
+.hud-etiket {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px 5px 10px;
+  background-color: var(--kagit);
+  transform: rotate(-1deg);
+}
+.hud-etiket + .hud-etiket { transform: rotate(1.3deg); }
+.hud-etiket strong { font-size: 1.2rem; line-height: 1; min-width: 2.6ch; }
+.hud-ikon,
+.arac-ikon {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Alet rafı: tuvalin alt kenarına oturan kartlar. */
+.araclar {
+  align-self: end;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: -34px;
+}
+.arac-kart {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  width: 92px;
+  height: 66px;
+  padding: 5px 4px 6px;
+  font-family: var(--yazi-govde);
+  font-size: 0.86rem;
+  line-height: 1;
+  color: var(--murekkep);
+  background-color: var(--kraft);
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+}
+.arac-kart .arac-ikon { width: 26px; height: 26px; }
+.arac-kart:hover { transform: translateY(-2px); }
+.arac-kart[aria-pressed='true'] {
+  background-color: var(--saman);
+  transform: translateY(-6px) rotate(-1deg);
+  box-shadow: inset 0 0 0 1px var(--murekkep), var(--golge-buyuk);
+}
+.arac-kart:active { transform: translate(2px, 3px); box-shadow: none; }
+/* Kısayol rakamı: kartın köşesine basılmış ters renk damga. */
+.arac-kart kbd {
+  position: absolute;
+  left: -7px;
+  top: -8px;
+  padding: 2px 5px 1px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.74rem;
+  line-height: 1.1;
+  color: var(--kagit);
+  background: var(--murekkep);
+  border-radius: 2px;
+  transform: rotate(-7deg);
+}
+.hak-dizi { display: flex; gap: 4px; height: 8px; }
+.hak-dizi:empty { display: none; }
+.hak-nokta {
+  position: relative;
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--murekkep);
+}
+/* Harcanan hak: boş halka, üstü çizili. */
+.hak-nokta.harcandi { background: none; box-shadow: inset 0 0 0 1.5px var(--murekkep-soluk); }
+.hak-nokta.harcandi::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 3px;
+  width: 12px;
+  height: 2px;
+  background: var(--damga);
+  transform: rotate(-35deg);
+}
+.araclar .zorluk-secici {
+  appearance: none;
+  height: 40px;
+  margin-left: 4px;
+  padding: 0 24px 0 9px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--murekkep);
+  background-color: var(--kagit);
+  /* Elle çizilmiş aşağı ok (gradyansız SVG). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1.5 1.8 6.1 6l4.4-4.3' fill='none' stroke='%232b2118' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  cursor: pointer;
+}
+
+/* Makine kartı: binince alet kartları ve zorluk seçici çekilir. */
+.araclar.binik .arac-kart,
+.araclar.binik .zorluk-secici { display: none; }
+.makine-karti {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 16px;
+  min-width: 270px;
+  padding: 8px 14px 10px;
+  background-color: var(--kraft);
+  box-shadow: var(--golge-buyuk);
+  transform: translateY(-6px) rotate(-0.8deg);
+}
+.makine-karti[hidden] { display: none; }
+.makine-ad { font-family: var(--yazi-baslik); font-weight: 400; font-size: 1.02rem; }
+.makine-ipucu {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
+  padding: 2px 6px 1px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--kagit);
+  background: var(--murekkep);
+  border-radius: 2px;
+  transform: rotate(-3deg);
+}
+.serit {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 4.6em 1fr;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+.serit[hidden] { display: none; }
+.serit-kutu {
+  height: 12px;
+  background: var(--kagit);
+  border: var(--kenar);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.serit-dolu {
+  display: block;
+  width: var(--dolu, 0%);
+  height: 100%;
+  background: var(--saman);
+  border-right: 2px solid var(--murekkep);
+}
+#makine-yakit { background: var(--cayir); }
+#makine-yakit.az { background: var(--damga); }
+
+/* Büyük ekranda HUD tuvalle birlikte büyür. */
+@media (min-width: 1600px) and (min-height: 940px) {
+  .hud-baslik,
+  .panel,
+  .araclar { zoom: 1.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arac-kart { transition: none; }
+}
