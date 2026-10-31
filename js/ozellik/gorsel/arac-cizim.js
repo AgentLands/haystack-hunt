@@ -1,12 +1,16 @@
 /**
- * Çiftçinin elindeki araçlar (karakter yerel uzayında): tırmık, dedektör, mıknatıs.
- * araciKur() hem aracı çizen işlevi hem de ellerin tuttuğu noktaları verir; böylece kollar
- * aracın sallanmasını izler. Kullanılırken araç sallanır, boştayken omuzda taşınır.
+ * Çiftçinin elindeki araçlar (karakter yerel uzayında, dış hatlı): tırmık, dedektör,
+ * mıknatıs. araciKur() hem aracı çizen işlevi hem de ellerin tuttuğu noktaları verir; böylece
+ * kollar aracın hareketini izler. Açı/ileri kayma karakter-poz.js aracPozu'ndan gelir:
+ * tırmık sap yayı çizip saman çeker, dedektör tarama yayı bırakır, mıknatıs ileri uzanıp
+ * nabız atar. Sap kalınlığı ekran-sabit alt sınırlıdır (uzakta kaybolmasın).
  */
-import { IKI_PI, doldur, elips, serit } from './ortak.js';
+import { IKI_PI } from './ortak.js';
+import { DIS, SAMAN_RENK, hatli, hatliCizgi } from './ciftci-parca.js';
 
-const SAP = '#7a5430';
-const SAP_ACIK = '#a77b46';
+const SAP = '#8a5d32';
+const METAL = '#5d6469';
+const METAL_ACIK = '#b4bbc2';
 
 /** Aracın yerel noktasını (u: sap boyunca, v: yanal) karakter uzayına çevirir. */
 function nokta(ox, oy, aci, u, v) {
@@ -15,96 +19,131 @@ function nokta(ox, oy, aci, u, v) {
   return [ox + u * c - v * s, oy + u * s + v * c];
 }
 
-function tirmik(ctx, ox, oy, aci, kullan) {
-  const [bx, by] = nokta(ox, oy, aci, 2.0, 0);
-  serit(ctx, ...nokta(ox, oy, aci, -0.5, 0), bx, by, 0.12, SAP);
-  serit(ctx, ...nokta(ox, oy, aci, -0.5, -0.03), ...nokta(ox, oy, aci, 1.9, -0.03),
-    0.04, SAP_ACIK);
-  const [x1, y1] = nokta(ox, oy, aci, 2.0, -0.62);
-  const [x2, y2] = nokta(ox, oy, aci, 2.0, 0.62);
-  serit(ctx, x1, y1, x2, y2, 0.14, '#6b6f73');
-  const boy = kullan ? 0.42 : 0.3;
-  for (let i = 0; i < 6; i++) {
-    const v = -0.56 + i * 0.224;
-    serit(ctx, ...nokta(ox, oy, aci, 2.0, v), ...nokta(ox, oy, aci, 2.0 + boy, v),
-      0.06, '#9a9ea2');
-  }
+function daire(ctx, x, y, r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, IKI_PI);
 }
 
-function dedektor(ctx, ox, oy, aci, kullan, t) {
-  serit(ctx, ...nokta(ox, oy, aci, -0.3, 0), ...nokta(ox, oy, aci, 1.6, 0), 0.11, '#39424d');
-  const [dx, dy] = nokta(ox, oy, aci, 1.85, 0);
-  elips(ctx, dx, dy, 0.52, 0.52);
-  doldur(ctx, '#2d343d');
-  elips(ctx, dx, dy, 0.42, 0.42);
-  doldur(ctx, '#6c7e91');
-  elips(ctx, dx - 0.04, dy - 0.04, 0.26, 0.26);
-  doldur(ctx, '#93a6b8');
-  if (kullan) {
-    ctx.strokeStyle = 'rgba(190, 235, 255, 0.55)';
-    ctx.lineWidth = 0.05;
+function tirmik(ctx, o, kullan, t, dh) {
+  const n = (u, v) => nokta(o.x, o.y, o.aci, u, v);
+  const sap = Math.max(0.1, dh * 1.7);
+  hatliCizgi(ctx, ...n(-0.5, 0), ...n(2.0, 0), sap, SAP, dh);
+  const boy = kullan ? 0.4 : 0.3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const v = -0.54 + i * 0.216;
+    ctx.moveTo(...n(2.0, v));
+    ctx.lineTo(...n(2.0 + boy, v));
+  }
+  ctx.strokeStyle = DIS;
+  ctx.lineWidth = Math.max(0.07, dh) + 2 * dh;
+  ctx.stroke();
+  ctx.strokeStyle = METAL_ACIK;
+  ctx.lineWidth = Math.max(0.07, dh);
+  ctx.stroke();
+  hatliCizgi(ctx, ...n(2.0, -0.6), ...n(2.0, 0.6), Math.max(0.13, dh * 1.6), METAL, dh);
+  if (!kullan) return;
+  // Dişlerin önünde çekilen saman tutamı.
+  ctx.lineWidth = Math.max(0.05, dh);
+  for (let r = 0; r < 3; r++) {
+    ctx.strokeStyle = SAMAN_RENK[r];
     ctx.beginPath();
-    ctx.arc(dx, dy, 0.66 + 0.1 * Math.sin(t * 8), 0, IKI_PI);
+    for (let i = r; i < 7; i += 3) {
+      const v = -0.5 + i * 0.165;
+      const u = 2.45 + 0.08 * Math.sin(t * 20 + i * 2.1);
+      ctx.moveTo(...n(u, v));
+      ctx.lineTo(...n(u + 0.22, v + 0.1 * Math.sin(i * 1.7)));
+    }
     ctx.stroke();
   }
-  const [lx, ly] = nokta(ox, oy, aci, 0.5, 0.09);
-  elips(ctx, lx, ly, 0.06, 0.06);
-  doldur(ctx, kullan && Math.sin(t * 12) > 0 ? '#ff5640' : '#7a2c24');
 }
 
-function miknatis(ctx, ox, oy, aci, kullan, t) {
-  serit(ctx, ...nokta(ox, oy, aci, -0.3, 0), ...nokta(ox, oy, aci, 1.1, 0), 0.1, SAP);
-  const sallan = kullan ? Math.sin(t * 9) * 0.18 : 0;
-  const [cx, cy] = nokta(ox, oy, aci + sallan, 1.5, 0);
-  const a = aci + sallan;
-  ctx.lineCap = 'butt';
-  ctx.strokeStyle = '#c93434';
-  ctx.lineWidth = 0.22;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 0.3, a + Math.PI / 2, a + Math.PI * 1.5);
-  ctx.stroke();
-  for (const v of [-1, 1]) {
-    serit(ctx, ...nokta(cx, cy, a, 0, v * 0.3), ...nokta(cx, cy, a, 0.32, v * 0.3),
-      0.22, '#dfe4e8');
-  }
-  if (kullan) {
-    ctx.strokeStyle = 'rgba(255, 245, 200, 0.6)';
-    ctx.lineWidth = 0.04;
-    for (let i = 0; i < 3; i++) {
-      const f = (t * 2 + i / 3) % 1;
-      const [px, py] = nokta(cx, cy, a, 0.9 - f * 0.55, (i - 1) * 0.28);
-      const [qx, qy] = nokta(cx, cy, a, 1.02 - f * 0.55, (i - 1) * 0.28);
+function dedektor(ctx, o, kullan, t, dh) {
+  const n = (u, v) => nokta(o.x, o.y, o.aci, u, v);
+  const [dx, dy] = n(1.85, 0);
+  if (kullan && o.iz) {
+    // Tarama yayı: başın az önce geçtiği yol (açık iz, baş tarafı daha parlak).
+    const r = Math.hypot(dx - o.x, dy - o.y);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 0.42;
+    for (const [k, a] of [[1, 0.16], [0.5, 0.2]]) {
+      const ucu = o.aci - o.iz * k;
+      ctx.strokeStyle = `rgba(205, 240, 255, ${a})`;
       ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(qx, qy);
+      ctx.arc(o.x, o.y, r, Math.min(ucu, o.aci), Math.max(ucu, o.aci));
       ctx.stroke();
     }
   }
+  hatliCizgi(ctx, ...n(-0.3, 0), ...n(1.6, 0), Math.max(0.1, dh * 1.6), '#39424d', dh);
+  daire(ctx, dx, dy, 0.44);
+  hatli(ctx, '#2d343d', dh);
+  daire(ctx, dx, dy, 0.34);
+  ctx.fillStyle = '#6c7e91';
+  ctx.fill();
+  daire(ctx, dx - 0.06, dy - 0.06, 0.19);
+  ctx.fillStyle = '#9fb3c6';
+  ctx.fill();
+  if (kullan) {
+    ctx.strokeStyle = 'rgba(190, 235, 255, 0.7)';
+    ctx.lineWidth = Math.max(0.05, dh);
+    daire(ctx, dx, dy, 0.55 + 0.12 * ((t * 3) % 1));
+    ctx.stroke();
+  }
+  const [lx, ly] = n(0.5, 0.11);
+  daire(ctx, lx, ly, 0.07);
+  hatli(ctx, kullan && Math.sin(t * 12) > 0 ? '#ff5640' : '#7a2c24', dh * 0.7);
 }
+
+function miknatis(ctx, o, kullan, t, dh) {
+  const n = (u, v) => nokta(o.x, o.y, o.aci, u, v);
+  hatliCizgi(ctx, ...n(-0.3, 0), ...n(1.15, 0), Math.max(0.1, dh * 1.6), SAP, dh);
+  const [cx, cy] = n(1.5, 0);
+  const a = o.aci;
+  const p = (u, v) => nokta(cx, cy, a, u, v);
+  // At nalı: dış hat, kırmızı gövde, çelik uçlar.
+  ctx.lineCap = 'butt';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 0.3, a + Math.PI / 2, a + Math.PI * 1.5);
+  ctx.strokeStyle = DIS;
+  ctx.lineWidth = 0.22 + 2 * dh;
+  ctx.stroke();
+  ctx.strokeStyle = '#c93434';
+  ctx.lineWidth = 0.22;
+  ctx.stroke();
+  for (const v of [-1, 1]) {
+    hatliCizgi(ctx, ...p(0, v * 0.3), ...p(0.3, v * 0.3), 0.2, '#dfe4e8', dh);
+  }
+  if (!kullan) return;
+  // Nabız: önden mıknatısa doğru gelen yaylar.
+  ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(0.06, dh * 1.2);
+  for (let i = 0; i < 3; i++) {
+    const f = (t * 1.6 + i / 3) % 1;
+    const r = 1.05 - f * 0.6;
+    ctx.strokeStyle = `rgba(255, 236, 170, ${(0.85 * Math.sin(Math.PI * f)).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(...p(-0.2, 0), r, a - 0.55, a + 0.55);
+    ctx.stroke();
+  }
+}
+
+const CIZICI = { tirmik, dedektor, miknatis };
+const TUTUS = { tirmik: [0.12, 0.7], dedektor: [0.2, 0.62], miknatis: [0.05, 0.5] };
 
 /**
  * Araç düzeni: { ciz(ctx), sag: [x, y], sol: [x, y] } ya da elle (el) için null.
- * kullan: araç çalışıyor; t: saniye.
+ * poz: aracPozu() sonucu (aci, uzat, iz); kullan: araç çalışıyor; t: saniye; dh: dış hat.
  */
-export function araciKur(ad, kullan, t) {
-  const ox = 0.1;
-  const oy = 0.3;
-  if (ad === 'tirmik') {
-    const aci = kullan ? Math.sin(t * 7) * 0.55 : -0.2;
-    return {
-      ciz: (ctx) => tirmik(ctx, ox, oy, aci, kullan),
-      sag: nokta(ox, oy, aci, 0.15, 0),
-      sol: nokta(ox, oy, aci, 0.85, 0),
-    };
-  }
-  if (ad === 'dedektor' || ad === 'miknatis') {
-    const aci = kullan ? Math.sin(t * (ad === 'dedektor' ? 3.5 : 5)) * 0.4 : -0.15;
-    const ciz = ad === 'dedektor' ? dedektor : miknatis;
-    return {
-      ciz: (ctx) => ciz(ctx, ox, oy, aci, kullan, t),
-      sag: nokta(ox, oy, aci, 0.35, 0),
-      sol: nokta(ox, oy, aci, 0.9, 0),
-    };
-  }
-  return null;
+export function araciKur(ad, poz, kullan, t, dh) {
+  const ciz = CIZICI[ad];
+  if (!ciz) return null;
+  const o = { x: 0.1 + Math.cos(poz.aci) * poz.uzat, y: 0.3 + Math.sin(poz.aci) * poz.uzat,
+    aci: poz.aci, iz: poz.iz || 0 };
+  const [a, b] = TUTUS[ad];
+  return {
+    ciz: (ctx) => ciz(ctx, o, kullan, t, dh),
+    sag: nokta(o.x, o.y, o.aci, a, 0),
+    sol: nokta(o.x, o.y, o.aci, b, 0),
+  };
 }

@@ -9,7 +9,7 @@
     font: 14px/1.4 system-ui, sans-serif; }
   h1 { font-size: 18px; margin: 0 0 6px; }
   h2 { font-size: 14px; margin: 18px 0 6px; color: #f0c870; }
-  .arac { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .arac { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
   button { background: #4b3a28; color: inherit; border: 1px solid #7a6240; padding: 4px 10px;
     border-radius: 4px; cursor: pointer; }
   button.secili { background: #8a6a30; }
@@ -17,13 +17,17 @@
 </style>
 </head>
 <body>
-<h1>Çiftçi, makineler ve balyalar: önizleme</h1>
+<h1>Çiftçi, iğne/çivi, makineler ve balyalar: önizleme</h1>
 <div class="arac">
   Yakınlaştırma:
   <button data-z="1">1×</button>
   <button data-z="2.5">2.5×</button>
   <button data-z="3">3×</button>
+  <button data-z="3.5">3.5×</button>
+  <button data-z="6">6×</button>
+  <button data-z="10">10×</button>
   <label><input type="checkbox" id="anim" checked> Canlandır</label>
+  <button id="olc">Ölç</button> <span id="olcum"></span>
 </div>
 <div id="bolumler"></div>
 <script type="module" src="onizleme.js"></script>

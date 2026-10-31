@@ -64,40 +64,108 @@ export function cizici(tuval) {
   };
 }
 
+/** Yerel uzayda 1 ekran pikseli (dünya pikseli cinsinden). */
+function ekranPikseli(ctx) {
+  const t = ctx.getTransform();
+  return 1 / Math.hypot(t.a, t.b);
+}
+
+/**
+ * İğnenin yarı boyu (dünya pikseli): ~1.6 hücre, ekranda en az ~22 px, en çok 4.4 hücre.
+ * eb: 1 ekran pikselinin dünya boyu (1 / yakınlaştırma).
+ */
+export function igneYariBoyu(eb) {
+  return Math.min(OLCEK * 2.2, Math.max(OLCEK * 0.8, 11 * eb));
+}
+
+/** İğne siluetinin yolu (yerel uzay, +x sivri uç): gözlü, hafif şişkin arka uç. */
+function igneYolu(ctx, h, w, goz) {
+  ctx.beginPath();
+  ctx.moveTo(h, 0);
+  ctx.lineTo(h * 0.4, -w);
+  ctx.lineTo(-h + goz, -w);
+  ctx.quadraticCurveTo(-h + goz * 0.35, -w * 1.75, -h, 0);
+  ctx.quadraticCurveTo(-h + goz * 0.35, w * 1.75, -h + goz, w);
+  ctx.lineTo(h * 0.4, w);
+  ctx.closePath();
+}
+
+/**
+ * Gümüş iğne modeli (dünya pikseli (x, y) merkezli, aci yönünde): gölge, ekran-sabit koyu
+ * dış hat, gölge tarafı koyu gövde, ışık tarafında beyaz çizgi, arka uçta göz deliği.
+ * olcek: havalanan iğne için büyütme. bulma ve balya işareti de bunu kullanır.
+ */
+export function igneModeli(ctx, x, y, aci, olcek = 1) {
+  const eb = ekranPikseli(ctx);
+  const h = igneYariBoyu(eb) * olcek;
+  const w = 1.2 * eb * olcek;
+  const goz = Math.max(h * 0.24, 4 * eb);
+  const lv = 0.6 * Math.sin(aci) - 0.8 * Math.cos(aci);
+  const yan = lv < 0 ? -1 : 1;
+  ctx.save();
+  ctx.translate(x + 1.6 * eb * olcek, y + 2 * eb * olcek);
+  ctx.rotate(aci);
+  igneYolu(ctx, h, w, goz);
+  ctx.fillStyle = 'rgba(40, 22, 8, 0.4)';
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(aci);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  igneYolu(ctx, h, w, goz);
+  ctx.strokeStyle = '#2a1a0d';
+  ctx.lineWidth = 2.1 * eb;
+  ctx.stroke();
+  ctx.fillStyle = '#7f8891';
+  ctx.fill();
+  ctx.strokeStyle = '#c3cad1';
+  ctx.lineWidth = w * 1.1;
+  ctx.beginPath();
+  ctx.moveTo(-h + goz * 0.6, yan * w * 0.4);
+  ctx.lineTo(h * 0.75, yan * w * 0.25);
+  ctx.stroke();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = Math.max(0.8 * eb, w * 0.45);
+  ctx.beginPath();
+  ctx.moveTo(-h + goz * 1.1, yan * w * 0.5);
+  ctx.lineTo(h * 0.45, yan * w * 0.45);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(42, 26, 13, 0.9)';
+  ctx.beginPath();
+  ctx.ellipse(-h + goz * 0.42, 0, goz * 0.26, Math.max(w * 0.42, 0.45 * eb), 0, 0,
+    Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 function igneyiCiz(ctx, durum, zaman) {
   const { igne } = durum.tarla;
   const derinlik = durum.goster ? 0 : igneDerinligi(durum.tarla);
   const mx = (igne.x + 0.5) * OLCEK;
   const my = (igne.y + 0.5) * OLCEK;
+  const eb = ekranPikseli(ctx);
   if (derinlik === 0) {
-    const dx = Math.cos(igne.aci) * OLCEK * 2.2;
-    const dy = Math.sin(igne.aci) * OLCEK * 2.2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = 'rgba(30, 20, 10, 0.55)';
-    ctx.lineWidth = 3;
-    cizgi(ctx, mx - dx + 1.5, my - dy + 1.5, mx + dx + 1.5, my + dy + 1.5);
-    ctx.strokeStyle = '#d9dee6';
-    ctx.lineWidth = 2;
-    cizgi(ctx, mx - dx, my - dy, mx + dx, my + dy);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-    cizgi(ctx, mx - dx * 0.6, my - dy * 0.6, mx + dx * 0.2, my + dy * 0.2);
+    igneModeli(ctx, mx, my, igne.aci);
   } else if (derinlik <= 3 && zaman % 1700 < 140) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-    ctx.fillRect(mx - 1, my - 1, 2, 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.fillRect(mx - 1.5 * eb, my - 1.5 * eb, 3 * eb, 3 * eb);
   }
   if (durum.parilti && zaman < durum.parilti.bitis) {
-    const kalan = (durum.parilti.bitis - zaman) / durum.parilti.sure;
-    yildiz(ctx, mx, my, 4 + 10 * Math.sin(kalan * Math.PI), Math.sin(kalan * Math.PI));
+    const s = Math.sin(((durum.parilti.bitis - zaman) / durum.parilti.sure) * Math.PI);
+    yildiz(ctx, mx, my, (6 + 16 * s) * eb, s, eb);
   }
 }
 
-function yildiz(ctx, x, y, boy, alfa) {
+/** Dört uzun, dört kısa ışınlı parıltı; boy dünya pikseli, kalınlık ekran-sabit. */
+function yildiz(ctx, x, y, boy, alfa, eb) {
+  ctx.lineCap = 'round';
   ctx.strokeStyle = `rgba(255, 255, 240, ${alfa})`;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.8 * eb;
   cizgi(ctx, x - boy, y, x + boy, y);
   cizgi(ctx, x, y - boy, x, y + boy);
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.1 * eb;
   const k = boy * 0.45;
   cizgi(ctx, x - k, y - k, x + k, y + k);
   cizgi(ctx, x - k, y + k, x + k, y - k);

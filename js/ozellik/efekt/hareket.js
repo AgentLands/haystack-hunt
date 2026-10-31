@@ -1,16 +1,17 @@
 /**
- * Hareket efektleri: yürürken ayak altından saman çöpü/toz ve yüksek samanda solan ayak
- * izi; makine sürerken arka tekerlek tozu ve solan tekerlek izi; çalışırken traktör
- * kepçesinden saman savrulması, balya makinesi tamburundan çöp, üfleyici konisinde ileri
- * uçuşan çöp bulutu (ufleme olayı). Egzoz dumanı makine çiziminde zaten var. İzler yalnız
- * çizim katmanında yaşar; parçacık sınırı parcacik.js'te (AZAMI), sade harekette azalır.
+ * Hareket efektleri: yürürken ayak altından saman çöpü/toz, ayak temasında küçük toz pofu
+ * ve yüksek samanda solan ayak izi; makine sürerken arka tekerlek tozu ve solan tekerlek
+ * izi; çalışırken traktör kepçesinden saman savrulması, balya makinesi tamburundan çöp,
+ * üfleyici konisinde ileri uçuşan çöp bulutu (ufleme olayı). Egzoz dumanı makine çiziminde
+ * zaten var. İzler yalnız çizim katmanında yaşar; parçacık sınırı parcacik.js'te (AZAMI),
+ * sade harekette azalır.
  */
 import { dinle } from '../../olaylar.js';
 import { katmanEkle, OLCEK } from '../../cizim.js';
 import { durumAl } from '../../oyun.js';
 import { makineTanimi } from '../../kural/makineler/kayit.js';
 import { hizSinirlayici } from '../ses-desen.js';
-import { sade, az, rasgele, copEkle, tozEkle } from './uretim.js';
+import { sade, az, rasgele, copEkle, tozEkle, pofEkle } from './uretim.js';
 import {
   adimEfekti, arkaTekerlekler, ayakKaymasi, dunyaNoktasi, koniNoktasi, tozHizi, uretimAdimi,
 } from './hareket-desen.js';
@@ -41,8 +42,12 @@ function ayakEfekti({ x, y, z }) {
         rasgele(4, 7));
     }
   }
-  if (!d.iz) return;
+  // Öndeki (yere basan) ayağın altında küçük toz pofu.
   const kayma = ayakKaymasi(yon, adimSirasi++);
+  const ileri = 0.35 * OLCEK;
+  pofEkle(px + Math.cos(yon) * ileri + kayma.x * OLCEK, py + Math.sin(yon) * ileri
+    + kayma.y * OLCEK, d.tur === 'saman' ? '214, 184, 110' : undefined);
+  if (!d.iz) return;
   izEkle({
     x: px + kayma.x * OLCEK, y: py + kayma.y * OLCEK, aci: yon, uzun: OLCEK * 0.9,
     en: OLCEK * 0.55, bas: zaman, omur: sade.matches ? 600 : 1500, alfa: d.izAlfa,

@@ -136,11 +136,19 @@ export function parcaciklariCiz(ctx) {
     const x = p.x[i];
     const y = p.y[i] - p.z[i] * 0.5;
     ctx.globalAlpha = alfa(i);
-    ctx.lineWidth = 1.6 * p.s[i];
+    ctx.lineWidth = 1.7 * p.s[i];
     ctx.strokeStyle = p.renk[i];
     ctx.beginPath();
     ctx.moveTo(x - dx, y - dy);
     ctx.lineTo(x + dx, y + dy);
+    ctx.stroke();
+    // Işık (sol üst) tarafında ince açık çizgi: çöp yuvarlak sap gibi okunur.
+    const k = 0.45 * p.s[i];
+    ctx.lineWidth = 0.7 * p.s[i];
+    ctx.strokeStyle = '#fff0c0';
+    ctx.beginPath();
+    ctx.moveTo(x - dx * 0.6 - k, y - dy * 0.6 - k);
+    ctx.lineTo(x + dx * 0.6 - k, y + dy * 0.6 - k);
     ctx.stroke();
   }
   ctx.globalCompositeOperation = 'lighter';
