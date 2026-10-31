@@ -22,6 +22,7 @@ import './ozellik/efekt/efekt.js';
 import './ozellik/yaris.js';
 import './ozellik/dokunmatik.js';
 import './ozellik/gorsel/katman.js';
+import './ozellik/gorsel/garaj-cizim.js';
 import './ozellik/balya-isaret.js';
 import './ozellik/menu.js';
 import './ozellik/rahat.js';

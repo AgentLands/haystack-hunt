@@ -13,6 +13,7 @@ import { disHat, ekranBirim } from '../js/ozellik/gorsel/ortak.js';
 import { aracPozu, govdePozu } from '../js/ozellik/gorsel/karakter-poz.js';
 import { igneYariBoyu, OLCEK } from '../js/cizim.js';
 import { civiYariBoyu } from '../js/ozellik/civi-cizim.js';
+import { yakitGostergesi } from '../js/ozellik/gorsel/yakit-gosterge.js';
 
 /** Her yöntemi kaydeden, durum özelliklerini serbest bırakan sahte 2B bağlam. */
 function sahteBaglam() {
@@ -73,7 +74,9 @@ test('üç makine türü ve her durumları çizilir', () => {
 test('sürülen üfleyici makine olarak ayrıca çizilmez; bilinmeyen tür yok sayılır', () => {
   const a = sahteBaglam();
   makineCiz(a.ctx, makine('ufleyici', { surucu: true }), 0);
-  assert.equal(a.cagrilar.length, 0);
+  const g = sahteBaglam();
+  yakitGostergesi(g.ctx, makine('ufleyici', { surucu: true }), 0, 1.3);
+  assert.deepEqual(a.cagrilar, g.cagrilar); // yalnız yakıt göstergesi
   const b = sahteBaglam();
   makineCiz(b.ctx, makine('ucak'), 0);
   assert.equal(b.cagrilar.length, 0);
