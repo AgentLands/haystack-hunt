@@ -137,6 +137,9 @@ test('oyunda: kontrol.yon karakteri yürütür, hedefe tıkla-yürü varınca du
   assert.ok(Math.hypot(k.x - 140.5, k.y - 80.5) < 0.5);
 });
 
+/** 60 Hz kare süresi (ms): el kazısı saniyede sabit hızla biriktiği için tam 1/60 kullanılır. */
+const KARE = 1000 / 60;
+
 test('oyunda: Boşluk el ile önündeki samanı kazar, imleç araç noktasını gösterir', () => {
   yeniOyun('kaz', 'normal');
   const d = durumAl();
@@ -148,18 +151,19 @@ test('oyunda: Boşluk el ile önündeki samanı kazar, imleç araç noktasını 
   const bitir = dinle('kazildi', (v) => kazilar.push(v));
   kontrol.kullan = true;
   adim(0);
-  adim(16);
+  adim(KARE);
   kontrol.kullan = false;
   bitir();
   assert.ok(kazilar.length >= 1);
   yakin(kazilar[0].x, 100 + ARAC_UZAKLIK);
   assert.equal(d.tarla.h[70 * GENISLIK + 101], 8);
-  adim(32);
+  adim(2 * KARE);
   yakin(d.imlec.x, 100 + ARAC_UZAKLIK);
   // Fare erişimdeyse orada kazar; bırakınca durur.
-  assert.equal(bas({ x: 98, y: 70 }, 40), true);
-  adim(48);
+  adim(3 * KARE);
+  assert.equal(bas({ x: 98, y: 70 }, 3 * KARE), true);
+  adim(4 * KARE);
   birak();
-  adim(64);
+  adim(5 * KARE);
   assert.equal(d.tarla.h[70 * GENISLIK + 98], 9);
 });

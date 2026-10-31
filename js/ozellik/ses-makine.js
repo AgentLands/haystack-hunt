@@ -141,6 +141,7 @@ dinle('kepce-doldu', kepceDoldu);
 dinle('kepce-bosaltildi', ({ miktar }) => kepceBosaltildi(miktar));
 dinle('igne-kepcede', igneTiki);
 dinle('igne-yutuldu', igneTiki);
+dinle('civi-yutuldu', igneTiki);
 dinle('balya-birakildi', balyaBirakildi);
 dinle('balya-acildi', balyaAcildi);
 document.addEventListener('visibilitychange', () => {

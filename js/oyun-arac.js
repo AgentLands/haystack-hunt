@@ -23,14 +23,16 @@ export function baslat(durum, zaman) {
 }
 
 /**
- * El bir kare kazar: iğne açıktaysa ve el yakınındaysa iğne alınır (true döner; çağıran
- * oyunu bitirir). Değilse açıktaki paslı çivi alınır ve saman kazılır.
+ * El bir kare kazar (kat: bu karede alınacak kat sayısı, kare hızına göre; elAdimi): iğne
+ * açıktaysa ve el yakınındaysa iğne alınır (true döner; çağıran oyunu bitirir). Değilse
+ * açıktaki paslı çivi alınır ve saman kazılır.
  */
-export function elKullan(durum, p) {
+export function elKullan(durum, p, kat = 1) {
   const { tarla } = durum;
   if (igneyiAlabilirMi(tarla, p.x, p.y)) return true;
   civiyiAl(durum, p);
-  const miktar = elIleAl(tarla, p.x, p.y);
+  if (kat <= 0) return false;
+  const miktar = elIleAl(tarla, p.x, p.y, kat);
   if (miktar > 0) yay('kazildi', { x: p.x, y: p.y, miktar });
   return false;
 }
