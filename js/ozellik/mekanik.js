@@ -47,7 +47,9 @@ dinle('miknatis', ({ cekti, kalan }) => {
   bildir(cekti ? 'Mıknatıs bir şey çekti!' : 'Mıknatıs boşa gitti.');
 });
 dinle('miknatis-bos', () => bildir('Mıknatıs hakkın kalmadı.'));
-dinle('civi-alindi', ({ ceza }) => bildir(`Paslı çivi! +${ceza / 1000} sn`));
+dinle('civi-alindi', ({ ceza }) => bildir(
+  ceza > 0 ? `Paslı çivi! +${ceza / 1000} sn` : 'Paslı çivi! Rahat modda ceza yok.',
+));
 
 // Bitiş fişi (puan dahil) js/ozellik/fis.js'te doldurulur.
 

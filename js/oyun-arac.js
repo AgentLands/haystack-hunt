@@ -80,7 +80,7 @@ export function civileriParlat(durum, zaman) {
 function civiyiAl(durum, p) {
   const civi = alinabilirCivi(durum.tarla, p.x, p.y);
   if (!civi) return;
-  const ceza = civiAl(civi);
+  const ceza = civiAl(civi, durum.rahat);
   durum.ceza += ceza;
   durum.baslangic -= ceza;
   yay('civi-alindi', { x: civi.x, y: civi.y, ceza });
@@ -99,6 +99,7 @@ export function sonucHesapla(durum, zaman) {
     miknatisKullanilan: durum.miknatisHakki - durum.miknatis,
     miknatisHakki: durum.miknatisHakki,
     okumalar: durum.halkalar.map((h) => h.seviye.ad),
+    rahat: durum.rahat,
   };
   const kullanilanHak = sonuc.dedektorKullanilan + sonuc.miknatisKullanilan;
   sonuc.puan = puanHesapla({ ...sonuc, kullanilanHak }, durum.zorluk);

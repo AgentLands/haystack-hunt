@@ -1,0 +1,128 @@
+/*
+ * Meydan okuma, temizlik yüzdesi, akış çubuğu ve rahat mod (meydan.js, rahat.js, akis.js).
+ * Tuvalin sol üstüne iğnelenmiş küçük kâğıt etiketler; renkler yalnız belirteçlerden.
+ */
+.meydan-yigin {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 56%;
+  pointer-events: none;
+}
+.meydan-etiket {
+  position: relative;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--murekkep);
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+}
+.meydan-etiket[hidden] { display: none; }
+.meydan-etiket.hedef { order: 1; padding-top: 8px; rotate: -1.2deg; }
+.meydan-etiket.hedef::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--civit);
+  border: 2px solid var(--murekkep);
+  box-shadow: var(--golge);
+}
+.meydan-etiket.temiz { order: 2; rotate: 0.6deg; color: var(--murekkep-soluk); }
+.meydan-etiket.temiz strong { color: var(--murekkep); }
+
+/* Akış çubuğu: ince, süzülerek dolan saman şeridi; ara verince söner. */
+.akis-cubuk {
+  order: 3;
+  width: 96px;
+  height: 8px;
+  padding: 1px;
+  border: 1.5px solid var(--kagit);
+  border-radius: 4px;
+  box-shadow: var(--golge);
+  background: var(--ahsap-koyu);
+  opacity: 0;
+  transition: opacity 0.35s ease-out, box-shadow 0.25s ease-out;
+}
+.akis-cubuk.acik { opacity: 0.95; }
+.akis-cubuk.parilti { box-shadow: var(--golge), 0 0 8px 2px var(--saman); }
+.akis-cubuk i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--saman);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.12s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .akis-cubuk, .akis-cubuk i { transition: none; }
+}
+
+/* Fiş: meydan okuma satırları. */
+.meydan-ad {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--murekkep-soluk);
+}
+.meydan-ad input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--murekkep);
+  background: color-mix(in srgb, var(--kraft) 40%, transparent);
+  border: none;
+  border-bottom: 2px solid var(--murekkep);
+  border-radius: 2px 2px 0 0;
+  padding: 4px 8px;
+}
+.meydan-ad + .dugmeler { margin-top: 10px; gap: 8px; }
+/* İki ikincil düğme yan yana, birincil altta tam genişlikte. */
+#bitis .dugmeler .dugme-ikincil { font-size: 0.8rem; padding: 0.5em 0.8em; }
+#bitis .dugmeler .dugme-birincil { flex: 1 0 100%; }
+.fis-not.meydan-fark { font-weight: 700; }
+.fis-not.meydan-fark.gecti {
+  --ikon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h12l-3 4 3 4H6'/%3E%3C/svg%3E");
+  color: var(--cayir);
+}
+.fis-not.meydan-fark.geride {
+  --ikon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h12l-3 4 3 4H6'/%3E%3C/svg%3E");
+  color: var(--civit);
+}
+
+/* Rahat mod: süre ve puan gizli; fişte yalnız "buldun" ve temizlik yüzdesi. */
+body.rahat-mod [data-rahat-gizle] { display: none !important; }
+#bitis.rahat-fis .fis-satirlar,
+#bitis.rahat-fis .fis-toplam,
+#bitis.rahat-fis .fis-notlar .rekor,
+#bitis.rahat-fis .meydan-fark,
+#bitis.rahat-fis .meydan-ad,
+#bitis.rahat-fis .meydan-dugme,
+#bitis.rahat-fis #paylas { display: none; }
+#alt-dugmeler button[aria-pressed='true'] {
+  background: var(--saman);
+  color: var(--murekkep);
+}
+
+@media (max-width: 520px) {
+  .meydan-yigin { top: 8px; left: 8px; gap: 6px; }
+  .meydan-etiket { font-size: 0.72rem; padding: 3px 8px; }
+  .meydan-etiket.hedef { padding-top: 6px; }
+}

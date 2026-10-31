@@ -45,10 +45,13 @@ export function alinabilirCivi(tarla, cx, cy) {
   return null;
 }
 
-/** Çiviyi alır (bir daha alınmaz); süre cezasını (ms) döndürür. */
-export function civiAl(civi) {
+/**
+ * Çiviyi alır (bir daha alınmaz); süre cezasını (ms) döndürür. Rahat modda ceza 0'dır
+ * (çivi yine alınır ve bir daha parlamaz; yalnız süreye bir şey eklenmez).
+ */
+export function civiAl(civi, rahat = false) {
   civi.alindi = true;
-  return CIVI_CEZA_MS;
+  return rahat ? 0 : CIVI_CEZA_MS;
 }
 
 /** Parlayacak kadar yüzeye yakın (derinlik ≤ esik), alınmamış çiviler. */

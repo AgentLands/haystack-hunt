@@ -88,7 +88,7 @@ const ISLEYICILER = {
   basla(m) {
     Object.assign(y, { etiket: m.etiket, basladi: performance.now(), sonImlec: '' });
     hayaletTemizle();
-    yeniOyun(m.etiket, m.zorluk || 'normal');
+    yeniOyun(m.etiket, m.zorluk || 'normal', { rahat: false });
     sayac('Başla!', 700);
   },
   imlec(m) {

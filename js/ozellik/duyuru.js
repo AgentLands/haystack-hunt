@@ -29,7 +29,7 @@ dinle('dedektor-bos', () => duyur('Dedektör hakkın bitti.'));
 dinle('igne-gorundu', () => duyur('İğne açığa çıktı. Üstüne elle bas.'));
 dinle('parilti', () => duyur('Güneşte bir şey parladı.'));
 dinle('bulundu', ({ sonuc }) => duyur(
-  `İğneyi buldun. ${sureMetni(sonuc.sureMs)} sürdü, `
+  `İğneyi buldun. ${sonuc.rahat ? '' : `${sureMetni(sonuc.sureMs)} sürdü, `}`
   + `${sayi.format(sonuc.kaldirilan)} saman kaldırıldı.`,
 ));
 dinle('pes-edildi', () => duyur('Pes ettin, iğne gösterildi.'));

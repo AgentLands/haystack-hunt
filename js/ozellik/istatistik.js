@@ -55,8 +55,13 @@ function bitisBilgisi(sonuc, rapor) {
   } else if (rapor.tohumRekoru) {
     satirlar.push(not('Bu tarlada yeni rekor.', 'rekor'));
   }
-  if (rapor.gunluk) satirlar.push(not(`Günün tarlası çözüldü. Seri: ${rapor.seri} gün.`, 'seri'));
-  else if (rapor.seri > 0) satirlar.push(not(`Seri: ${rapor.seri} gün.`, 'seri'));
+  if (rapor.dondurma) {
+    satirlar.push(not(`Seri dondurma hakkı kullanıldı, serin sürüyor: ${rapor.seri} gün.`, 'seri'));
+  } else if (rapor.gunluk) {
+    satirlar.push(not(`Günün tarlası çözüldü. Seri: ${rapor.seri} gün.`, 'seri'));
+  } else if (rapor.seri > 0) {
+    satirlar.push(not(`Seri: ${rapor.seri} gün.`, 'seri'));
+  }
   bilgi.replaceChildren(...satirlar);
 }
 
@@ -72,7 +77,9 @@ dinle('pes-edildi', () => {
   if (oynandi) guncelle(pesKaydet(ist));
 });
 dinle('bulundu', ({ sonuc }) => {
-  const { ist: yeni, rapor } = bulunduKaydet(ist, sonuc, gununEtiketi());
+  // Rahat modda süre tutulmaz: rekorlara ve ortalamaya girmez, ama bulma ve seri sayılır.
+  const kayit = sonuc.rahat ? { ...sonuc, sureMs: null } : sonuc;
+  const { ist: yeni, rapor } = bulunduKaydet(ist, kayit, gununEtiketi());
   guncelle(yeni);
   bitisBilgisi(sonuc, rapor);
 });
