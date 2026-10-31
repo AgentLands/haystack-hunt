@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Haystack Hunt</title>
+  <meta name="description" content="Kuş bakışı bir saman tarlasında tek bir iğneyi ara.">
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+  <header>
+    <h1>Haystack Hunt</h1>
+    <p id="etiket" class="etiket"></p>
+  </header>
+
+  <section class="panel" aria-label="Durum">
+    <div><span class="baslik">Süre</span><strong id="sure">0:00</strong></div>
+    <div><span class="baslik">Kaldırılan saman</span><strong id="kaldirilan">0</strong></div>
+    <div><span class="baslik">Dedektör</span><strong id="dedektor-hak">3</strong></div>
+  </section>
+
+  <nav class="araclar" aria-label="Araçlar">
+    <button data-arac="el" aria-pressed="true"><kbd>1</kbd> El</button>
+    <button data-arac="tirmik" aria-pressed="false"><kbd>2</kbd> Tırmık</button>
+    <button data-arac="dedektor" aria-pressed="false"><kbd>3</kbd> Dedektör</button>
+  </nav>
+
+  <main>
+    <canvas id="tarla" aria-label="Saman tarlası"></canvas>
+  </main>
+
+  <nav class="alt">
+    <button id="gunun">Günün tarlası</button>
+    <button id="yeni">Yeni tarla</button>
+    <button id="pes" class="ikincil">Pes et, iğneyi göster</button>
+  </nav>
+
+  <details class="nasil">
+    <summary>Nasıl oynanır?</summary>
+    <ul>
+      <li><b>El</b>: basılı tut, altındaki samanı tarladan alırsın. Açılan çukura yamaçtan saman kayar.</li>
+      <li><b>Tırmık</b>: sürükle, samanı o yöne itersin. Tarlanın dışına ittiğin saman gider.</li>
+      <li><b>Dedektör</b>: 3 hakkın var. Dokunduğun yere iğneye ne kadar yakın olduğunu yazar.</li>
+      <li>İğne yüzeye yakınsa güneşte arada bir parlar; gözünü tarladan ayırma.</li>
+      <li>İğne açığa çıkınca üstüne elle bas, al.</li>
+    </ul>
+  </details>
+
+  <dialog id="bitis">
+    <h2>İğneyi buldun! 🪡</h2>
+    <p id="sonuc"></p>
+    <div class="dugmeler">
+      <button id="paylas">Sonucu kopyala</button>
+      <button id="tekrar">Yeni tarla</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/oyun.js"></script>
+</body>
+</html>

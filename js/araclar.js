@@ -1,0 +1,77 @@
+/**
+ * Oyuncu araçları: el (samanı tarladan alır), tırmık (samanı sürüklendiği yöne iter;
+ * tarla dışına itilen saman gider) ve dedektör (sınırlı hak, sıcak/soğuk ipucu).
+ */
+import { GENISLIK, icinde } from './boyut.js';
+import { igneAcikMi } from './igne.js';
+
+export const EL_YARICAP = 2.5;
+export const TIRMIK_YARICAP = 4;
+export const TIRMIK_ADIM = 5;
+export const DEDEKTOR_HAKKI = 3;
+
+export const SEVIYELER = [
+  { mesafe: 6, ad: 'Yanıyor!', renk: '#ff4d4f' },
+  { mesafe: 16, ad: 'Sıcak', renk: '#ff8a1f' },
+  { mesafe: 35, ad: 'Ilık', renk: '#ffd23f' },
+  { mesafe: Infinity, ad: 'Soğuk', renk: '#4aa8ff' },
+];
+
+function hucrelerde(cx, cy, r, islev) {
+  const r2 = r * r;
+  for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) {
+    for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) {
+      const dx = x - cx;
+      const dy = y - cy;
+      if (dx * dx + dy * dy <= r2 && icinde(x, y)) islev(y * GENISLIK + x, x, y);
+    }
+  }
+}
+
+/** Fırça altındaki her hücreden en çok `miktar` kat alır; alınan toplamı döndürür. */
+export function elIleAl(tarla, cx, cy, miktar = 1) {
+  let alinan = 0;
+  hucrelerde(cx, cy, EL_YARICAP, (i) => {
+    const m = Math.min(tarla.h[i], miktar);
+    tarla.h[i] -= m;
+    alinan += m;
+  });
+  tarla.kaldirilan += alinan;
+  return alinan;
+}
+
+/** Fırça altındaki samanın üçte birini (yx, yy) yönünde ileri iter; dışarı atılanı döndürür. */
+export function tirmikla(tarla, cx, cy, yx, yy) {
+  const boy = Math.hypot(yx, yy);
+  if (boy < 0.5) return 0;
+  const ox = Math.round((yx / boy) * TIRMIK_ADIM);
+  const oy = Math.round((yy / boy) * TIRMIK_ADIM);
+  const tasinan = [];
+  hucrelerde(cx, cy, TIRMIK_YARICAP, (i, x, y) => {
+    const m = Math.floor(tarla.h[i] / 3);
+    if (m > 0) {
+      tarla.h[i] -= m;
+      tasinan.push(x + ox, y + oy, m);
+    }
+  });
+  let disari = 0;
+  for (let k = 0; k < tasinan.length; k += 3) {
+    const [x, y, m] = [tasinan[k], tasinan[k + 1], tasinan[k + 2]];
+    if (icinde(x, y)) tarla.h[y * GENISLIK + x] += m;
+    else disari += m;
+  }
+  tarla.kaldirilan += disari;
+  return disari;
+}
+
+/** Noktanın iğneye uzaklığına göre sıcaklık seviyesi. */
+export function dedektorOku(tarla, cx, cy) {
+  const mesafe = Math.hypot(cx - tarla.igne.x, cy - tarla.igne.y);
+  return SEVIYELER.find((s) => mesafe <= s.mesafe);
+}
+
+/** El iğnenin üstündeyse ve iğne açıktaysa alınabilir. */
+export function igneyiAlabilirMi(tarla, cx, cy) {
+  const yakin = Math.hypot(cx - tarla.igne.x, cy - tarla.igne.y) <= EL_YARICAP + 1.5;
+  return yakin && igneAcikMi(tarla);
+}
