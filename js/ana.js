@@ -16,6 +16,7 @@ import './ozellik/sure-duraklat.js';
 import './ozellik/istatistik.js';
 import './ozellik/kamera.js';
 import './ozellik/mekanik.js';
+import './ozellik/efekt/efekt.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
