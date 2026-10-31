@@ -2,11 +2,21 @@
  * Çizim: tarlayı yükseklik ve eğime göre gölgeli piksellere boyar, üstüne iğneyi,
  * güneş parıltısını, dedektör halkalarını ve imleci çizer.
  */
-import { GENISLIK, YUKSEKLIK } from './boyut.js';
-import { igneDerinligi } from './igne.js';
+import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
+import { igneDerinligi } from './kural/igne.js';
 
 export const OLCEK = 4;
 const TOPRAK = [104, 78, 52];
+const katmanlar = { alt: [], ust: [] };
+
+/**
+ * Özellikler için çizim katmanı: islev(ctx, durum, zaman). 'alt' tarladan hemen sonra
+ * (iğne ve halkalardan önce), 'ust' her şeyden sonra çizilir. Koordinatlar piksel;
+ * hücre (x, y) merkezi ((x + 0.5) * OLCEK, (y + 0.5) * OLCEK).
+ */
+export function katmanEkle(islev, yer = 'ust') {
+  katmanlar[yer].push(islev);
+}
 
 export function cizici(tuval) {
   const ctx = tuval.getContext('2d');
@@ -22,9 +32,11 @@ export function cizici(tuval) {
     actx.putImageData(resim, 0, 0);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(ara, 0, 0, tuval.width, tuval.height);
+    for (const k of katmanlar.alt) k(ctx, durum, zaman);
     igneyiCiz(ctx, durum, zaman);
     halkalariCiz(ctx, durum.halkalar, zaman);
     imleciCiz(ctx, durum);
+    for (const k of katmanlar.ust) k(ctx, durum, zaman);
   };
 }
 

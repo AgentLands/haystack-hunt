@@ -1,11 +1,11 @@
 /** Tarla, iğne ve araç kurallarının birim testleri (node --test). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GENISLIK, YUKSEKLIK } from '../js/boyut.js';
-import { tarlaKur, cokert, toplamSaman } from '../js/tarla.js';
-import { igneAcikMi, igneDerinligi, igneHucreleri } from '../js/igne.js';
-import { elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi } from '../js/araclar.js';
-import { metindenTohum, gununEtiketi } from '../js/rastgele.js';
+import { GENISLIK, YUKSEKLIK } from '../js/kural/boyut.js';
+import { tarlaKur, cokert, toplamSaman } from '../js/kural/tarla.js';
+import { igneAcikMi, igneDerinligi, igneHucreleri } from '../js/kural/igne.js';
+import { elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi } from '../js/kural/araclar.js';
+import { metindenTohum, gununEtiketi } from '../js/kural/rastgele.js';
 
 test('aynı tohum aynı tarlayı ve iğneyi üretir', () => {
   const a = tarlaKur(metindenTohum('2026-10-31'));

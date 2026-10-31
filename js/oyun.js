@@ -1,169 +1,148 @@
 /**
- * Oyun döngüsü: durum, fare/dokunma/klavye girdisi, araç kullanımı, süre, güneş
- * parıltısı ve iğne bulununca bitiş ekranı.
+ * Oyun durumu ve eylemleri: yeni tarla, araç seçimi, kazma/tırmık/dedektör, kare adımı,
+ * güneş parıltısı, bitiş. DOM'a dokunmaz; dış dünyaya olay yayar (olaylar.js).
  */
-import { GENISLIK, YUKSEKLIK } from './boyut.js';
-import { tarlaKur, cokert } from './tarla.js';
-import { igneDerinligi } from './igne.js';
+import { tarlaKur, cokert } from './kural/tarla.js';
+import { igneDerinligi } from './kural/igne.js';
 import {
   elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi,
   DEDEKTOR_HAKKI, EL_YARICAP, TIRMIK_YARICAP,
-} from './araclar.js';
-import { cizici } from './cizim.js';
-import { metindenTohum, gununEtiketi } from './rastgele.js';
+} from './kural/araclar.js';
+import { metindenTohum } from './kural/rastgele.js';
+import { yay } from './olaylar.js';
 
-const PARILTI_ARALIK = 12000;
-const PARILTI_SURE = 800;
-const PARILTI_DERINLIK = 8;
-const YARICAP = { el: EL_YARICAP, tirmik: TIRMIK_YARICAP, dedektor: 1.5 };
+export const PARILTI_ARALIK = 12000;
+export const PARILTI_SURE = 800;
+export const PARILTI_DERINLIK = 8;
+export const YARICAP = { el: EL_YARICAP, tirmik: TIRMIK_YARICAP, dedektor: 1.5 };
 
-const $ = (id) => document.getElementById(id);
-const tuval = $('tarla');
-const ciz = cizici(tuval);
-const sayi = new Intl.NumberFormat('tr-TR');
-let durum;
+let durum = null;
 
-function yeniOyun(etiket) {
+export function durumAl() {
+  return durum;
+}
+
+export function yeniOyun(etiket) {
+  const arac = durum ? durum.arac : 'el';
   durum = {
     etiket,
     tarla: tarlaKur(metindenTohum(etiket)),
-    arac: durum ? durum.arac : 'el',
-    aracYaricap: YARICAP[durum ? durum.arac : 'el'],
+    arac, aracYaricap: YARICAP[arac],
     basili: false, imlec: null, son: null,
-    halkalar: [], dedektor: DEDEKTOR_HAKKI,
-    baslangic: null, bitis: null, bitti: false, goster: false,
-    parilti: null, sonrakiParilti: Infinity,
+    halkalar: [], dedektor: DEDEKTOR_HAKKI, dedektorHakki: DEDEKTOR_HAKKI,
+    baslangic: null, bitis: null, bitti: false, goster: false, gorundu: false,
+    parilti: null, sonrakiParilti: Infinity, sonuc: null,
   };
-  const adres = new URL(location.href);
-  adres.searchParams.set('tohum', etiket);
-  history.replaceState(null, '', adres);
-  $('etiket').textContent = etiket === gununEtiketi() ? `Günün tarlası (${etiket})` : etiket;
-  $('bitis').close();
-  $('paylas').textContent = 'Sonucu kopyala';
-  aracSec(durum.arac);
+  yay('oyun-basladi', { durum });
+  yay('arac-secildi', { arac });
 }
 
-function aracSec(arac) {
+export function aracSec(arac) {
+  if (!YARICAP[arac] || durum.bitti) return;
   durum.arac = arac;
   durum.aracYaricap = YARICAP[arac];
-  for (const d of document.querySelectorAll('[data-arac]')) {
-    d.setAttribute('aria-pressed', String(d.dataset.arac === arac));
-  }
-  $('dedektor-hak').textContent = durum.dedektor;
-}
-
-function hucre(e) {
-  const k = tuval.getBoundingClientRect();
-  return {
-    x: Math.floor(((e.clientX - k.left) / k.width) * GENISLIK),
-    y: Math.floor(((e.clientY - k.top) / k.height) * YUKSEKLIK),
-  };
+  yay('arac-secildi', { arac });
 }
 
 function baslat(zaman) {
   if (durum.baslangic !== null) return;
   durum.baslangic = zaman;
   durum.sonrakiParilti = zaman + PARILTI_ARALIK;
+  yay('ilk-hamle', { zaman });
 }
 
-tuval.addEventListener('pointerdown', (e) => {
+/** İşaretçi basıldı (p: hücre koordinatı). */
+export function bas(p, zaman) {
   if (durum.bitti) return;
-  tuval.setPointerCapture(e.pointerId);
-  const p = hucre(e);
   Object.assign(durum, { basili: true, imlec: p, son: p });
-  baslat(performance.now());
-  if (durum.arac === 'dedektor' && durum.dedektor > 0) {
-    durum.dedektor -= 1;
-    $('dedektor-hak').textContent = durum.dedektor;
-    durum.halkalar.push({ ...p, seviye: dedektorOku(durum.tarla, p.x, p.y), zaman: performance.now() });
+  baslat(zaman);
+  if (durum.arac !== 'dedektor') return;
+  if (durum.dedektor <= 0) {
+    yay('dedektor-bos', { x: p.x, y: p.y });
+    return;
   }
-});
+  durum.dedektor -= 1;
+  const seviye = dedektorOku(durum.tarla, p.x, p.y);
+  durum.halkalar.push({ ...p, seviye, zaman });
+  yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor });
+}
 
-tuval.addEventListener('pointermove', (e) => {
-  const p = hucre(e);
+/** İşaretçi hareket etti; tırmık basılıysa iter. */
+export function surukle(p) {
   durum.imlec = p;
   if (!durum.basili || durum.bitti || durum.arac !== 'tirmik') return;
   const dx = p.x - durum.son.x;
   const dy = p.y - durum.son.y;
-  if (Math.hypot(dx, dy) >= 1.5) {
-    tirmikla(durum.tarla, p.x, p.y, dx, dy);
-    durum.son = p;
-  }
-});
-
-for (const olay of ['pointerup', 'pointercancel']) {
-  tuval.addEventListener(olay, () => { durum.basili = false; });
+  if (Math.hypot(dx, dy) < 1.5) return;
+  const disari = tirmikla(durum.tarla, p.x, p.y, dx, dy);
+  durum.son = p;
+  yay('tirmiklandi', { x: p.x, y: p.y, dx, dy, disari });
 }
-tuval.addEventListener('pointerleave', () => { if (!durum.basili) durum.imlec = null; });
 
-function kazan(zaman) {
-  durum.bitti = true;
+export function birak() {
   durum.basili = false;
-  durum.bitis = zaman;
-  const sure = sureMetni(zaman - durum.baslangic);
-  const kullanilan = DEDEKTOR_HAKKI - durum.dedektor;
-  $('sonuc').textContent = `${sure} sürede, ${sayi.format(durum.tarla.kaldirilan)} saman `
-    + `kaldırarak ve ${kullanilan}/${DEDEKTOR_HAKKI} dedektörle buldun.`;
-  durum.paylas = `Haystack Hunt · ${durum.etiket}\n🪡 ${sure} · `
-    + `${sayi.format(durum.tarla.kaldirilan)} saman · 📡 ${kullanilan}/${DEDEKTOR_HAKKI}`;
-  $('bitis').showModal();
 }
 
-function sureMetni(ms) {
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+export function imlecCikti() {
+  if (!durum.basili) durum.imlec = null;
 }
 
-function kare(zaman) {
+export function pesEt(zaman) {
+  if (durum.bitti) return;
+  Object.assign(durum, { goster: true, bitti: true, basili: false });
+  durum.bitis = durum.baslangic === null ? null : zaman;
+  yay('pes-edildi', { durum });
+}
+
+/** Bir kare: el kazısı, yığın kayması, iğne görünürlüğü ve parıltı. */
+export function adim(zaman) {
   const { tarla } = durum;
   if (durum.basili && !durum.bitti && durum.arac === 'el' && durum.imlec) {
-    if (igneyiAlabilirMi(tarla, durum.imlec.x, durum.imlec.y)) kazan(zaman);
-    else elIleAl(tarla, durum.imlec.x, durum.imlec.y);
+    const { x, y } = durum.imlec;
+    if (igneyiAlabilirMi(tarla, x, y)) {
+      kazan(zaman);
+    } else {
+      const miktar = elIleAl(tarla, x, y);
+      if (miktar > 0) yay('kazildi', { x, y, miktar });
+    }
   }
   if (cokert(tarla)) cokert(tarla);
-  if (!durum.bitti && zaman >= durum.sonrakiParilti) {
-    if (igneDerinligi(tarla) <= PARILTI_DERINLIK) {
-      durum.parilti = { bitis: zaman + PARILTI_SURE, sure: PARILTI_SURE };
+  if (!durum.bitti) {
+    const derinlik = igneDerinligi(tarla);
+    if (derinlik === 0 && !durum.gorundu) {
+      durum.gorundu = true;
+      yay('igne-gorundu', { x: tarla.igne.x, y: tarla.igne.y });
     }
-    durum.sonrakiParilti = zaman + PARILTI_ARALIK;
+    if (zaman >= durum.sonrakiParilti) {
+      if (derinlik <= PARILTI_DERINLIK) {
+        durum.parilti = { bitis: zaman + PARILTI_SURE, sure: PARILTI_SURE };
+        yay('parilti', { x: tarla.igne.x, y: tarla.igne.y });
+      }
+      durum.sonrakiParilti = zaman + PARILTI_ARALIK;
+    }
   }
-  ciz(durum, zaman);
-  const gecen = durum.baslangic === null ? 0 : (durum.bitis ?? zaman) - durum.baslangic;
-  $('sure').textContent = sureMetni(gecen);
-  $('kaldirilan').textContent = sayi.format(tarla.kaldirilan);
-  requestAnimationFrame(kare);
+  yay('kare', { zaman, durum });
 }
 
-function rastgeleEtiket() {
+export function sonucOlustur(zaman) {
+  return {
+    etiket: durum.etiket,
+    sureMs: zaman - durum.baslangic,
+    kaldirilan: durum.tarla.kaldirilan,
+    dedektorKullanilan: durum.dedektorHakki - durum.dedektor,
+    dedektorHakki: durum.dedektorHakki,
+    okumalar: durum.halkalar.map((h) => h.seviye.ad),
+  };
+}
+
+function kazan(zaman) {
+  Object.assign(durum, { bitti: true, basili: false, bitis: zaman });
+  durum.sonuc = sonucOlustur(zaman);
+  yay('bulundu', { sonuc: durum.sonuc });
+}
+
+export function rastgeleEtiket() {
   const dizi = new Uint32Array(1);
   crypto.getRandomValues(dizi);
   return dizi[0].toString(36).slice(0, 6);
 }
-
-for (const d of document.querySelectorAll('[data-arac]')) {
-  d.addEventListener('click', () => aracSec(d.dataset.arac));
-}
-document.addEventListener('keydown', (e) => {
-  const arac = { 1: 'el', 2: 'tirmik', 3: 'dedektor' }[e.key];
-  if (arac && !durum.bitti) aracSec(arac);
-});
-$('yeni').addEventListener('click', () => yeniOyun(rastgeleEtiket()));
-$('gunun').addEventListener('click', () => yeniOyun(gununEtiketi()));
-$('tekrar').addEventListener('click', () => yeniOyun(rastgeleEtiket()));
-$('pes').addEventListener('click', () => {
-  if (durum.bitti) return;
-  durum.goster = true;
-  durum.bitti = true;
-  durum.bitis = durum.baslangic === null ? null : performance.now();
-});
-$('paylas').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(durum.paylas);
-    $('paylas').textContent = 'Kopyalandı';
-  } catch {
-    $('paylas').textContent = 'Kopyalanamadı';
-  }
-});
-
-yeniOyun(new URLSearchParams(location.search).get('tohum') || gununEtiketi());
-requestAnimationFrame(kare);
