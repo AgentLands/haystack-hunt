@@ -4,10 +4,12 @@
  * Koordinatlar tuval pikseli (hücre * OLCEK).
  */
 import { parcacikEkle, COP, TOZ } from './parcacik.js';
+import { sadeHareket } from '../sade-hareket.js';
 
 export const SAMAN = ['#fff0b8', '#f6db86', '#ffe9a0', '#e9c463', '#fdf5d6'];
 export const TOZ_RENK = '168, 134, 92';
-export const sade = matchMedia('(prefers-reduced-motion: reduce)');
+/** Sade hareket (ozellik/sade-hareket.js); `sade.matches` eski kullanımlar için. */
+export const sade = { get matches() { return sadeHareket(); } };
 
 /** Sade harekette adedi çeyreğe indirir (en az 1). */
 export const az = (n) => (sade.matches ? Math.ceil(n * 0.25) : n);

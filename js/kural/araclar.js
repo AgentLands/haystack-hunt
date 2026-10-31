@@ -39,6 +39,7 @@ export function elIleAl(tarla, cx, cy, miktar = 1) {
     tarla.h[i] -= m;
     alinan += m;
   });
+  if (alinan) tarla.kirli = true; // yükseklik değişti: yığın kayması yeniden taranır
   tarla.kaldirilan += alinan;
   return alinan;
 }
@@ -57,6 +58,7 @@ export function tirmikla(tarla, cx, cy, yx, yy) {
       tasinan.push(x + ox, y + oy, m);
     }
   });
+  if (tasinan.length) tarla.kirli = true;
   let disari = 0;
   for (let k = 0; k < tasinan.length; k += 3) {
     const [x, y, m] = [tasinan[k], tasinan[k + 1], tasinan[k + 2]];

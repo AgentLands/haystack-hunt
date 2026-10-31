@@ -5,6 +5,7 @@
  * Bu yalnız görsel bir gösterimdir: başkasının makinesi yerel tarlayı etkilemez.
  */
 import { katmanEkle, OLCEK } from '../cizim.js';
+import { DUNYA_EN, dunyaPikseli } from '../cizim/tuval-olcek.js';
 import { gorunum } from '../gorunum.js';
 import { ADIM_BOYU } from '../kural/karakter.js';
 import { karakterCiz } from './gorsel/karakter-cizim.js';
@@ -91,12 +92,12 @@ function halkaCiz(ctx, s, renk, k) {
   return r;
 }
 
-/** Ad etiketi: ekran boyutu sabit (k = tuval pikseli / ekran pikseli, gorunum.z'ye bölünür). */
+/** Ad etiketi: ekran boyutu sabit (k = dünya pikseli / CSS pikseli, gorunum.z'ye bölünür). */
 function etiketCiz(ctx, s, r, ad, renk, k) {
   const px = s.x * OLCEK;
   const en = ctx.measureText(ad).width + 10 * k;
   const boy = 18 * k;
-  const lx = Math.max(0, Math.min(ctx.canvas.width - en, px - en / 2));
+  const lx = Math.max(0, Math.min(DUNYA_EN - en, px - en / 2));
   const ly = Math.max(boy / 2, s.y * OLCEK - r - 8 * k);
   ctx.fillStyle = 'rgba(20, 14, 8, 0.8)';
   ctx.fillRect(lx, ly - boy / 2, en, boy);
@@ -111,8 +112,7 @@ function etiketCiz(ctx, s, r, ad, renk, k) {
 export function hayaletKatmaniKur(bilgiAl) {
   katmanEkle((ctx, durum, zaman) => {
     if (!oyuncular.size) return;
-    const gorunen = ctx.canvas.clientWidth;
-    const k = (gorunen > 0 ? ctx.canvas.width / gorunen : 1) / gorunum.z;
+    const k = dunyaPikseli() / gorunum.z;
     const cizilen = [];
     for (const [id, o] of oyuncular) {
       const bilgi = bilgiAl(id, durum);

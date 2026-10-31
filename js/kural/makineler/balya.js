@@ -140,6 +140,7 @@ export const BALYA_MAKINESI = makineTanimla('balya', {
       tarla.h[i] -= a;
       miktar += a;
     }
+    if (miktar) tarla.kirli = true; // yığın kayması yeniden taranır (kural/tarla.js)
     ic.saman += miktar;
     nesneleriAl(tarla, m, hucreler, olaylar);
     if (ic.saman >= BALYA_KAPASITE) balyala(tarla, m, olaylar);

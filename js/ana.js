@@ -11,6 +11,7 @@ import { gununEtiketi } from './kural/rastgele.js';
 import './ozellik/ses.js';
 import './ozellik/ses-makine.js';
 import './ozellik/pwa.js';
+import './ozellik/on-hazirlik.js';
 import './ozellik/rehber.js';
 import './ozellik/duyuru.js';
 import './ozellik/sure-duraklat.js';

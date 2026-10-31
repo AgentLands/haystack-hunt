@@ -160,7 +160,7 @@ export function bulmaCiz(ctx, zaman, hareketli) {
   ctx.globalCompositeOperation = 'source-over';
   igneCiz(ctx, mx, my - z, aci, 1 + 0.35 * kalk);
   const pir = (t % 1500) / 1500;
-  if (t > KALKIS * 0.6) {
+  if (t > KALKIS * 0.6 && hareketli) {
     const ux = mx + Math.cos(aci) * OLCEK * 2.6 * (pir * 2 - 1);
     const uy = my - z + Math.sin(aci) * OLCEK * 2.6 * (pir * 2 - 1);
     yildizIsigi(ctx, ux, uy, 7, Math.sin(Math.PI * pir) * 0.9, t / 400);

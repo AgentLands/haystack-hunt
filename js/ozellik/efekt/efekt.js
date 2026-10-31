@@ -122,9 +122,11 @@ function igneParlat(ctx, durum, zaman) {
   const evre = (zaman % 2200) / 700;
   if (evre >= 1) return;
   const { igne } = durum.tarla;
-  const k = (evre * 2 - 1) * OLCEK * 2;
+  // Sade harekette ışıltı iğne boyunca kaymaz ve dönmez, daha sönük yanar.
+  const k = sade.matches ? 0 : (evre * 2 - 1) * OLCEK * 2;
+  const a = Math.sin(Math.PI * evre) * (sade.matches ? 0.35 : 0.85);
   yildizIsigi(ctx, piksel(igne.x) + Math.cos(igne.aci) * k,
-    piksel(igne.y) + Math.sin(igne.aci) * k, 6, Math.sin(Math.PI * evre) * 0.85, zaman / 500);
+    piksel(igne.y) + Math.sin(igne.aci) * k, 6, a, sade.matches ? 0 : zaman / 500);
 }
 
 katmanEkle((ctx) => {

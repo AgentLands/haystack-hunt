@@ -106,6 +106,8 @@ function sprite(renk) {
 export function parcaciklariCiz(ctx) {
   if (canli === 0) return;
   ctx.save();
+  // Yumuşak lekeler (32 px sprite) yüksek çözünürlükte büyütülürken kare kare görünmesin.
+  ctx.imageSmoothingEnabled = true;
   ctx.lineCap = 'round';
   ctx.strokeStyle = 'rgb(40, 24, 8)';
   ctx.lineWidth = 1.5 / Math.max(1, gorunum.z);

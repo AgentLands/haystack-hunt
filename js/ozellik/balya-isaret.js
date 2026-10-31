@@ -6,6 +6,7 @@
  */
 import { katmanEkle, OLCEK } from '../cizim.js';
 import { igneKonumu, tarlada } from '../kural/igne.js';
+import { nabizSade } from './sade-hareket.js';
 
 function cizgi(ctx, x1, y1, x2, y2) {
   ctx.beginPath();
@@ -15,7 +16,7 @@ function cizgi(ctx, x1, y1, x2, y2) {
 }
 
 function igneIsareti(ctx, x, y, aci, zaman) {
-  const nabiz = 0.5 + 0.5 * Math.sin(zaman / 180);
+  const nabiz = nabizSade(0.5 + 0.5 * Math.sin(zaman / 180));
   ctx.strokeStyle = `rgba(255, 255, 255, ${(0.45 + 0.5 * nabiz).toFixed(2)})`;
   ctx.lineWidth = 1.5;
   ctx.beginPath();

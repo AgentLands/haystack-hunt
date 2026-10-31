@@ -75,3 +75,16 @@ export function takipEt(g, x, y, z, oran, W = GENISLIK, H = YUKSEKLIK) {
   return sinirla({ z: nz, gx: g.gx + (hedef.gx - g.gx) * k, gy: g.gy + (hedef.gy - g.gy) * k },
     W, H);
 }
+
+/** Takip yakınlığının ayarlandığı tuval genişliği (CSS px; masaüstü 1280 düzeni). */
+export const TAKIP_REFERANS_EN = 968;
+
+/**
+ * Ekrana göre takip yakınlığı: dar tuvalde (telefon) karakter masaüstündeki CSS boyutuna
+ * yakın görünsün diye yakınlaştırma genişlikle ters orantılı artar; geniş tuvalde taban
+ * kalır. Sonuç [taban, YAKIN_EN_COK] aralığında; genişlik bilinmiyorsa taban.
+ */
+export function ekranaGoreYakinlik(taban, cssEn, referans = TAKIP_REFERANS_EN) {
+  if (!(cssEn > 0)) return taban;
+  return Math.min(YAKIN_EN_COK, Math.max(taban, (taban * referans) / cssEn));
+}

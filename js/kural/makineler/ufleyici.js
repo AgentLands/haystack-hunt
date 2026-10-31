@@ -80,6 +80,7 @@ function savur(tarla, m, dt) {
     tarla.h[i] -= 1;
     alinan.push(ucusYeri(o, dx, dy, d, UCUS_ASGARI + UCUS_EK * (1 - d / MENZIL)));
   });
+  if (alinan.length) tarla.kirli = true; // yığın kayması yeniden taranır (kural/tarla.js)
   let disari = 0;
   for (const [x, y] of alinan) {
     if (icinde(x, y)) tarla.h[y * GENISLIK + x] += 1;

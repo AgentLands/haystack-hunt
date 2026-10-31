@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   varsayilan, sinirla, odakla, kaydir, merkezle, gorunurAlan,
   ekrandanDunyaya, ekrandanHucre, dunyadanEkrana, takipEt, YAKIN_EN_AZ, YAKIN_EN_COK,
+  ekranaGoreYakinlik, TAKIP_REFERANS_EN,
 } from '../js/kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../js/kural/boyut.js';
 
@@ -109,4 +110,13 @@ test('takipEt: oran 1 hedefi ortalar, küçük oran yumuşak yaklaşır, sınır
   assert.equal(kose.gx, 0);
   assert.equal(kose.gy, 0);
   assert.deepEqual(takipEt(tam, 120, 80, 2.5, 0), tam);
+});
+
+test('ekranaGoreYakinlik: dar tuvalde artar (en çok 6), genişte taban kalır', () => {
+  assert.equal(ekranaGoreYakinlik(3.5, TAKIP_REFERANS_EN), 3.5);
+  assert.equal(ekranaGoreYakinlik(3.5, 1900), 3.5);
+  yakin(ekranaGoreYakinlik(3.5, 700), (3.5 * TAKIP_REFERANS_EN) / 700);
+  assert.equal(ekranaGoreYakinlik(3.5, 358), YAKIN_EN_COK);
+  assert.equal(ekranaGoreYakinlik(3.5, 0), 3.5);
+  assert.equal(ekranaGoreYakinlik(3.5, NaN), 3.5);
 });
