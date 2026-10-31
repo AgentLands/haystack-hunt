@@ -4,39 +4,42 @@
  * balya, çevresinde açık turkuaz doluluk halkası; dolunca turuncu yanıp söner).
  * Yerel uzay balya-makine-cizim ile aynı (+x ileri).
  */
-import { elips, renk, serit, yuvarDik } from './ortak.js';
+import { elips, renk, serit } from './ortak.js';
 import { celKutu, hat } from './makine-ortak.js';
 
 const TOP_X = 2.02;
 const TOP_W = 0.82;
 const TOP_YARI = 1.85;
 
-/** Toplayıcı: gri tambur, dönen diş sıraları, iki yanda turkuaz kalkan. */
-export function toplayici(ctx, k, isik) {
+/** Toplayıcının durağan kısmı: gri tambur ve iki yanda turkuaz kalkan. */
+export function toplayiciGovde(ctx, k, isik) {
   const s = k.sonuk;
   celKutu(ctx, TOP_X, -TOP_YARI, TOP_W, TOP_YARI * 2, 0.26, isik, '#4a5055', '#8a9298', s,
     k.eb);
-  ctx.lineCap = 'round';
-  for (let i = 0; i < 4; i++) {
-    const faz = (k.calis ? k.t * 9 : 0) + i * (Math.PI / 2);
-    const x = TOP_X + TOP_W / 2 + 0.3 * Math.sin(faz);
-    const on = Math.cos(faz) > 0;
-    ctx.strokeStyle = renk(on ? '#2a2e32' : '#5b6166', s);
-    ctx.lineWidth = on ? 0.07 : 0.05;
-    ctx.setLineDash([0.06, 0.13]);
-    ctx.beginPath();
-    ctx.moveTo(x, -TOP_YARI + 0.18);
-    ctx.lineTo(x, TOP_YARI - 0.18);
-    ctx.stroke();
-  }
-  ctx.setLineDash([]);
+  ctx.beginPath();
   for (const v of [-1, 1]) {
-    yuvarDik(ctx, TOP_X - 0.06, v < 0 ? -TOP_YARI - 0.12 : TOP_YARI - 0.14, TOP_W + 0.12,
-      0.26, 0.08);
-    hat(ctx, renk('#2f6f7a', s), k.eb, 0.9);
+    ctx.rect(TOP_X - 0.06, v < 0 ? -TOP_YARI - 0.12 : TOP_YARI - 0.14, TOP_W + 0.12, 0.26);
   }
+  hat(ctx, renk('#2f6f7a', s), k.eb, 0.9);
   serit(ctx, TOP_X + 0.05, -TOP_YARI + 0.2, TOP_X + 0.05, TOP_YARI - 0.2, 0.05,
     'rgba(255, 248, 225, 0.35)');
+}
+
+/** Toplayıcı dişleri: dört sıra kısa diş; çalışırken tambur üstünde dönerek kayar. */
+export function toplayiciDisler(ctx, k) {
+  const s = k.sonuk;
+  for (const on of [false, true]) {
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const faz = (k.calis ? k.t * 9 : 0) + i * (Math.PI / 2);
+      if ((Math.cos(faz) > 0) !== on) continue;
+      const x = TOP_X + TOP_W / 2 + 0.3 * Math.sin(faz);
+      const w = on ? 0.07 : 0.05;
+      for (let y = -TOP_YARI + 0.2; y < TOP_YARI - 0.2; y += 0.19) ctx.rect(x - w / 2, y, w, 0.07);
+    }
+    ctx.fillStyle = renk(on ? '#2a2e32' : '#5b6166', s);
+    ctx.fill();
+  }
 }
 
 /** Gözlem penceresi (cx merkez): içinde büyüyen balya ve doluluk halkası. */
@@ -58,7 +61,7 @@ export function pencere(ctx, k, cx) {
     ctx.beginPath();
     const tur = 2 + 2 * k.yuk;
     const don = k.calis ? k.t * 3 : 0;
-    for (let a = 0; a <= tur * Math.PI * 2; a += 0.35) {
+    for (let a = 0; a <= tur * Math.PI * 2; a += 0.55) {
       const rr = (a / (tur * Math.PI * 2)) * r * 0.92;
       const x = cx + Math.cos(a + don) * rr;
       const y = Math.sin(a + don) * rr;

@@ -10,7 +10,7 @@ import { hat } from './makine-ortak.js';
 const MENTESE_X = 2.25;
 const KEPCE_BOY = 0.95;
 /** Kepçe gölgesinin yerden yüksekliği, tam kalkışta (golgeKayma birimi). */
-const KALKIS_YUKSEKLIK = 90;
+const KALKIS_YUKSEKLIK = 110;
 const SAP_CIZGI = [
   [-0.3, -0.5, 0.45, -0.2], [0.1, -0.7, -0.35, 0.3], [0.35, 0.1, 0.6, 0.65],
   [-0.1, 0.2, -0.45, 0.7], [0.0, -0.1, 0.5, -0.65], [-0.5, 0.0, 0.1, 0.85],
@@ -65,6 +65,8 @@ function copDusur(ctx, k, isik) {
   const sallaniyor = k.hareket || k.calis || k.hal.kalkis > 0.3;
   if (k.yuk < 0.3 || !sallaniyor || k.sonuk) return;
   ctx.lineCap = 'round';
+  ctx.beginPath();
+  const cop = [];
   for (let i = 0; i < 3; i++) {
     const devir = k.t * 1.3 + i * 0.37;
     const f = devir % 1;
@@ -75,15 +77,26 @@ function copDusur(ctx, k, isik) {
     const x = KEPCE_BOY + 0.05 + g * 0.35;
     const yukseklik = (1 - g) * (0.25 + 0.4 * k.hal.kalkis);
     const aci = sahte(i + 7, n) * Math.PI + g * 3;
-    const dx = Math.cos(aci) * 0.16;
-    const dy = Math.sin(aci) * 0.16;
+    const r = 0.16 * (1 - g * 0.5);
+    const dx = Math.cos(aci) * r;
+    const dy = Math.sin(aci) * r;
     const gx = x - isik[0] * yukseklik;
     const gy = y - isik[1] * yukseklik;
-    serit(ctx, gx - dx, gy - dy, gx + dx, gy + dy, 0.06, `rgba(40, 22, 8, ${
-      (0.3 * (1 - g)).toFixed(3)})`);
-    serit(ctx, x - dx, y - dy, x + dx, y + dy, 0.07, `rgba(233, 197, 96, ${
-      (1 - g * 0.6).toFixed(3)})`);
+    ctx.moveTo(gx - dx, gy - dy);
+    ctx.lineTo(gx + dx, gy + dy);
+    cop.push([x - dx, y - dy, x + dx, y + dy]);
   }
+  ctx.strokeStyle = 'rgba(40, 22, 8, 0.25)';
+  ctx.lineWidth = 0.06;
+  ctx.stroke();
+  ctx.beginPath();
+  for (const [a, b, c, d] of cop) {
+    ctx.moveTo(a, b);
+    ctx.lineTo(c, d);
+  }
+  ctx.strokeStyle = '#e9c560';
+  ctx.lineWidth = 0.07;
+  ctx.stroke();
 }
 
 /** Kepçeyi (kollar govde'de) ve içindekini çizer. */
@@ -115,9 +128,14 @@ export function kepce(ctx, k, isik) {
   ctx.fill();
   serit(ctx, KEPCE_BOY, -1.5, KEPCE_BOY, 1.5, 0.13, renk('#b4bbc2', s));
   serit(ctx, 0.07, -1.28, 0.07, 1.28, 0.1, renk('#2c3036', s));
+  ctx.strokeStyle = renk('#8b9299', s);
+  ctx.lineWidth = 0.09;
+  ctx.beginPath();
   for (const v of [-1, 1]) {
-    serit(ctx, 0.05, v * 1.29, KEPCE_BOY - 0.03, v * 1.48, 0.09, renk('#8b9299', s));
+    ctx.moveTo(0.05, v * 1.29);
+    ctx.lineTo(KEPCE_BOY - 0.03, v * 1.48);
   }
+  ctx.stroke();
   samanYigini(ctx, 0.5, k.yuk, isik, k.eb);
   copDusur(ctx, k, isik);
   ctx.restore();

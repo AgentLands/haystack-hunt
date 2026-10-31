@@ -31,9 +31,9 @@ function sahte(i) {
 /** Beton zemin: dış hatlı döşeme, derz ve çatlaklar, yağ lekeleri. */
 function beton(ctx, o, eb) {
   yuvarDik(ctx, o.zx0, -o.zy, o.zx1 - o.zx0, o.zy * 2, 0.35);
-  hat(ctx, '#b9b1a2', eb, 0.8);
+  hat(ctx, '#a99f8e', eb, 0.8);
   yuvarDik(ctx, o.zx0 + 0.15, -o.zy + 0.15, o.zx1 - o.zx0 - 0.5, o.zy * 2 - 0.3, 0.25);
-  ctx.fillStyle = '#c6bfb0';
+  ctx.fillStyle = '#b9b1a2';
   ctx.fill();
   ctx.strokeStyle = 'rgba(92, 82, 68, 0.35)';
   ctx.lineWidth = 0.06;
@@ -150,18 +150,22 @@ function samanSerpinti(ctx, garaj, o, tarla) {
   }
 }
 
-/** Garajın merkezine göre dünya hizalı kapsayan kutusu (önbellek için; yon dik açılardadır). */
-export function garajKutusu(garaj, o) {
+/**
+ * Garajın merkezine göre dünya hizalı kapsayan kutusu (önbellek için; yon dik açılardadır).
+ * cati: yalnız sundurma çatısını kapsar (daha küçük ara tuval).
+ */
+export function garajKutusu(garaj, o, cati = false) {
   const c = Math.cos(garaj.yon);
   const s = Math.sin(garaj.yon);
+  const [x0, x1, yy, pay] = cati ? [o.cx0, o.cx1, o.cy, 0.3] : [o.zx0, o.zx1, o.zy, 1.5];
   const xs = [];
   const ys = [];
-  for (const [lx, ly] of [[o.zx0, -o.zy], [o.zx1, -o.zy], [o.zx0, o.zy], [o.zx1, o.zy]]) {
+  for (const [lx, ly] of [[x0, -yy], [x1, -yy], [x0, yy], [x1, yy]]) {
     xs.push(lx * c - ly * s);
     ys.push(lx * s + ly * c);
   }
-  return [Math.min(...xs) - 1.5, Math.min(...ys) - 1.5, Math.max(...xs) + 1.5,
-    Math.max(...ys) + 1.5];
+  return [Math.min(...xs) - pay, Math.min(...ys) - pay, Math.max(...xs) + pay,
+    Math.max(...ys) + pay];
 }
 
 /** Zeminin durağan kısmı (merkez 0, 0): beton, çizgiler, çatı gölgesi, variller, yığın. */
@@ -214,7 +218,7 @@ export function garajCatiCiz(ctx, durum, zaman) {
   const o = garajOlcu(durum.garaj);
   donuk(ctx, durum.garaj.x, durum.garaj.y, durum.garaj.yon, 1, (c) => direklerCiz(c, o));
   const { garaj } = durum;
-  catiCiz(ctx, durum, o, zaman, garajSahipleri(garaj).cati, garajKutusu(garaj, o));
+  catiCiz(ctx, durum, o, zaman, garajSahipleri(garaj).cati, garajKutusu(garaj, o, true));
 }
 
 katmanEkle((ctx, durum, zaman) => {

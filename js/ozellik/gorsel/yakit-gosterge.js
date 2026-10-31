@@ -1,8 +1,9 @@
 /**
  * Makine üstündeki yakıt göstergesi: makine sürülürken ya da yakıt %25'in altındayken
  * makinenin üstünde ekran-sabit küçük bir yay çubuk (yeşil → turuncu → kırmızı; %10'un
- * altında yanıp söner). Yakıt bitince yay yerine boş bidon simgesi. Boyutlar CSS pikseli:
- * tuval yakınlaşsa ya da telefonda küçülse de gösterge ekranda aynı boyda kalır.
+ * altında yanıp söner). Yakıt bitince yay yerine boş bidon simgesi. Boy yakınlaştırmadan
+ * bağımsızdır; tuval ekranda küçülünce (telefon) gösterge yarı yarıya telafi edilir
+ * (ölçek √(tuval px / CSS px)): okunur kalır ama küçük makineyi örtmez.
  */
 import { OLCEK } from '../../cizim.js';
 import { ekranBirim } from './ortak.js';
@@ -102,7 +103,7 @@ export function yakitGostergesi(ctx, makine, zaman, yukari) {
   ctx.translate(makine.x * OLCEK, (makine.y - yukari) * OLCEK);
   const tuval = ctx.canvas;
   const css = tuval && tuval.clientWidth > 0 ? tuval.width / tuval.clientWidth : 1;
-  const eb = ekranBirim(ctx) * css;
+  const eb = ekranBirim(ctx) * Math.sqrt(Math.max(1, css));
   ctx.scale(eb, eb);
   ctx.translate(0, -6);
   if (oran <= 0) bosBidon(ctx, t);

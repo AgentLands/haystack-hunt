@@ -4,7 +4,7 @@
  * cel kutu), direksiyonlu ön tekerlek, tekerlek izleri, egzoz dumanı ve pofu, gölgeler.
  */
 import {
-  donuk, ekranBirim, golgeKayma, renk, tekerlek, yuvarDik,
+  donuk, ekranBirim, golgeKayma, isikYerel, renk, tekerlek, yuvarDik,
 } from './ortak.js';
 import { halAl, pofYasi } from './makine-hal.js';
 
@@ -31,6 +31,28 @@ export function makineBilgi(makine, zaman) {
     hal: halAl(makine, zaman),
     eb: 0.05,
   };
+}
+
+const parcalar = new WeakMap();
+/** Işık yönü bu kadar basamağa yuvarlanır (önbellekli gövde dönerken seyrek yenilensin). */
+const ISIK_BASAMAK = 16;
+
+/** Makinenin adlı gövde parçası için önbellek sahibi nesnesi (onbellek.js). */
+export function parcaSahibi(makine, ad) {
+  let p = parcalar.get(makine);
+  if (!p) {
+    p = {};
+    parcalar.set(makine, p);
+  }
+  if (!p[ad]) p[ad] = {};
+  return p[ad];
+}
+
+/** Yuvarlanmış yerel ışık yönü ve basamak numarası (önbellek anahtarı için). */
+export function isikBasamak(yon) {
+  const adim = (Math.PI * 2) / ISIK_BASAMAK;
+  const n = Math.round(yon / adim);
+  return { isik: isikYerel(n * adim), n: ((n % ISIK_BASAMAK) + ISIK_BASAMAK) % ISIK_BASAMAK };
 }
 
 /** Yerel uzayda ekran-sabit dış hat kalınlığını k.eb'ye yazar (donuk içinde çağrılır). */
@@ -126,23 +148,17 @@ export function izleriCiz(ctx, tekerlekler, hiz) {
   if (Math.abs(hiz) <= 0.05) return;
   const yon = hiz > 0 ? -1 : 1;
   const boy = Math.min(Math.abs(hiz) * 0.4, 1.5);
-  ctx.strokeStyle = 'rgba(45, 28, 12, 0.3)';
-  ctx.lineCap = 'butt';
-  ctx.setLineDash([0.22, 0.12]);
-  let en = -1;
-  for (const [x, y, uzun, e] of tekerlekler) {
-    if (e !== en) {
-      if (en > 0) ctx.stroke();
-      en = e;
-      ctx.lineWidth = e * 0.8;
-      ctx.beginPath();
-    }
+  ctx.fillStyle = 'rgba(45, 28, 12, 0.3)';
+  ctx.beginPath();
+  for (const [x, y, uzun, en] of tekerlekler) {
     const bas = x + yon * uzun / 2;
-    ctx.moveTo(bas, y);
-    ctx.lineTo(bas + yon * boy, y);
+    const e = en * 0.8;
+    for (let d = 0; d < boy; d += 0.34) {
+      const u = Math.min(0.22, boy - d);
+      ctx.rect(yon > 0 ? bas + d : bas - d - u, y - e / 2, u, e);
+    }
   }
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.fill();
 }
 
 /**

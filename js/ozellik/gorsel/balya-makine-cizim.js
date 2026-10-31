@@ -8,10 +8,12 @@
 import { donuk, elips, isikYerel, renk, serit, tekerlek, yuvarDik } from './ortak.js';
 import { oturanCiftci } from './ciftci-parca.js';
 import {
-  celKutu, dumanCiz, hat, hatOlc, izleriCiz, kareler, kutuGolgesi, makineBilgi, onTekerlek,
+  celKutu, dumanCiz, hat, hatOlc, isikBasamak, izleriCiz, kareler, kutuGolgesi, makineBilgi,
+  onTekerlek, parcaSahibi,
 } from './makine-ortak.js';
 import { kapakAcikligi } from './makine-hal.js';
-import { pencere, toplayici } from './balya-makine-parca.js';
+import { pencere, toplayiciDisler, toplayiciGovde } from './balya-makine-parca.js';
+import { yerelOnbellek } from './onbellek.js';
 
 const TEKERLEKLER = [[-0.3, -1.62, 1.6, 0.8], [-0.3, 1.62, 1.6, 0.8]];
 const ON = [1.55, 1.12, 0.7, 0.34];
@@ -57,7 +59,7 @@ function kapak(ctx, k, isik, ac) {
   ctx.restore();
 }
 
-/** Oda: krem silindir, iki yanda turkuaz şerit, pencere; ön boyun turkuaz. */
+/** Oda: krem silindir, iki yanda turkuaz şerit; ön boyun turkuaz (pencere ayrı). */
 function oda(ctx, k, isik) {
   const s = k.sonuk;
   celKutu(ctx, -2.2, -1.32, 3.25, 2.64, 0.3, isik, KREM[0], KREM[1], s, k.eb);
@@ -68,10 +70,9 @@ function oda(ctx, k, isik) {
   }
   serit(ctx, 0.62, -1.1, 0.62, 1.1, 0.06, renk(KREM[0], s));
   celKutu(ctx, 0.9, -0.82, 1.3, 1.64, 0.22, isik, TURKUAZ[0], '#3f8c98', s, k.eb);
-  pencere(ctx, k, -0.8);
 }
 
-/** Sürücü yeri: koltuk, dönen direksiyon simidi, sürücü ve turkuaz çizgili tente. */
+/** Sürücü yeri: koltuk, direksiyon simidi, sürücü ve turkuaz çizgili tente. */
 function surucuYeri(ctx, makine, k, isik) {
   const s = k.sonuk;
   yuvarDik(ctx, 1.1, -0.38, 0.5, 0.76, 0.14);
@@ -81,9 +82,7 @@ function surucuYeri(ctx, makine, k, isik) {
   ctx.beginPath();
   ctx.arc(1.82, 0, 0.26, 0, Math.PI * 2);
   ctx.stroke();
-  const ds = k.hal.direksiyon * 3;
-  serit(ctx, 1.82 - Math.sin(ds) * 0.26, -Math.cos(ds) * 0.26, 1.82 + Math.sin(ds) * 0.26,
-    Math.cos(ds) * 0.26, 0.05, renk('#262626', s));
+  serit(ctx, 1.82, -0.26, 1.82, 0.26, 0.05, renk('#262626', s));
   if (makine.surucu) oturanCiftci(ctx, 1.35, 0, isik);
   kareler(ctx, DIREKLER, 0.08, renk('#3b3b3b', s), k.eb);
   yuvarDik(ctx, 0.86, -0.9, 1.36, 1.8, 0.12);
@@ -94,19 +93,29 @@ function surucuYeri(ctx, makine, k, isik) {
   ctx.fill();
 }
 
+/**
+ * Durağan gövde (tek önbellek): oda, boyun, toplayıcı tamburu, egzoz, sürücü yeri; kapak
+ * kapalıyken o da. Pencere, toplayıcı dişleri ve açılan kapak üstüne canlı çizilir.
+ */
 function govde(ctx, makine, k, isik) {
   const s = k.sonuk;
   for (const [x, y, uzun, en] of TEKERLEKLER) tekerlek(ctx, x, y, uzun, en, k.kayma, s);
   for (const v of [-1, 1]) onTekerlek(ctx, ON[0], v * ON[1], ON[2], ON[3], k, k.hal.direksiyon);
   const ac = kapakAcikligi(k.hal, k.t);
   odaAgzi(ctx, k, ac);
-  oda(ctx, k, isik);
-  kapak(ctx, k, isik, ac);
-  toplayici(ctx, k, isik);
-  // Egzoz.
-  elips(ctx, 0.72, -0.62, 0.08, 0.08);
-  hat(ctx, '#1d1b19', k.eb, 0.8);
-  surucuYeri(ctx, makine, k, isik);
+  const ib = isikBasamak(makine.yon || 0);
+  yerelOnbellek(ctx, parcaSahibi(makine, 'govde'),
+    `${ib.n}|${s}|${!!makine.surucu}|${ac === 0}`, [-3.35, -2.15, 3.0, 2.15], (c) => {
+      oda(c, k, ib.isik);
+      if (ac === 0) kapak(c, k, ib.isik, 0);
+      toplayiciGovde(c, k, ib.isik);
+      elips(c, 0.72, -0.62, 0.08, 0.08);
+      hat(c, '#1d1b19', k.eb, 0.8);
+      surucuYeri(c, makine, k, ib.isik);
+    });
+  if (ac > 0) kapak(ctx, k, isik, ac);
+  pencere(ctx, k, -0.8);
+  toplayiciDisler(ctx, k);
 }
 
 /** Balya makinesini çizer: makine { x, y, yon, hiz, yakit, surucu, calisiyor, yuk }. */

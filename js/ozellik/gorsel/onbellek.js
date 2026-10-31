@@ -9,6 +9,8 @@
 import { OLCEK } from '../../cizim.js';
 
 const kayitlar = new WeakMap();
+/** Önbellek açık mı (önizlemede süre karşılaştırması için kapatılabilir). */
+export const onbellekAyar = { acik: true };
 const OLCEK_PAYI = 0.02;
 /** Ara tuvalin bir kenarı en çok bu kadar piksel olur (çok yakında bellek patlamasın). */
 const EN_BUYUK = 2048;
@@ -54,7 +56,7 @@ export function onbellekliCiz(ctx, sahip, anahtar, mx, my, kutu, cizim, alfa = 1
   const olcek = Math.hypot(t.a, t.b);
   ctx.save();
   ctx.globalAlpha *= alfa;
-  if (!belge || !(olcek > 0)) {
+  if (!belge || !(olcek > 0) || !onbellekAyar.acik) {
     ctx.translate(mx * OLCEK, my * OLCEK);
     cizim(ctx);
     ctx.restore();
@@ -65,5 +67,29 @@ export function onbellekliCiz(ctx, sahip, anahtar, mx, my, kutu, cizim, alfa = 1
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(k.tuval, (mx + x0) * OLCEK, (my + y0) * OLCEK, (x1 - x0) * OLCEK,
     (y1 - y0) * OLCEK);
+  ctx.restore();
+}
+
+/**
+ * Yerel (döndürülmüş) uzayda önbellekli çizim: hareket eden makinenin durağan gövde
+ * parçaları için. cizim(c) geçerli yerel uzayda çizer; kutu [x0, y0, x1, y1] yerel birimde.
+ * Ara tuval yerel eksenlerde ekran ölçeğinde tutulur, döndürülerek yumuşatmalı basılır.
+ */
+export function yerelOnbellek(ctx, sahip, anahtar, kutu, cizim) {
+  const tuval = ctx.canvas;
+  const belge = tuval && tuval.ownerDocument;
+  const t = ctx.getTransform();
+  const olcek = Math.hypot(t.a, t.b);
+  if (!belge || !(olcek > 0) || !onbellekAyar.acik) {
+    cizim(ctx);
+    return;
+  }
+  const [x0, y0, x1, y1] = kutu;
+  const yerel = [x0 / OLCEK, y0 / OLCEK, x1 / OLCEK, y1 / OLCEK];
+  // hazirla dünya pikseli (OLCEK) birimiyle çalışır: kutu OLCEK'e bölünür, ölçek aynı kalır.
+  const k = hazirla(belge, sahip, anahtar, olcek, yerel, cizim);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(k.tuval, x0, y0, x1 - x0, y1 - y0);
   ctx.restore();
 }

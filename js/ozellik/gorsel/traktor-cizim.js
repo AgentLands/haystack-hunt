@@ -8,9 +8,10 @@
 import { donuk, elips, isikYerel, renk, serit, tekerlek, yuvarDik } from './ortak.js';
 import { oturanCiftci } from './ciftci-parca.js';
 import {
-  celKutu, dumanCiz, hat, hatOlc, hatliSerit, izleriCiz, kareler, kutuGolgesi, makineBilgi,
-  onTekerlek,
+  celKutu, dumanCiz, hat, hatOlc, hatliSerit, isikBasamak, izleriCiz, kareler, kutuGolgesi,
+  makineBilgi, onTekerlek, parcaSahibi,
 } from './makine-ortak.js';
+import { yerelOnbellek } from './onbellek.js';
 import { kepce, kepceGolgesi, kepceKonumu } from './traktor-kepce.js';
 
 const ARKA = [-1.15, 1.5, 1.8, 0.9];
@@ -18,9 +19,9 @@ const ON = [1.2, 1.02, 1.0, 0.46];
 const KAYMA_X = -0.5;
 const GOVDE_GOLGE = [
   [-2.1 + KAYMA_X, -1.7, 2.4, 3.4, 0.4], [0.15 + KAYMA_X, -0.6, 2.0, 1.2, 0.3],
-  [-1.9 + KAYMA_X, -0.95, 1.7, 1.9, 0.12, 40],
+  [-1.9 + KAYMA_X, -0.95, 1.55, 1.9, 0.12, 40],
 ];
-const DIREKLER = [[-1.72, -0.74], [-1.72, 0.74], [-0.38, -0.74], [-0.38, 0.74]];
+const DIREKLER = [[-1.72, -0.74], [-1.72, 0.74], [-0.5, -0.74], [-0.5, 0.74]];
 
 /** ROPS çerçevesi (dört direk) ve çizgili, yarı saydam güneşlik tentesi. */
 function kabin(ctx, k, isik) {
@@ -32,10 +33,10 @@ function kabin(ctx, k, isik) {
   ctx.beginPath();
   ctx.moveTo(-1.72, -0.74);
   ctx.lineTo(-1.72, 0.74);
-  ctx.moveTo(-0.38, -0.74);
-  ctx.lineTo(-0.38, 0.74);
+  ctx.moveTo(-0.5, -0.74);
+  ctx.lineTo(-0.5, 0.74);
   ctx.stroke();
-  const [x, y, w, h] = [-1.9, -0.95, 1.7, 1.9];
+  const [x, y, w, h] = [-1.9, -0.95, 1.55, 1.9];
   yuvarDik(ctx, x, y, w, h, 0.12);
   hat(ctx, s ? 'rgba(180, 172, 156, 0.42)' : 'rgba(246, 236, 210, 0.45)', k.eb);
   ctx.fillStyle = s ? 'rgba(110, 90, 80, 0.3)' : 'rgba(178, 52, 24, 0.42)';
@@ -44,6 +45,36 @@ function kabin(ctx, k, isik) {
   ctx.fill();
   serit(ctx, x + 0.1 - isik[0] * 0.02, y + 0.07, x + w - 0.1, y + 0.07, 0.05,
     'rgba(255, 248, 225, 0.6)');
+}
+
+/** Durağan alt gövde: şasi, çamurluklar, kaput, ızgara, farlar, koltuk, egzoz borusu. */
+function altGovde(ctx, k, isik) {
+  const s = k.sonuk;
+  celKutu(ctx, -2.0, -0.78, 2.3, 1.56, 0.22, isik, '#9a3217', '#d4481f', s, k.eb);
+  for (const v of [-1, 1]) {
+    celKutu(ctx, -2.0, v < 0 ? -1.32 : 0.8, 1.75, 0.52, 0.22, isik, '#a8371a', '#ee5a2a', s,
+      k.eb);
+  }
+  celKutu(ctx, 0.15, -0.55, 1.95, 1.1, 0.24, isik, '#a8371a', '#ee5a2a', s, k.eb);
+  serit(ctx, 0.4, isik[1] * 0.18, 1.85, isik[1] * 0.18, 0.09, renk('#ff9a5c', s));
+  ctx.strokeStyle = '#2a2420';
+  ctx.lineWidth = 0.05;
+  ctx.beginPath();
+  for (let i = 0; i < 4; i++) {
+    ctx.moveTo(2.04, -0.3 + i * 0.2);
+    ctx.lineTo(2.04, -0.2 + i * 0.2);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  for (const v of [-1, 1]) ctx.ellipse(2.0, v * 0.4, 0.09, 0.09, 0, 0, Math.PI * 2);
+  hat(ctx, k.motorAcik ? '#fff3b0' : renk('#d8cfa8', s), k.eb, 0.8);
+  yuvarDik(ctx, -1.25, -0.4, 0.55, 0.8, 0.16);
+  hat(ctx, renk('#33261d', s), k.eb, 0.8);
+  elips(ctx, 1.25, -0.3, 0.1, 0.1);
+  hat(ctx, '#1d1b19', k.eb, 0.8);
+  elips(ctx, 1.25, -0.3, 0.05, 0.05);
+  ctx.fillStyle = renk('#9a9a9a', s);
+  ctx.fill();
 }
 
 function govde(ctx, makine, k, isik) {
@@ -61,41 +92,23 @@ function govde(ctx, makine, k, isik) {
     serit(ctx, -0.4, v * 0.67 + isik[1] * 0.04, kx - 0.1, v * (0.67 + 0.08 * kalkis)
       + isik[1] * 0.04, 0.06, renk('#f58a4c', s));
   }
-  // Arka şasi ve çamurluklar.
-  celKutu(ctx, -2.0, -0.78, 2.3, 1.56, 0.22, isik, '#9a3217', '#d4481f', s, k.eb);
-  for (const v of [-1, 1]) {
-    celKutu(ctx, -2.0, v < 0 ? -1.32 : 0.8, 1.75, 0.52, 0.22, isik, '#a8371a', '#ee5a2a', s,
-      k.eb);
-  }
-  // Kaput, ızgara ve farlar.
-  celKutu(ctx, 0.15, -0.55, 1.95, 1.1, 0.24, isik, '#a8371a', '#ee5a2a', s, k.eb);
-  serit(ctx, 0.4, isik[1] * 0.18, 1.85, isik[1] * 0.18, 0.09, renk('#ff9a5c', s));
-  for (let i = 0; i < 4; i++) {
-    serit(ctx, 2.04, -0.3 + i * 0.2, 2.04, -0.2 + i * 0.2, 0.05, '#2a2420');
-  }
-  for (const v of [-1, 1]) {
-    elips(ctx, 2.0, v * 0.4, 0.09, 0.09);
-    hat(ctx, k.motorAcik ? '#fff3b0' : renk('#d8cfa8', s), k.eb, 0.8);
-  }
-  // Koltuk, direksiyon simidi (dönüşle döner), sürücü.
-  yuvarDik(ctx, -1.25, -0.4, 0.55, 0.8, 0.16);
-  hat(ctx, renk('#33261d', s), k.eb, 0.8);
+  // Gövde, sürücü ve kabin durağandır: ışık basamağı, sönüklük, far ve sürücüyle tek
+  // önbellekte. Direksiyon simidi tentenin önünde kalır, üstüne canlı çizilir.
+  const ib = isikBasamak(makine.yon || 0);
+  yerelOnbellek(ctx, parcaSahibi(makine, 'govde'),
+    `${ib.n}|${s}|${k.motorAcik}|${!!makine.surucu}`, [-2.15, -1.5, 2.25, 1.5], (c) => {
+      altGovde(c, k, ib.isik);
+      if (makine.surucu) oturanCiftci(c, -0.85, 0, ib.isik);
+      kabin(c, k, ib.isik);
+    });
   ctx.strokeStyle = renk('#262626', s);
   ctx.lineWidth = 0.08;
   ctx.beginPath();
-  ctx.arc(-0.2, 0, 0.28, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.arc(-0.08, 0, 0.24, 0, Math.PI * 2);
   const ds = direksiyon * 3;
-  serit(ctx, -0.2 - Math.sin(ds) * 0.28, -Math.cos(ds) * 0.28, -0.2 + Math.sin(ds) * 0.28,
-    Math.cos(ds) * 0.28, 0.05, renk('#262626', s));
-  if (makine.surucu) oturanCiftci(ctx, -0.85, 0, isik);
-  // Egzoz borusu (dikey).
-  elips(ctx, 1.25, -0.3, 0.1, 0.1);
-  hat(ctx, '#1d1b19', k.eb, 0.8);
-  elips(ctx, 1.25, -0.3, 0.05, 0.05);
-  ctx.fillStyle = renk('#9a9a9a', s);
-  ctx.fill();
-  kabin(ctx, k, isik);
+  ctx.moveTo(-0.08 - Math.sin(ds) * 0.24, -Math.cos(ds) * 0.24);
+  ctx.lineTo(-0.08 + Math.sin(ds) * 0.24, Math.cos(ds) * 0.24);
+  ctx.stroke();
 }
 
 /** Traktörü çizer: makine { x, y, yon, hiz, yakit, surucu, calisiyor, yuk }. */
