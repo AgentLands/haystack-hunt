@@ -104,6 +104,17 @@ function akit(h, a, b, esik) {
   return false;
 }
 
+/**
+ * Dünya noktasının (kayan nokta; hücre i [i, i+1) aralığıdır) altındaki saman yüksekliği.
+ * Tarla dışı 0 sayılır. Karakter ve makineler bununla yürür.
+ */
+export function yukseklik(tarla, x, y) {
+  const hx = Math.floor(x);
+  const hy = Math.floor(y);
+  if (hx < 0 || hy < 0 || hx >= GENISLIK || hy >= YUKSEKLIK) return 0;
+  return tarla.h[hy * GENISLIK + hx];
+}
+
 export function toplamSaman(tarla) {
   let s = 0;
   for (let i = 0; i < tarla.h.length; i++) s += tarla.h[i];

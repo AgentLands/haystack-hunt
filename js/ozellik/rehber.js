@@ -1,21 +1,30 @@
 /**
- * İlk açılış rehberi: oyunu ilk kez açana 4 adımlık, atlanabilir bir bindirme
- * (El / Tırmık / Dedektör / güneş parıltısı). Görüldüğü localStorage'ta tutulur.
+ * İlk açılış rehberi: oyunu ilk kez açana 6 adımlık, atlanabilir bir bindirme (yürüme,
+ * El / Tırmık / Dedektör, traktör, güneş parıltısı). Görüldüğü localStorage'ta tutulur.
  * Üst sıradaki "?" düğmesi rehberi yeniden açar. Bindirme tuvale tıklamayı engellemez:
- * tuvale ilk dokunuşta ya da 1-2-3 tuşlarında kendiliğinden kapanır.
+ * tuvale ilk dokunuşta, hareket tuşlarında ya da 1-4 tuşlarında kendiliğinden kapanır.
  */
 import { dugmeEkle } from '../arayuz.js';
+import { YON_TUSLARI } from '../girdi.js';
 
 const ANAHTAR = 'haystack-hunt:rehber-goruldu';
 const ADIMLAR = [
+  { arac: null, baslik: 'Çiftçi',
+    metin: 'WASD ya da oklarla yürü; telefonda sanal kolu kullan ya da gideceğin yere dokun. '
+      + 'Samanın üstünde yavaşlarsın.' },
   { arac: 'el', baslik: 'El',
-    metin: 'Basılı tut: altındaki samanı alırsın. Açılan çukura yamaçtan saman kayar.' },
+    metin: 'Boşluğu basılı tut: önündeki samanı alırsın. Yakındaki bir yere basılı tutarak da '
+      + 'kazabilirsin. Açılan çukura yamaçtan saman kayar.' },
   { arac: 'tirmik', baslik: 'Tırmık',
-    metin: 'Sürükle: samanı o yöne itersin. Tarlanın dışına ittiğin saman gider.' },
+    metin: 'Boşluk basılıyken yürü: samanı yürüdüğün yöne itersin. Tarlanın dışına ittiğin '
+      + 'saman gider.' },
   { arac: 'dedektor', baslik: 'Dedektör',
-    metin: 'Üç hakkın var. Dokunduğun yer iğneye ne kadar yakınsa yazar.' },
+    metin: 'Boşluğa bas: durduğun yerin iğneye ne kadar yakın olduğunu yazar. Hakkın sınırlı.' },
+  { arac: null, baslik: 'Kepçeli traktör',
+    metin: 'Garajdaki traktöre yaklaş, E ile bin. W/S gaz, A/D dön, Boşluk kepçe. Dolu kepçeyi '
+      + 'tarla kenarında Boşlukla boşalt. Yakıtı sınırlı!' },
   { arac: null, baslik: 'Güneş parıltısı',
-    metin: 'İğne yüzeye yakınsa güneşte arada bir parlar. Gözünü tarladan ayırma!' },
+    metin: 'İğne yüzeye yakınsa güneşte arada bir parlar. Açığa çıkınca yanına git, Boşlukla al.' },
 ];
 
 function goruldu() {
@@ -57,7 +66,7 @@ function oyunBasladi(e) {
 }
 
 function tusBasildi(e) {
-  if (e.key === 'Escape' || ['1', '2', '3'].includes(e.key)) kapat();
+  if (e.key === 'Escape' || ['1', '2', '3', '4'].includes(e.key) || YON_TUSLARI[e.code]) kapat();
 }
 
 function ciz() {

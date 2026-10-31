@@ -1,8 +1,9 @@
 # Haystack Hunt
 
 Kuş bakışı, tarayıcıda oynanan bir arama oyunu: tepeli bir saman tarlasının içinde tek
-bir iğne var. Samanı elle al, tırmıkla it, dedektör ve mıknatıs haklarını akıllıca kullan,
-güneşte parlayan iğneyi paslı çivilerin parıltısından ayırt et.
+bir iğne var. Tarlada yürüyen bir çiftçisin: samanı elle al, tırmıkla it, garajdaki kepçeli
+traktörle taşı, dedektör ve mıknatıs haklarını akıllıca kullan, güneşte parlayan iğneyi paslı
+çivilerin parıltısından ayırt et.
 
 **Özellikler:** Kolay / Normal / Zor seviyeleri ve puan · paslı çivi yemleri · yığın kayması,
 gölgeler ve parçacık efektleri · sentezlenmiş sesler (M ile kapat) · yakınlaştırma, kaydırma ve
@@ -21,8 +22,12 @@ python3 -m http.server 8000      # sonra http://localhost:8000
 
 - `?tohum=abc` adresi aynı tarlayı herkese açar; tohum yoksa **günün tarlası** gelir.
   `?zorluk=kolay|zor` zorluğu seçer.
-- Klavye: `1` el, `2` tırmık, `3` dedektör, `4` mıknatıs, `M` ses, `+`/`−`/`0` yakınlaştırma,
-  ok tuşları ya da Boşluk + sürükle kaydırma. Fare tekerleği / iki parmak yakınlaştırır.
+- Klavye: `WASD` / oklar yürü (makinede W/S gaz, A/D dön), `Boşluk` kullan (basılı tut),
+  `E` makineye bin/in, `1` el, `2` tırmık, `3` dedektör, `4` mıknatıs, `M` ses,
+  `+`/`−` yakınlaştırma, `0` tüm tarla. Kamera çiftçiyi izler; fare tekerleği / iki parmak
+  yakınlaştırır, orta tuşla sürükleyip kaydırırsın. Tuvalde uzak bir yere tıklayınca çiftçi
+  oraya yürür; yakına (3 hücre) tıklayıp basılı tutunca araç orada çalışır.
+- Karakter ve makine sözleşmesi: `docs/KARAKTER_TASARIM.md`.
 
 ## Yarış modu
 
@@ -46,7 +51,8 @@ node sunucu/sunucu.js --port 8080          # sonra http://localhost:8080 (LAN'da
 - Komşusundan 3 kattan fazla yüksek olan hücreden saman aşağı kayar (yığın kayması);
   açtığın çukurun kenarları içeri dökülür.
 - İğnenin yerden bir yüksekliği var; üstündeki saman o yüksekliğe inince görünür,
-  elle üstüne basınca alınır.
+  yanına gidip elle alınır. Traktör kepçesi iğnenin katına inerse iğne kepçeye takılır;
+  kepçe tarla kenarında boşaltılınca iğne orada açıkta yere düşer.
 - İğne yüzeye 8 kattan yakınsa her 12 saniyede bir güneşte parlar (Normal; Kolay ve Zor farklı).
 
 ## Geliştirme

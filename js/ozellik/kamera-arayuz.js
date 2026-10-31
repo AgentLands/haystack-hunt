@@ -1,6 +1,7 @@
 /**
  * Kamera arayüzü: tuval kabının sağ altında +, −, ⤢ düğmeleri; sol altta (yakınken görünen)
- * mini harita: tarlanın küçük hâli, görünür alan dikdörtgeni; tıklayınca/sürükleyince oraya gider.
+ * mini harita: tarlanın küçük hâli, görünür alan dikdörtgeni; tıklayınca/sürükleyince oraya gider
+ * (karakter takibi, oyuncu yeniden hareket edene dek bırakılır).
  */
 import { gorunum, gorunumAyarla } from '../gorunum.js';
 import { gorunurAlan, merkezle, YAKIN_EN_AZ, YAKIN_EN_COK } from '../kural/gorunum.js';
@@ -17,12 +18,12 @@ function dugmeYap(metin, baslik, tikla) {
   d.title = baslik;
   d.setAttribute('aria-label', baslik);
   d.addEventListener('click', tikla);
-  // Düğmeye basınca odak kalmasın: Boşluk/ok tuşları kamerada kalsın.
+  // Düğmeye basınca odak kalmasın: Boşluk/ok tuşları karakterde kalsın.
   d.addEventListener('pointerup', () => d.blur());
   return d;
 }
 
-function miniHaritaKur(kap) {
+function miniHaritaKur(kap, elleKaydirildi) {
   const harita = document.createElement('canvas');
   harita.className = 'minik-harita';
   harita.width = EN;
@@ -31,6 +32,7 @@ function miniHaritaKur(kap) {
   harita.setAttribute('aria-label', 'Mini harita');
   const ctx = harita.getContext('2d');
   const git = (e) => {
+    elleKaydirildi();
     const k = harita.getBoundingClientRect();
     gorunumAyarla(merkezle(gorunum, ((e.clientX - k.left) / k.width) * GENISLIK,
       ((e.clientY - k.top) / k.height) * YUKSEKLIK));
@@ -64,7 +66,7 @@ function miniHaritaKur(kap) {
   };
 }
 
-export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir }) {
+export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir, elleKaydirildi }) {
   const kap = document.getElementById('tarla-kap');
   const sira = document.createElement('div');
   sira.className = 'kamera-dugmeleri';
@@ -73,7 +75,7 @@ export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir }) {
   const sigdirDugme = dugmeYap('⤢', 'Sığdır (0)', sigdir);
   sira.append(arti, eksi, sigdirDugme);
   kap.append(sira);
-  const haritaCiz = miniHaritaKur(kap);
+  const haritaCiz = miniHaritaKur(kap, elleKaydirildi);
   // Her kare, çizimden sonra (ust katman) düğme durumları ve mini harita tazelenir.
   katmanEkle(() => {
     arti.disabled = gorunum.z >= YAKIN_EN_COK - 1e-6;
