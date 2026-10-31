@@ -29,8 +29,29 @@ python3 -m http.server 8000      # sonra http://localhost:8000
 ## Geliştirme
 
 ```
-node --test              # birim testleri (Node 20+)
+npm test                 # birim testleri (node --test; Node 22)
+npm run denetim          # CLAUDE.md kurallarının kod denetimi (satır uzunluğu, dosya boyu, ...)
+npm run duman            # Chromium'da uçtan uca duman testi (bkz. aşağı)
 ```
+
+`npm run denetim` satır > 100 karakter, kod dosyası > 300 / test dosyası > 400 satır,
+belge yorumu eksik modül, `js/kural/` içinde `Math.random` ve boş `catch` bloklarını
+`dosya:satır: açıklama` biçiminde listeler; bulgu varsa çıkış kodu 1 olur.
+
+`npm run duman` için Playwright ve Chromium gerekir:
+
+```
+npm install --no-save playwright@1.48.2
+npx playwright@1.48.2 install chromium
+```
+
+### Sürekli entegrasyon
+
+- `.github/workflows/test.yml`: her push ve pull request'te birim testleri, kod denetimi
+  ve duman testi çalışır.
+- `.github/workflows/pages.yml`: `main` dalına her push'ta oyun GitHub Pages'e yayınlanır.
+  Gizli (private) bir repoda GitHub Pages ücretsiz planda çalışmaz; ya repo herkese açık
+  olmalı ya da ücretli bir plan gerekir.
 
 | Dosya | Sorumluluk |
 | --- | --- |

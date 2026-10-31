@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Birim testleri
+        run: npm test
+
+      - name: Kod denetimi
+        run: npm run denetim
+
+      - name: Playwright paketi (yalnız duman testi için, package.json'a eklenmez)
+        run: npm install --no-save playwright@1.48.2
+
+      - name: Chromium kurulumu
+        run: npx --yes playwright@1.48.2 install --with-deps chromium
+
+      - name: Duman testi
+        run: npm run duman
