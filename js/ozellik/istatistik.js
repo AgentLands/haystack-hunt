@@ -48,16 +48,6 @@ function satir(metin, vurgulu) {
   return p;
 }
 
-/** sonuc.puan / sonuc.zorluk başka bir özellikten gelirse gösterilir; yoksa atlanır. */
-function ekAlanlar(sonuc) {
-  const parcalar = [];
-  if (typeof sonuc.puan === 'number') parcalar.push(`Puan: ${sonuc.puan}`);
-  const z = sonuc.zorluk;
-  const zad = z && typeof z === 'object' ? z.ad ?? z.etiket : z;
-  if (typeof zad === 'string' || typeof zad === 'number') parcalar.push(`Zorluk: ${zad}`);
-  return parcalar.join(' · ');
-}
-
 function bitisBilgisi(sonuc, rapor) {
   const satirlar = [];
   if (rapor.rekor) {
@@ -65,8 +55,6 @@ function bitisBilgisi(sonuc, rapor) {
   } else if (rapor.tohumRekoru) {
     satirlar.push(satir('🏆 Bu tarlada yeni rekor!', true));
   }
-  const ek = ekAlanlar(sonuc);
-  if (ek) satirlar.push(satir(ek));
   if (rapor.gunluk) satirlar.push(satir(`🔥 Günün tarlası çözüldü · Seri: ${rapor.seri} gün`));
   else if (rapor.seri > 0) satirlar.push(satir(`🔥 Seri: ${rapor.seri} gün`));
   bilgi.replaceChildren(...satirlar);

@@ -5,7 +5,7 @@
 import { dinle } from '../olaylar.js';
 import { durumAl, yeniOyun, varsayilanZorlukAyarla } from '../oyun.js';
 import { ZORLUKLAR, VARSAYILAN_ZORLUK, zorlukAl } from '../kural/zorluk.js';
-import { bildir, sayi } from '../arayuz.js';
+import { bildir, sayi, paylasimEkiKaydet } from '../arayuz.js';
 import './civi-cizim.js';
 
 const $ = (id) => document.getElementById(id);
@@ -55,3 +55,6 @@ dinle('bulundu', ({ sonuc }) => {
   $('puan').textContent = `Puan: ${sayi.format(sonuc.puan)} (${ayar.ad} ×${ayar.carpan}`
     + ` · mıknatıs ${sonuc.miknatisKullanilan}/${sonuc.miknatisHakki}${ceza})`;
 });
+
+paylasimEkiKaydet((sonuc) => (typeof sonuc.puan === 'number'
+  ? `🏅 ${sayi.format(sonuc.puan)} puan · ${zorlukAl(sonuc.zorluk).ad}` : ''));
