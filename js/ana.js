@@ -19,6 +19,7 @@ import './ozellik/mekanik.js';
 import './ozellik/efekt/efekt.js';
 import './ozellik/yaris.js';
 import './ozellik/dokunmatik.js';
+import './ozellik/gorsel/katman.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
