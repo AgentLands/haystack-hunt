@@ -1,0 +1,146 @@
+/*
+ * Görsel sözleşme: "Tohum Paketi ve Çuval Damgası" sanat yönünün renk belirteçleri, yazı
+ * tipleri, düğme türleri ve kâğıt pencere tabanı. Diğer bütün CSS dosyaları renk ve yazıyı
+ * buradaki değişkenlerden alır; yeni sabit renk yazma. Ayrıntı: docs/SANAT_YONU.md.
+ */
+@font-face {
+  font-family: 'Alfa Slab One';
+  src: url('font/alfa-slab-one.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bree Serif';
+  src: url('font/bree-serif.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Courier Prime';
+  src: url('font/courier-prime-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --ahsap: #3a2a1c;
+  --ahsap-koyu: #241910;
+  --kagit: #ead7b0;
+  --kraft: #d9b98a;
+  --kraft-koyu: #b8925e;
+  --murekkep: #2b2118;
+  --murekkep-soluk: #5c4a36;
+  --damga: #9e3a26;
+  --damga-yazi: #f4e9d0;
+  --civit: #2f4a6d;
+  --saman: #e3b341;
+  --cayir: #4e6b2f;
+
+  --yazi-baslik: 'Alfa Slab One', Rockwell, 'Roboto Slab', Georgia, serif;
+  --yazi-govde: 'Bree Serif', Georgia, 'Times New Roman', serif;
+  --yazi-sayi: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+
+  --golge: 2px 3px 0 rgba(36, 25, 16, 0.55);
+  --golge-buyuk: 4px 6px 0 rgba(36, 25, 16, 0.5);
+  --yaricap: 3px;
+  --kenar: 2px solid var(--murekkep);
+  --odak: 3px dashed var(--civit);
+  /* Kâğıt lifi: bulanıksız, çok hafif gürültü; arka plan rengiyle çarpılır. */
+  --kagit-doku: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .11 0 0 0 0 .06 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='96' height='96' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+
+/* Düğme türleri. Basılınca gerçekten basılır: gölge kaybolur, düğme kayar. */
+.dugme-birincil,
+.dugme-ikincil,
+.dugme-ikon {
+  font-family: var(--yazi-baslik);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  cursor: pointer;
+  transition: transform 60ms ease-out, box-shadow 60ms ease-out;
+}
+.dugme-birincil {
+  background: var(--damga);
+  color: var(--damga-yazi);
+  padding: 0.55em 1.1em;
+}
+.dugme-ikincil {
+  background: var(--kraft);
+  color: var(--murekkep);
+  padding: 0.55em 1.1em;
+}
+.dugme-ikon {
+  background: var(--kagit);
+  color: var(--murekkep);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.dugme-ikon svg {
+  width: 22px;
+  height: 22px;
+}
+.dugme-birincil:active,
+.dugme-ikincil:active,
+.dugme-ikon:active,
+.dugme-birincil[aria-pressed='true'],
+.dugme-ikincil[aria-pressed='true'] {
+  transform: translate(2px, 3px);
+  box-shadow: none;
+}
+.dugme-metin {
+  background: none;
+  border: none;
+  padding: 0.2em 0;
+  color: var(--civit);
+  font-family: var(--yazi-govde);
+  text-decoration: underline dashed 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.dugme-metin.tehlike {
+  color: var(--damga);
+}
+:where(button, a, input, select, summary, [tabindex]):focus-visible {
+  outline: var(--odak);
+  outline-offset: 3px;
+}
+
+/* Kâğıt pencere: masaya bırakılmış kâğıt. dialog'lar ve kartlar bu sınıfı alır. */
+.kagit-pencere {
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  color: var(--murekkep);
+  font-family: var(--yazi-govde);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge-buyuk);
+}
+.kagit-pencere h2,
+.kagit-pencere h3 {
+  font-family: var(--yazi-baslik);
+  font-weight: 400;
+  color: var(--murekkep);
+}
+dialog.kagit-pencere::backdrop {
+  background: rgba(36, 25, 16, 0.6);
+}
+.sayi {
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dugme-birincil,
+  .dugme-ikincil,
+  .dugme-ikon {
+    transition: none;
+  }
+}

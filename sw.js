@@ -5,7 +5,10 @@
  */
 const SURUM = 'v1';
 const ONBELLEK = `haystack-hunt-${SURUM}`;
-const KABUK = ['./', './stil.css', './js/ana.js', './manifest.webmanifest'];
+const KABUK = [
+  './', './belirtec.css', './stil.css', './js/ana.js', './manifest.webmanifest',
+  './font/alfa-slab-one.woff2', './font/bree-serif.woff2', './font/courier-prime-bold.woff2',
+];
 const ICE_AKTAR = /(?:from\s*|import\s*\(?\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
 
 /** Bir modülün göreli içe aktarmalarını (özyinelemeli) bulur. */
