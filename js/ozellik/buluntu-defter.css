@@ -1,0 +1,110 @@
+/*
+ * "Buluntu defteri" (buluntu-defter.js): kâğıt pencerede kart ızgarası. Bulunanlar renkli
+ * çizim, ad, açıklama, adet ve nadirlik damgasıyla; bulunmayanlar solgun "?" silüeti.
+ * Renkler yalnız belirteçlerden (belirtec.css).
+ */
+#buluntu-pencere {
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100dvh - 24px);
+}
+#buluntu-pencere[open] {
+  display: flex;
+  flex-direction: column;
+}
+#buluntu-pencere h2 { flex: none; }
+.buluntu-ozet { flex: none; margin: 0 0 10px; color: var(--murekkep-soluk); }
+.buluntu-izgara {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 12px 6px 6px 2px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-height: calc(100dvh - 210px);
+}
+.buluntu-kart {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px 8px 6px;
+  background: color-mix(in srgb, var(--kagit) 70%, var(--kraft));
+  border: 2px solid var(--kraft-koyu);
+  border-radius: var(--yaricap);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--murekkep) 28%, transparent);
+}
+.buluntu-kart:nth-child(odd) { rotate: -0.4deg; }
+.buluntu-kart:nth-child(even) { rotate: 0.35deg; }
+.buluntu-kart.bos {
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+  color: var(--murekkep-soluk);
+}
+.buluntu-kart.bos .buluntu-simge { opacity: 0.55; }
+.buluntu-simge { /* ortak canvas kurallarını (çerçeve, oran, piksel) sıfırla */
+  flex: none;
+  width: 56px;
+  height: 56px;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 0;
+  image-rendering: auto;
+}
+.buluntu-yazi { flex: 1; min-width: 0; }
+.buluntu-yazi p { margin: 0; line-height: 1.3; }
+.buluntu-ust {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.buluntu-ad { font-size: 1rem; line-height: 1.2; }
+.buluntu-kart.bos .buluntu-ad { font-family: var(--yazi-baslik); font-size: 1.3rem; }
+.buluntu-not { margin-top: 2px !important; font-size: 0.82rem; font-style: italic; }
+.buluntu-adet {
+  margin-top: 4px !important;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--murekkep-soluk);
+}
+.buluntu-damga {
+  padding: 0 5px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--murekkep-soluk);
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  rotate: -3deg;
+}
+.buluntu-kart.seyrek .buluntu-damga { color: var(--cayir); }
+.buluntu-kart.nadir .buluntu-damga { color: var(--civit); }
+.buluntu-kart.cokNadir .buluntu-damga { color: var(--damga); }
+.buluntu-kart.cokNadir { border-color: var(--damga); }
+.buluntu-yeni {
+  position: absolute;
+  top: -8px;
+  right: 6px;
+  padding: 0 6px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--damga-yazi);
+  background: var(--damga);
+  border-radius: 2px;
+  rotate: 4deg;
+}
+@media (max-width: 520px) {
+  #buluntu-pencere { padding: 36px 14px 14px; }
+  .buluntu-izgara { grid-template-columns: minmax(0, 1fr); max-height: calc(100dvh - 190px); }
+}

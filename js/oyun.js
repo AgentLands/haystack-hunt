@@ -20,6 +20,7 @@ import {
 } from './oyun-arac.js';
 import { karakterKaresi, fareBas, fareSurukle } from './oyun-karakter.js';
 import { binIn, makineKaresi, makineImleci } from './oyun-makine.js';
+import { buluntulariKur, buluntuKaresi } from './oyun-buluntu.js';
 import { yay } from './olaylar.js';
 
 export { PARILTI_SURE };
@@ -67,6 +68,7 @@ export function yeniOyun(etiket, zorluk, secenek = {}) {
   const karakter = karakterKur(tarla, garaj, makineler.map(makineEngeli));
   durum = {
     etiket, zorluk: ad, tarla, garaj, makineler, karakter, balyalar: tarla.balyalar,
+    buluntular: buluntulariKur(tarla),
     arac, aracYaricap: YARICAP[arac], rahat: secenek.rahat ?? varsayilanRahat,
     basili: false, fare: null, imlec: null, son: null,
     oncekiKullan: false, elKilitli: false, tirmikSayac: 0, sonZaman: null,
@@ -143,6 +145,7 @@ export function adim(zaman) {
       durum.gorundu = true;
       yay('igne-gorundu', { x: tarla.igne.x, y: tarla.igne.y });
     }
+    buluntuKaresi(durum, zaman);
     if (zaman >= durum.sonrakiParilti) {
       if (derinlik <= durum.pariltiDerinlik) igneParlat(durum, zaman);
       civileriParlat(durum, zaman);
