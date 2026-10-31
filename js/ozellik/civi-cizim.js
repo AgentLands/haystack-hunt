@@ -7,6 +7,7 @@
 import { katmanEkle, OLCEK } from '../cizim.js';
 import { civiDerinligi } from '../kural/civi.js';
 import { disHat, ekranBirim } from './gorsel/ortak.js';
+import { sadeHareket, nabizSade } from './sade-hareket.js';
 
 const GOVDE = '#8a4a22';
 const GOVDE_ACIK = '#c27a45';
@@ -117,8 +118,8 @@ katmanEkle((ctx, durum, zaman) => {
     const derinlik = durum.goster ? 0 : civiDerinligi(tarla, civi);
     if (derinlik === 0) {
       civiCiz(ctx, civi);
-    } else if (derinlik <= 3 && (zaman + civi.x * 37) % 1900 < 140) {
-      ctx.fillStyle = PARILTI(0.85);
+    } else if (derinlik <= 3 && (sadeHareket() || (zaman + civi.x * 37) % 1900 < 140)) {
+      ctx.fillStyle = PARILTI(sadeHareket() ? 0.45 : 0.85); // sade: yanıp sönmez, sönük sürekli
       ctx.fillRect((civi.x + 0.5) * OLCEK - 1.5 * eb, (civi.y + 0.5) * OLCEK - 1.5 * eb,
         3 * eb, 3 * eb);
     }
@@ -126,6 +127,7 @@ katmanEkle((ctx, durum, zaman) => {
   for (const p of durum.civiPariltilar) {
     if (zaman >= p.bitis) continue;
     const kalan = Math.sin(((p.bitis - zaman) / p.sure) * Math.PI);
-    yildiz(ctx, (p.x + 0.5) * OLCEK, (p.y + 0.5) * OLCEK, (6 + 14 * kalan) * eb, kalan, eb);
+    const boy = (6 + 14 * nabizSade(kalan, 0.4)) * eb; // sade: boy sabit, yalnız solar
+    yildiz(ctx, (p.x + 0.5) * OLCEK, (p.y + 0.5) * OLCEK, boy, kalan, eb);
   }
 }, 'alt');

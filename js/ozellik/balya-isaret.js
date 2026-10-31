@@ -4,14 +4,13 @@
  * balyadaki paslı çiviler için dış hatlı turuncu nokta. Üst katmanda balya çiziminden sonra
  * çizilir; balyaCiz'e dokunmaz, yalnız durumu okur.
  */
-import { katmanEkle, OLCEK, igneModeli } from '../cizim.js';
+import { katmanEkle, OLCEK, igneModeli, ekranBirim } from '../cizim.js';
 import { igneKonumu, tarlada } from '../kural/igne.js';
 import { nabizSade } from './sade-hareket.js';
 
 /** Balyadaki iğne: nabız gibi atan ekran-sabit kalınlıkta beyaz halka ve gümüş iğne modeli. */
 function igneIsareti(ctx, x, y, aci, zaman) {
-  const m = ctx.getTransform();
-  const eb = 1 / Math.hypot(m.a, m.b);
+  const eb = ekranBirim(ctx);
   const nabiz = nabizSade(0.5 + 0.5 * Math.sin(zaman / 180));
   ctx.strokeStyle = 'rgba(42, 26, 13, 0.55)';
   ctx.lineWidth = 4 * eb;
@@ -27,8 +26,7 @@ function igneIsareti(ctx, x, y, aci, zaman) {
 katmanEkle((ctx, durum, zaman) => {
   if (!durum.goster || !durum.tarla) return;
   const { tarla } = durum;
-  const m = ctx.getTransform();
-  const eb = 1 / Math.hypot(m.a, m.b);
+  const eb = ekranBirim(ctx);
   for (const civi of tarla.civiler) {
     if (civi.alindi || tarlada(civi)) continue;
     ctx.beginPath();

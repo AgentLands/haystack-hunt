@@ -4,7 +4,7 @@
  * prefers-reduced-motion açıksa parçacıklar azalır, sarsıntı ve salınım kapanır.
  */
 import { dinle } from '../../olaylar.js';
-import { katmanEkle, OLCEK, igneYariBoyu } from '../../cizim.js';
+import { katmanEkle, OLCEK, igneYariBoyu, ekranBirim } from '../../cizim.js';
 import { durumAl } from '../../oyun.js';
 import { SEVIYELER, EL_YARICAP, TIRMIK_YARICAP } from '../../kural/araclar.js';
 import { igneDerinligi } from '../../kural/igne.js';
@@ -122,8 +122,7 @@ function igneParlat(ctx, durum, zaman) {
   const evre = (zaman % 2200) / 700;
   if (evre >= 1) return;
   const { igne } = durum.tarla;
-  const m = ctx.getTransform();
-  const eb = 1 / Math.hypot(m.a, m.b);
+  const eb = ekranBirim(ctx);
   // Sade harekette ışıltı iğne boyunca kaymaz ve dönmez, daha sönük yanar.
   const k = sade.matches ? 0 : (evre * 2 - 1) * igneYariBoyu(eb) * 0.85;
   const a = Math.sin(Math.PI * evre) * (sade.matches ? 0.35 : 0.9);
