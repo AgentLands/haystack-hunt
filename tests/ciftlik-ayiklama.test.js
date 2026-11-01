@@ -1,9 +1,5 @@
-/**
- * Çiftlik ayıklama ailesi: esyalar.md §3 ayırma haritası (her satır bir test), oluk mıknatısı
- * (doyma 6, Boşalt, söküm), mıknatıslı tambur, kalbur (sıva 4 / -1 her 200 tik), tınaz
- * (yön × şiddet: 16 durum), şeytan yeli (3 yol), iş süreleri (±1 tik), güç oranı, iğne ve
- * buluntu korunumu, saman korunumu, kaydet → yükle gidiş-dönüşü.
- */
+/** Çiftlik ayıklama: esyalar.md §3 ayırma haritası (satır başına test), oluk mıknatısı, tambur,
+ * kalbur (sıva), tınaz (yön × şiddet), şeytan yeli, iş süreleri, güç, korunum, kayıt. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DX, DY, tersYon } from '../js/kural/ciftlik/olcu.js';
@@ -15,11 +11,10 @@ import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
 import { dunya, kur, bantCek, duzTarla, gucVer, havaSabitle } from './ciftlik-yardim.mjs';
+import { toplamaBulunan } from './ciftlik-isleme-yardim.mjs';
 
 const ruzgarAyarla = (yon, siddet) => havaSabitle({ yon, siddet }); // yon: gittiği yön
 ruzgarAyarla(1, 2); // dosyanın varsayılanı (eski sap): güneye 2
-import { toplamaBulunan } from './ciftlik-isleme-yardim.mjs';
-
 const K = (ad) => esyaKodu(ad);
 const BULUNTULAR = KATALOG.map((b) => K(`buluntu:${b.tur}`));
 const IGNELER = [K('igne'), K('cuvaldiz'), K('altin-igne')];

@@ -147,7 +147,8 @@ function surukle(c, tarla, alan) {
 
 parcaTanimla('tirmik-kolu', {
   kod: 4, ad: 'Tırmık kolu', aile: 'toplama', boyut: [1, 1], guc: TIRMIK.guc, gucsuzOran: 0,
-  maliyet: { kurus: 120 }, kilit: 'D6', ayarlar: { yaricap: { secim: [1, 2, 3] } },
+  maliyet: { kurus: 120 }, kilit: 'D6',
+  ayarlar: { yaricap: { tur: 'secim', secenekler: [1, 2, 3], etiket: 'Yarıçap' } },
   kur(p) {
     Object.assign(p.ozel, { yaricap: TIRMIK.yaricap, ilerleme: 0, son: 0, durum: 'bos' });
   },

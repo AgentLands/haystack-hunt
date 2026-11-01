@@ -119,8 +119,13 @@ export function parcaDegeri(c) {
   return s;
 }
 
-/** Kurulum engeli: 'kilitli' | 'kurus' | null (bilinmeyen parça çekirdeğe kalır). */
+/**
+ * Kurulum engeli: 'kilitli' | 'kurus' | null (bilinmeyen parça çekirdeğe kalır). Fiyat
+ * tablosunda olmayan parça ekonomi dışıdır (yalnız testlerin 64000+ kodlu parçaları; her
+ * kayıtlı oyun parçasının satırı olduğunu ciftlik-ekonomi testi denetler): kilitsiz, bedava.
+ */
 export function kurulumEngeli(c, anahtar) {
+  if (!Object.hasOwn(PARCA_MALIYET, anahtar)) return null;
   if (!acikMi(anahtar, ilerlemeAl(c))) return 'kilitli';
   return ekonomiAl(c).kurus < parcaMaliyeti(anahtar) ? 'kurus' : null;
 }

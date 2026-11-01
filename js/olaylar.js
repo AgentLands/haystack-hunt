@@ -126,7 +126,7 @@
  *                                                  (kurus: ödenen); buluntu: tür adı ya da null
  *   parca-temizlendi { parca, komut }              sıkışmış pres açıldı (eşya envantere)
  *   parca-onarildi   { parca, komut }              kıyıcı onarımı başladı (50 kuruş, 200 tik)
- *   parca-ayarlandi  { parca, komut }              'ayar' komutu uygulandı (komut.ad, deger)
+ *   parca-ayarlandi  { parca, komut, ad, deger }   'ayar' komutu uygulandı (tek tanım)
  *   gubre-serpildi   { parca, karo }               gübre çukuru 20 puanla çayırı gübreledi
  *                                                  (karo: gübrelenen çayır karosu, -1 bilinmez)
  *   (parca-tikandi'nin nedenleri: 'sikisti' pres, 'kirik' kıyıcı; veri.kod sert eşya.
@@ -145,7 +145,7 @@
  *   (komut-reddedildi nedenleri: 'kilitli', 'kurus', 'taban', 'bekle', 'tavan', 'damga';
  *    parca-sokuldu iade'sinde ek alan kurus: iade edilen parça bedeli)
  *
- *   [I inşa] (bu ailenin/işin olayları buraya)
+ *   [I inşa] ('ayar' komutu tek tanım: isleme/komutlar.js; olayı parca-ayarlandi [F])
  *   [I2 seçim-şablon]
  *   yapistirildi     { parcalar }                  'yapistir' komutu kümeyi tek işlemde kurdu
  *                                                  (ayrıca parça başına 'parca-kuruldu')

@@ -38,6 +38,7 @@ import './ozellik/dedektor-cizim.js';
 import './ozellik/kenar-isaret.js';
 import './ozellik/kulak.js';
 import { ciftlikAc } from './ozellik/ciftlik/ciftlik.js';
+import './ozellik/ciftlik/yerlestir.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);

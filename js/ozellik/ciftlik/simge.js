@@ -58,5 +58,5 @@ export function simge(ad, boy = 18) {
   return svg;
 }
 
-/** Gök adından (gunesli | bulutlu | yagmur) simge adı. */
-export const GOK_SIMGE = { gunesli: 'gunes', bulutlu: 'bulut', yagmur: 'yagmur' };
+/** Gök adından (dunya/hava.js GOK: gunes | bulut | yagmur) simge adı. */
+export const GOK_SIMGE = { gunes: 'gunes', bulut: 'bulut', yagmur: 'yagmur' };
