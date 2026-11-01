@@ -6,7 +6,8 @@
  * `bosluk` karo çevresinde parça olmayan ilki; r 12 hücre, tepe 45 kat koni (c.arabaKat'a
  * yazılır) + 1 iğne türü (%80 iğne, %15 çuvaldız, %5 altın), 3 çivi, 2 taş, 1 buluntu.
  * Uygun yer yoksa araba bekler ('yer-yok' bir kez) ve her duyuru süresinde yeniden dener.
- * Komut `arabaCagir` (kuruş kuyusu; bedel G'nin bedelBagla'sıyla): ARABA.cagri tikte en çok 1.
+ * Komut `arabaCagir` (kuruş kuyusu): ARABA.cagri (= KUYU.araba.bekleme) tikte en çok 1; red
+ * 'yolda', 'erken', 'yer-yok', sonra bedel (G: kurus.js kuyuOde → 'kurus' | 'taban').
  */
 import { GENISLIK, YUKSEKLIK } from '../../boyut.js';
 import { KARO, KARO_EN, KARO_BOY, karoIndeks, zarAralik } from '../olcu.js';
@@ -16,12 +17,14 @@ import { asamaTanimla } from '../benzetim.js';
 import { komutTanimla } from '../komut.js';
 import { kayitAlaniTanimla } from '../sakla.js';
 import { kirliIsaretle } from '../saman.js';
-import { harmanStogu, bedelOde, dunyaHazirla } from './arazi.js';
+import { KUYU } from '../ekonomi/denge.js';
+import { kuyuOde } from '../ekonomi/kurus.js';
+import { harmanStogu, dunyaHazirla } from './arazi.js';
 import { gomuluEkle } from './gomulu.js';
 
 export const ARABA = Object.freeze({
   yoklama: 6000, esik: 15000, dusukEsik: 8000, dusukStokYuzde: 10, duyuru: 600,
-  r: 12, tepe: 45, bosluk: 6, cagri: 6000, nesneR: 9,
+  r: 12, tepe: 45, bosluk: 6, cagri: KUYU.araba.bekleme, nesneR: 9,
   civi: 3, tas: 2, buluntu: 1, igneTuru: [[800, 'igne'], [950, 'cuvaldiz'], [1000, 'altin-igne']],
 });
 
@@ -147,9 +150,11 @@ komutTanimla('arabaCagir', (c, tarla, k, olaylar) => {
   if (a.bekleyen) return red('yolda');
   if (c.tik - a.sonCagri < ARABA.cagri) return red('erken');
   if (!dokumYeri(c)) return red('yer-yok');
-  if (!bedelOde(c, 'arabaCagir', 0)) return red('kurus');
+  const olay = (ad, veri) => olaylar.push({ ad, veri });
+  const neden = kuyuOde(c, 'araba', 0, olay);
+  if (neden) return red(neden);
   a.sonCagri = c.tik;
-  const ctx = { c, tarla, tik: c.tik, olay: (ad, veri) => olaylar.push({ ad, veri }) };
+  const ctx = { c, tarla, tik: c.tik, olay };
   baslat(ctx);
   return undefined;
 });

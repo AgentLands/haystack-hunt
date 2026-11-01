@@ -20,7 +20,7 @@ import {
   ilerlemeAl, siradakiDamga, etkinDamgaNo, damgaKarti, kartTamam, damgaBas,
 } from './damga.js';
 import {
-  ekonomiAl, anahtarDegeri, esyaDegeri, bulunurSinif, bulundu, kurusEkle, kurusHarca, kuyuDenetle,
+  ekonomiAl, anahtarDegeri, esyaDegeri, bulunurSinif, bulundu, kurusEkle,
 } from './kurus.js';
 import { pencereEkle, satisKaydet } from './cevrimdisi.js';
 
@@ -201,10 +201,9 @@ const red = (olaylar, komut, neden) => {
   olaylar.push({ ad: 'komut-reddedildi', veri: { komut, neden } });
 };
 
-// Komutlar (kapı paneli ve pano): { tur: 'siparisCevir', yuva }, { tur: 'kapiSat', acik },
-// { tur: 'arabaCagir' }, { tur: 'cayirGenislet' }. Kuyular kuruşu öder ve isteği
-// c.ekonomi'ye yazar: arabaIstek (dünya/araba.js tüketir: hemen yığın döker),
-// cayirEk (0..3; dünya/arazi.js çayırı KUYU.cayir.sutun × cayirEk karo genişletir).
+// Komutlar (kapı paneli ve pano): { tur: 'siparisCevir', yuva }, { tur: 'kapiSat', acik }.
+// Kuyu komutları ({ tur: 'arabaCagir' }, { tur: 'cayirGenislet' }) dünyanındır
+// (dunya/araba.js, dunya/arazi.js); bedeli kurus.js kuyuOde öder.
 komutTanimla('siparisCevir', (c, tarla, k, olaylar) => {
   const neden = siparisCevir(c, k.yuva);
   if (neden) red(olaylar, k, neden);
@@ -214,20 +213,3 @@ komutTanimla('siparisCevir', (c, tarla, k, olaylar) => {
 komutTanimla('kapiSat', (c, tarla, k) => {
   ekonomiAl(c).fazlasiniSat = Boolean(k.acik);
 });
-
-for (const [komut, tur] of [['arabaCagir', 'araba'], ['cayirGenislet', 'cayir']]) {
-  komutTanimla(komut, (c, tarla, k, olaylar) => {
-    const s = kuyuDenetle(c, tur);
-    if (s.neden) return red(olaylar, k, s.neden);
-    kurusHarca(c, s.bedel);
-    const e = ekonomiAl(c);
-    if (tur === 'araba') {
-      e.arabaSon = c.tik;
-      e.arabaIstek += 1;
-    } else {
-      e.cayirEk += 1;
-    }
-    olaylar.push({ ad: 'kuyu-kullanildi', veri: { tur, bedel: s.bedel } });
-    return undefined;
-  });
-}

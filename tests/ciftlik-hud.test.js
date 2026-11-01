@@ -222,10 +222,11 @@ test('fiş satırları: yalnız sayısal anahtarlı pozitif eşya, ada göre sı
   assert.deepEqual(fisSatirlari({}), []);
 });
 
-test('benzetime komut eklemek HUD için güvenli: bilinmeyen komut reddedilir (olay)', () => {
+test('benzetime komut eklemek HUD için güvenli: red nedeni olayla döner', () => {
   const { c, tarla } = hat(0, false);
+  komutEkle(c, { tur: 'yok-boyle' });
   komutEkle(c, { tur: 'arabaCagir' });
-  const olaylar = kos(c, tarla, 2);
-  const red = olaylar.find((o) => o.ad === 'komut-reddedildi');
-  assert.equal(red?.veri.neden, 'bilinmeyen');
+  const red = kos(c, tarla, 2).filter((o) => o.ad === 'komut-reddedildi');
+  assert.deepEqual(red.map((o) => o.veri.neden), ['bilinmeyen', 'yer-yok'],
+    'sentetik dünyada döküm yeri yok');
 });

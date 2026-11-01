@@ -47,7 +47,8 @@ export function olc(n = 10000) {
     if (huniler.every((p) => p.ozel.son > 0)) calisan += 1;
   }
   const ms = performance.now() - bas;
-  const esya = d.c.hatlar.reduce((s, h) => s + h.n, 0);
+  // Halka eşyaları (huni hatlarındakiler akıştadır, sayılmaz)
+  const esya = d.c.hatlar.reduce((s, h) => s + (h.cikis?.hat === h ? h.n : 0), 0);
   return {
     ms, tikUs: (ms / n) * 1000, parca: d.parca, esyaBas: d.esya, esyaSon: esya, d,
     huniOrani: calisan / n,

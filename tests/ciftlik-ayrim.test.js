@@ -183,7 +183,7 @@ test('yarış sürerken çiftliğe girmek onay ister (koruma.js); menü düğmes
   korumaKaydet({ suruyor: () => false, ayril: () => { ayrildi += 1; } });
   assert.equal(yeniTarlaIzni(), true, 'yarış yoksa soru yok');
   delete globalThis.window;
-  const yol = new URL('../js/ozellik/ciftlik/ciftlik.js', import.meta.url);
+  const yol = new URL('../js/ozellik/ciftlik/menu-bag.js', import.meta.url);
   const kaynak = fs.readFileSync(yol, 'utf8');
   assert.match(kaynak, /else if \(yeniTarlaIzni\(\)\) ciftlikAc\(\)/, 'düğme izin ister');
 });

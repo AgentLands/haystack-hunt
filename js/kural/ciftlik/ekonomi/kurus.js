@@ -139,23 +139,44 @@ export function sokumIade(c, p) {
 
 /**
  * Kuruş kuyusu bedeli ve engeli: tur 'araba' | 'cayir'. Dönüş { bedel } ya da { neden }:
- * 'bekle' (araba 6000 tikte bir), 'tavan' (çayır 3 kez), 'kurus', 'taban' (KUYU_TABAN).
+ * 'tavan' (çayır 3 kez), 'kurus', 'taban' (KUYU_TABAN). Çağrı aralığı ('erken'), yolda
+ * araba, yer ve çayır sınırları dünyanın (dunya/araba.js, arazi.js) komutlarındadır.
+ * seviye: çayırın kaçıncı genişletmesi (varsayılan: e.cayirEk).
  */
-export function kuyuDenetle(c, tur) {
+export function kuyuDenetle(c, tur, seviye = ekonomiAl(c).cayirEk) {
   const e = ekonomiAl(c);
   let bedel;
   if (tur === 'araba') {
-    if (e.arabaSon !== null && c.tik - e.arabaSon < KUYU.araba.bekleme) return { neden: 'bekle' };
     bedel = KUYU.araba.bedel;
   } else if (tur === 'cayir') {
-    if (e.cayirEk >= KUYU.cayir.bedeller.length) return { neden: 'tavan' };
-    bedel = KUYU.cayir.bedeller[e.cayirEk];
+    if (seviye >= KUYU.cayir.bedeller.length) return { neden: 'tavan' };
+    bedel = KUYU.cayir.bedeller[seviye];
   } else {
     throw new Error(`kuyu: bilinmeyen tür ${tur}`);
   }
   if (e.kurus < bedel) return { neden: 'kurus' };
   if (e.kurus - bedel + parcaDegeri(c) < KUYU_TABAN) return { neden: 'taban' };
   return { bedel };
+}
+
+/**
+ * Kuyu bedelini öder (dünyanın arabaCagir / cayirGenislet komutları çağırır): red nedeni
+ * ya da null. Ödenince c.ekonomi'ye arabaSon/arabaIstek ya da cayirEk yazılır ve
+ * olay('kuyu-kullanildi', { tur, bedel }) verilir.
+ */
+export function kuyuOde(c, tur, seviye, olay = null) {
+  const s = kuyuDenetle(c, tur, seviye);
+  if (s.neden) return s.neden;
+  kurusHarca(c, s.bedel);
+  const e = ekonomiAl(c);
+  if (tur === 'araba') {
+    e.arabaSon = c.tik;
+    e.arabaIstek += 1;
+  } else {
+    e.cayirEk = seviye + 1;
+  }
+  olay?.('kuyu-kullanildi', { tur, bedel: s.bedel });
+  return null;
 }
 
 /**

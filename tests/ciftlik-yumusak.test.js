@@ -43,6 +43,9 @@ function yiginDunyasi(gomuluListe) {
   const tarla = duzTarla(0, [{ x: 44, y: 70, r: 16, t: 80 }]);
   for (let y = 60; y < 70; y++) for (let x = 36; x < 66; x++) tarla.h[y * GENISLIK + x] = 0;
   const { c } = dunya(9, tarla, { gomulu: gomuluListe });
+  // Öğretici çizelgesi bitmiş sayılır: korunum sayımına öğretici çivisi/iğnesi eklenmesin
+  // (öğretici nesneleri dunya testinde 'gomulu-eklendi' ile sayılır).
+  c.ogretici = { kurTik: 0, civi: 8, igne: 1 };
   const huni = besleyiciKur(c, tarla, HUNI_AD, { kx: 22, ky: 31 }, 0, 0);
   bantCek(c, tarla, 22, 31, 0, 5);
   const sandik = girisineKur(c, tarla, 'sandik', { kx: 27, ky: 31 }, 0);
@@ -50,13 +53,13 @@ function yiginDunyasi(gomuluListe) {
   return { c, tarla, huni, sandik };
 }
 
-/** Yığına, huni ağzının yakınına gömülü iğne, çivi ve buluntu koyar. */
+/** Huni ağzına (D: çıkışın karşı kenarındaki karo sütunu) gömülü iğne, çivi, buluntu koyar. */
 function gomuluNesneler() {
   return [
-    { esya: IGNE, x: 43, y: 66, z: 5, aci: 0, alindi: false },
-    { esya: IGNE, x: 45, y: 67, z: 6, aci: 1, alindi: false },
-    { esya: CIVI, x: 44, y: 66, z: 4, aci: 2, alindi: false },
-    { esya: BULUNTU, x: 42, y: 67, z: 3, aci: 0, alindi: false, tur: 'dugme' },
+    { esya: IGNE, x: 38, y: 63, z: 5, aci: 0, alindi: false },
+    { esya: IGNE, x: 39, y: 65, z: 6, aci: 1, alindi: false },
+    { esya: CIVI, x: 38, y: 64, z: 4, aci: 2, alindi: false },
+    { esya: BULUNTU, x: 39, y: 62, z: 3, aci: 0, alindi: false, tur: 'dugme' },
   ];
 }
 
@@ -73,7 +76,8 @@ test('söküm korunumu: hat çalışırken her şey sökülür; saman ve eşya i
   assert.equal(c.parcalar.size, 0);
   assert.equal(c.hatlar.length, 0);
   assert.equal(toplam(), once, 'söküm saman ve eşyayı kaybetmez');
-  assert.ok(c.envanter[esyaKodu('saman')] >= sandik.ozel.toplam, 'tutamlar envanterde');
+  const tutam = c.envanter[esyaKodu('saman')] + c.envanter[esyaKodu('toz')];
+  assert.ok(tutam >= sandik.ozel.toplam, 'tutamlar (saman + toz) envanterde');
   assert.ok(c.izgara.taban.every((t) => !t), 'taban maskesi temizlendi');
 });
 

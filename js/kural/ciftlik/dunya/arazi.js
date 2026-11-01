@@ -18,6 +18,8 @@ import { kayitAlaniTanimla, ozelKodla, ozelCoz } from '../sakla.js';
 import { havaAl, karma, GOK } from './hava.js';
 import { ZEMIN, bosArazi, dunyaHazirla, harmanStogu } from './zemin.js';
 import './esya-sap.js';
+import { KUYU } from '../ekonomi/denge.js';
+import { kuyuOde } from '../ekonomi/kurus.js';
 
 export {
   ZEMIN, zeminAl, hucreZemini, dunyaHazirla, harmanStogu, gubrele, gubreliMi,
@@ -30,22 +32,12 @@ export const CIFTLIK_YIGIN = Object.freeze({ taban: 6, ek: 3, r: [14, 18], t: [5
  * `yagmurBuyume`; gübreli karoda yarısı); Çayır genişlet: +genislet karo sütunu, en çok 3.
  */
 export const CAYIR = Object.freeze({
-  en: 24, boy: 12, kat: 12, buyume: 240, yagmurBuyume: 120, genislet: 6, genisletEnCok: 3,
+  en: 24, boy: 12, kat: 12, buyume: 240, yagmurBuyume: 120, genislet: KUYU.cayir.sutun,
+  genisletEnCok: KUYU.cayir.bedeller.length,
 });
 /** Kapı ile en yakın yığın eteği arası en çok bu kadar karo olsun (ilk bant ≤ 30). */
 export const KAPI_ETEK = 30;
 const DOKUM_ADAY = 8;
-
-let bedel = () => true;
-/**
- * Kuruş kuyularının (Araba çağır, Çayır genişlet) bedel denetimi. G · ekonomi bağlar:
- * islev(c, tur, seviye) → true ise ödendi (kuruş düşüldü), false ise komut reddedilir.
- * SAP: bağlanana dek bedava.
- */
-export function bedelBagla(islev) {
-  bedel = islev;
-}
-export const bedelOde = (c, tur, seviye = 0) => bedel(c, tur, seviye);
 
 /** Çiftliğin tarlası (normal tarla formülü + çiftlik yığın ayarı; çivi yok, iğne yok sayılır). */
 export function ciftlikTarlasi(tohum) {
@@ -206,6 +198,8 @@ asamaTanimla('cayir', 55, {
 
 /**
  * Çayır genişlet: çayıra köşeden uzağa +CAYIR.genislet karo sütunu (en çok genisletEnCok).
+ * Bedel G'nin kuyusu (kurus.js kuyuOde: 400/800/1200, KUYU_TABAN); red 'cayir-yok',
+ * 'en-cok', 'kurus', 'taban'.
  * Yeni karoların samanı yerinde kalır (korunum); yalnız zemin çayır olur ve büyür.
  */
 komutTanimla('cayirGenislet', (c, tarla, k, olaylar) => {
@@ -213,7 +207,8 @@ komutTanimla('cayirGenislet', (c, tarla, k, olaylar) => {
   const red = (neden) => olaylar.push({ ad: 'komut-reddedildi', veri: { komut: k, neden } });
   if (!a.cayir) return red('cayir-yok');
   if (a.seviye >= CAYIR.genisletEnCok) return red('en-cok');
-  if (!bedelOde(c, 'cayirGenislet', a.seviye)) return red('kurus');
+  const neden = kuyuOde(c, 'cayir', a.seviye, (ad, veri) => olaylar.push({ ad, veri }));
+  if (neden) return red(neden);
   const solda = a.cayir.kose === 0 || a.cayir.kose === 3;
   const n = CAYIR.genislet;
   const yeni = { ...a.cayir, x: solda ? a.cayir.x + a.cayir.en : a.cayir.x - n, en: n };

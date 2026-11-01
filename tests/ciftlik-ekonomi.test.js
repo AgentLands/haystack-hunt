@@ -27,6 +27,7 @@ import {
   cevrimdisiHesapla, cevrimdisiIlerle, satisKaydet,
 } from '../js/kural/ciftlik/ekonomi/cevrimdisi.js';
 import { ESYA_KAP } from '../js/kural/ciftlik/esya.js';
+import { dunyaHazirla } from '../js/kural/ciftlik/dunya/arazi.js';
 import { dunya, duzTarla, kos, kur } from './ciftlik-yardim.mjs';
 
 /** SAP: kalbur (E · ayıklama) henüz yoksa yalnız kilit testi için boş bir 2×1 parça. */
@@ -190,6 +191,12 @@ function hatKur(c, n) {
   for (let i = 0; i < n; i++) komutEkle(c, { tur: 'kur', parca: 'bant', x: 12 + i, y: 20 });
   komutEkle(c, { tur: 'kur', parca: 'sandik', x: 12 + n, y: 20 });
 }
+/** Sentetik dünyaya araba döküm yeri ve küçük bir çayır (kuyu komutları dünyanın). */
+function kuyuDunyasi(c) {
+  const a = dunyaHazirla(c);
+  a.dokum = [[60, 50]];
+  a.cayir = { x: 90, y: 5, en: 4, boy: 4, kose: 1 };
+}
 function hepsiniSok(c, tarla) {
   for (const p of [...c.parcalar.values()]) komutEkle(c, { tur: 'sok', x: p.x, y: p.y });
   kos(c, tarla, 1);
@@ -198,6 +205,7 @@ function hepsiniSok(c, tarla) {
 
 test('soft-lock (a): her şey sökülünce kuruş = 300 + kazanılan − kuyu harcaması', () => {
   const { c, tarla } = dunya(5, duzTarla(0));
+  kuyuDunyasi(c);
   hatKur(c, 20);
   kos(c, tarla, 2);
   const e = ekonomiAl(c);
@@ -231,6 +239,7 @@ test('soft-lock (b): kuruş 0 iken söküm kuruşu geri verir, hat yeniden kurul
 
 test('soft-lock (c): kuyular kuruş + parça değerini KUYU_TABAN altına indiremez', () => {
   const { c, tarla } = dunya(5, duzTarla(0));
+  kuyuDunyasi(c);
   const e = ekonomiAl(c);
   komutEkle(c, { tur: 'arabaCagir' });
   assert.deepEqual(red(kos(c, tarla, 1)), ['taban'], '300 − 300 + 0 < 100');
@@ -250,8 +259,9 @@ test('soft-lock (c): kuyular kuruş + parça değerini KUYU_TABAN altına indire
   assert.equal(e.kurus, 105, 'söküm sonrası taban üstünde: yeni hat kurulabilir');
 });
 
-test('kuyular: araba 6000 tikte bir; çayır 400/800/1200 sonra tavan; istekler yazılır', () => {
+test('kuyular: araba 6000 tikte bir; çayır 400/800/1200 sonra en çok; sayaçlar yazılır', () => {
   const { c, tarla } = dunya(5, duzTarla(0));
+  kuyuDunyasi(c);
   const e = ekonomiAl(c);
   e.kurus = 5000;
   komutEkle(c, { tur: 'arabaCagir' });
@@ -259,16 +269,18 @@ test('kuyular: araba 6000 tikte bir; çayır 400/800/1200 sonra tavan; istekler 
   assert.deepEqual(ol.filter((o) => o.ad === 'kuyu-kullanildi').map((o) => o.veri),
     [{ tur: 'araba', bedel: 300 }]);
   assert.equal(e.arabaIstek, 1);
+  kos(c, tarla, 700);
   komutEkle(c, { tur: 'arabaCagir' });
-  assert.deepEqual(red(kos(c, tarla, 5000)), ['bekle']);
+  assert.deepEqual(red(kos(c, tarla, 4300)), ['erken'], 'araba döktü, çağrı aralığı dolmadı');
   kos(c, tarla, 1000);
   komutEkle(c, { tur: 'arabaCagir' });
   assert.deepEqual(red(kos(c, tarla, 1)), []);
   assert.equal(e.arabaIstek, 2);
   const once = e.kurus;
   for (let i = 0; i < 4; i++) komutEkle(c, { tur: 'cayirGenislet' });
-  assert.deepEqual(red(kos(c, tarla, 1)), ['tavan']);
+  assert.deepEqual(red(kos(c, tarla, 1)), ['en-cok']);
   assert.equal(e.cayirEk, 3);
+  assert.equal(c.arazi.seviye, 3, 'dünyanın çayır seviyesi ve ekonominin sayacı aynı');
   assert.equal(once - e.kurus, 2400);
   assert.equal(kurusHarca(c, 1e6), false, 'yetmeyen harcama kuruşu değiştirmez');
 });

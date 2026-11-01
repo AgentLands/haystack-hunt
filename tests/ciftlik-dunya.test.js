@@ -14,11 +14,12 @@ import { yerlestirmeEngeli } from '../js/kural/ciftlik/izgara.js';
 import { ciftlikSamani, komutEkle, tikAt } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import {
-  CAYIR, ZEMIN, zeminAl, bedelBagla, dunyaHazirla,
+  CAYIR, ZEMIN, zeminAl, dunyaHazirla,
 } from '../js/kural/ciftlik/dunya/arazi.js';
 import { GOMULU_SAYI, yuvarla, igneMi } from '../js/kural/ciftlik/dunya/gomulu.js';
 import { ARABA } from '../js/kural/ciftlik/dunya/araba.js';
 import { OGRETICI } from '../js/kural/ciftlik/dunya/ogretici.js';
+import { ekonomiAl } from '../js/kural/ciftlik/ekonomi/kurus.js';
 import { dunya, duzTarla, kur, kos } from './ciftlik-yardim.mjs';
 import { gercekDunya, ogreticiHatti, ETIKETLER, degerliSay } from './ciftlik-dunya-yardim.mjs';
 
@@ -157,6 +158,7 @@ test('harman arabası: 6000 tikte yoklama, eşik, duyuru → 600 tik → döküm
 test('araba eşiği stok %10 altında 8000; yer yoksa bekler; arabaCagir sınırları', () => {
   const { c, tarla } = dunya(5, duzTarla(0));
   const a = dunyaHazirla(c);
+  ekonomiAl(c).kurus = 100000;
   a.dokum = [[20, 20]];
   a.baslangicStok = 1000000;
   c.tuketilenKat = ARABA.dusukEsik;
@@ -174,17 +176,17 @@ test('araba eşiği stok %10 altında 8000; yer yoksa bekler; arabaCagir sınır
   kos(c, tarla, ARABA.duyuru);
   komutEkle(c, { tur: 'arabaCagir' });
   assert.equal(kos(c, tarla, 1).find((o) => o.ad === 'komut-reddedildi').veri.neden, 'erken');
-  bedelBagla(() => false);
+  ekonomiAl(c).kurus = 0;
   c.araba.sonCagri = -ARABA.cagri;
   komutEkle(c, { tur: 'arabaCagir' });
   assert.equal(kos(c, tarla, 1).find((o) => o.ad === 'komut-reddedildi').veri.neden, 'kurus');
-  bedelBagla(() => true);
 });
 
 test('cayirGenislet: +6 karo sütunu köşeden uzağa, en çok 3; samana dokunmaz', () => {
   const d = gercekler.get('ciftlik') ?? yeniGercek('ciftlik');
   const { c, tarla } = d;
   const ilk = { ...c.arazi.cayir };
+  ekonomiAl(c).kurus = 10000;
   const toplam = () => tarla.h.reduce((s, v) => s + v, 0) - c.cayirKat;
   const once = toplam();
   for (let k = 0; k < 4; k++) komutEkle(c, { tur: 'cayirGenislet' });
