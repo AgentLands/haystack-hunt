@@ -24,8 +24,18 @@ js/kural/ciftlik/             saf kural (DOM yok, Node'da test edilir, Math.rand
   tasima/hat.js       hat topolojisi: hatlariKur, hatKonumu, hatEsyalari, HAT_EN_UZUN
   tasima/hat-adim.js  hat adımı ve port protokolü: hatAdim, hatlarAdim, hatBasaKoy,
                       hatBasiBos, hedefKabul, hedefeVer, cikisaVer
-  tasima/dugum.js     ayırıcı/birleştirici altyapısı: dagit, sirayla, tampon*
+  tasima/dugum.js     düğüm altyapısı: dagit, oncelikle, sirayla, tampon*, yuva*, bekleIsle
+  tasima/menfez.js    menfez eşleme kuralı: menfezEsi, MENFEZ_ARA_EN_AZ/EN_COK
+  ekonomi/denge.js    TEK KAYNAK denge sayıları: fiyatlar, eşya değerleri, sipariş, damgalar,
+                      kuyular, çevrimdışı; PARCA_SABIT (aile ajanlarının sabitleri taşınır)
+  ekonomi/acilis.js   kilit kaynağı (ACILIS, kipler damga/arastirma/acik, acikMi), URETIM
+                      (ürün → gereken parçalar; erişilebilirlik ve sipariş üretimi)
+  ekonomi/damga.js    kalıcı ilerleme (ilerlemeKur/Bagla/Al/Kodla/Coz), damga kartı ve basma
+  ekonomi/kurus.js    c.ekonomi, kurulum bedeli/söküm iadesi, esyaDegeri, bulundu, kuyular
+  ekonomi/siparis.js  siparisUret, ödül, pano (ekonomiAdim), teslimEt (kapı), ekonomi komutları
+  ekonomi/cevrimdisi.js  5 dk ölçüm penceresi, cevrimdisiHesapla/Uygula/Ilerle
   parcalar/temel.js   dikey dilim: bant (kod 1), huni (2), sandik (3)
+  parcalar/tasima.js  çatal (40), birleştirme oluğu (41), menfez (42)
   parcalar/hepsi.js   aile dosyalarını yükler (yeni aile = bir satır)
 js/oyun-ciftlik.js            modTanimla('ciftlik'): durum kurulumu, tik, iğneler, olay yayma
 js/ozellik/ciftlik/           tarayıcı tarafı
@@ -81,8 +91,13 @@ esyaTanimla('saman', { kod: 1, ad: 'Saman tutamı', renk: '#e3b341', agirlik: 12
 ```
 - `kod` 1..511 (`ESYA_KAP = 512`; depolar `Uint32Array(ESYA_KAP)` tutabilir), benzersiz, **hiç
   yeniden kullanılmaz**. Kayıtlar dondurulur; bilinmeyen alanlar saklanır (Faz 1: `yakit`...).
-- Mevcut kodlar: 1 saman, 2 iğne, 3 çivi, 100-119 `buluntu:<tur>` (sabit tablo, katalog sırası
-  değişse de kayıt bozulmaz; yeni buluntu tabloya eklenmezse yükleme hata verir).
+- Kodlar `esyalar.md` §2 ile aynı: 1 saman, 2 yas-ot, 3 kuru-ot, 4 toz, 5 kiyim, 6-8 balyalar,
+  9 curuk-ot, 10 igne, 11 cuvaldiz, 12 altin-igne, 13 civi, 14 tas (15-20 dalga 2, ayrılı),
+  100-119 `buluntu:<tur>` (sabit tablo, katalog sırası değişse de kayıt bozulmaz; yeni buluntu
+  tabloya ve `BULUNTU_OZELLIK` satırına eklenmezse yükleme hata verir).
+- Fizik alanları (varsayılanlı, geçersiz değer hata): `hafiflik` 0|1|2, `boyut` ince|iri,
+  `manyetik`, `nem` 0|1, `sert`, `uzunluk` kisa|uzun, `yogunluk` 0..2, `deger`, `sinif`
+  (saman|urun|igne|metal|cop|buluntu). Ayıklayıcılar yalnız bunları okur.
 
 ## 5. Parça tanımı (`parca-kayit.js`)
 ```js
@@ -125,6 +140,14 @@ konur → sürekli besleme tam verim), parça portuysa `kabulEder` → `al`. Bir
 yalnız **hat başına** (öncülü olmayan bant karosu, porta geri bakmayan) ya da komşu parçanın
 **o kenara bakan giriş portuna** bağlanır; aksi `null` (eşya tamponda bekler).
 
+**Ayıklama ailesi** (parça kodları 40-44, `parcalar/ayiklama.js`; kurallar `ayiklama/ayirma.js`):
+oluk mıknatısı (tamponsuz; `ozel.tutucu` kod dizisi; tanımda `cek(p, uygun)` yaba kolu için,
+`doluluk(p)` kantar için, `bosalt(c, p)`; komut `{ tur: 'bosalt', x, y }`), mıknatıslı tambur,
+kalbur (`ozel.siva`), tınaz, şeytan yeli. Yuvalı makineler `ozel = { kod, ilerleme, ... }`
+(tek eşya; çıkış kabul etmezse yuvada bekler). Rozetler: `doymus`, `sivali`, `cikis-dolu`,
+`girdi-yok`, `calisiyor` (durum güç oranına bakmaz: talep döngüsü olmasın). Rüzgâr:
+`ayirma.js` `ruzgarOku(ctx)` GEÇİCİ sap (D'nin `hava` işlevi gelince gövdesi değişir).
+
 ## 6. Çizim kaydı (`ozellik/ciftlik/gorsel/kayit.js`)
 `parcaCizimiTanimla(anahtar, { govde(ctx, p, eb), hareketli(ctx, p, an, eb) })`.
 `govde` durağan gövdedir, **bölge önbelleğine** girer (16×16 karo, ekran ölçeğinde ara tuval;
@@ -140,13 +163,19 @@ pikseli kayması; sade harekette 0). Dünya pikseli: karo `(kx, ky)` = `(kx*8, k
   (hatlar + aşamaların `yenidenKur`'u; düşen hat eşyaları envantere) → aşamalar `sira < 40`
   (Faz 1: enerji 20, sinyal 30) → parçaların `adim`'ı (id artan) → aşamalar `40..49` →
   hatlar (aşağı akış önce) → aşamalar `50..59` → saman: en çok `KAYMA_TIK = 6` `cokertKaro`
-  (saniyede 120, normal modla aynı) → aşamalar `≥ 60` → `c.tik++` → her 20 tikte
-  `ciftlik-ozet`.
+  (saniyede 120, normal modla aynı) → aşamalar `≥ 60` → `c.tik++` → `ekonomiAdim` (biten
+  kartlar ödenir/damga basılır, boş pano yuvaları dolar; saniyede bir çevrimdışı penceresi) →
+  her 20 tikte `ciftlik-ozet`.
 - `asamaTanimla(ad, sira, { adim(ctx), yenidenKur(c, tarla) })` Faz 1 ağları içindir.
 - **Komutlar** (`komutEkle(c, komut)`; sonraki tikte uygulanır, `tik` alanı eklenir):
   `{ tur: 'kur', parca, x, y, yon }` (x, y döndürülmüş kutunun sol üstü), `{ tur: 'sok', x, y }`,
   `{ tur: 'dondur', x, y, yon? }`. `komutTanimla(tur, uygula(c, tarla, komut, olaylar))` ile
   yeni tür (Faz 1: ayar, temizle, sandıktan al). Arayüz benzetimi **yalnız komutla** değiştirir.
+  `kur` kilidi ve kuruşu denetler (red `'kilitli'`, `'kurus'`) ve bedeli öder; `sok` bedeli
+  %100 iade eder (`iade.kurus`); `parcaKur`/`parcaSok` doğrudan çağrılınca kuruş işlemez.
+  Ekonomi komutları: `{ tur: 'siparisCevir', yuva }`, `{ tur: 'kapiSat', acik }`,
+  `{ tur: 'arabaCagir' }` (→ `c.ekonomi.arabaIstek++`), `{ tur: 'cayirGenislet' }`
+  (→ `c.ekonomi.cayirEk` 0..3); dünya tarafı (D) bu istekleri okur.
 - **Determinizm**: gerçek zaman okunmaz; zar `c.zar = { a }` (kayda girer); Map sırası = id
   sırası; trigonometri yok. Aynı tohum + aynı tik numaralı komutlar = aynı `dunyaOzeti`.
 - Kare tarafı: `oyun-ciftlik.js` `tikSayisi(birikim, dt*1000)` ile karede 0-4 tik atar; geride
@@ -166,10 +195,28 @@ pikseli kayması; sade harekette 0). Dünya pikseli: karo `(kx, ky)` = `(kx*8, k
   (bant: 18 → 4,5 eşya/sn). Sıkışma doğal; üst üste binme yok.
 - Topoloji değişince bütün hatlar yeniden kurulur; eşyalar karo + karo içi konumla taşınır,
   karosu kalmayan ya da sığmayan **envantere** düşer (`c.envanter`).
-- Faz 1 kancaları: yeraltı/kaldırıcı = hat parçası + `hat.ardil` (çıkış karosu) +
-  `hat.uzunluk` (sanal uzun karo; çizimde tek karo boyunda gösterilir). Ayırıcı/birleştirici
-  = portlu parça + `dugum.js` (`dagit`: dönüşümlü ve filtreli çıkış, `sirayla`: adil seçim).
-  Şalter: `hat.etkin = false` hattı durdurur (çizimde eşyalar da durur).
+- Hat kancaları (`tanim.hat`): `ardil(p, c)` ardıl karo indeksi, `-1` (yok) ya da `undefined`
+  (varsayılan: önündeki karo); `uzunluk(p, c)` karonun hat boyu (sanal uzun karo; çizimde tek
+  karo boyunda gösterilir); `kopuk(p, c)` true ise parça hat dışıdır (önündeki bant orada
+  biter, eşya girmez). Bir karoya hem `ardil` işlevi değer vermiş (sanal bağ) hem sıradan
+  bant akıyorsa **sanal bağ öncül olur** (menfez çıkışının arkasına bant konsa da tünel
+  besler). Şalter: `hat.etkin = false` hattı durdurur (çizimde eşyalar da durur).
+- **Menfez** (`parcalar/tasima.js`, `tasima/menfez.js`): aynı yöne bakan iki ağız aynı
+  doğruda, **arada 1-5 karo** (mesafe 2-6) kalırsa çift olur: arka ağız giriş (`ardil` = çıkış
+  karosu, `uzunluk` = mesafe × BIRIM, bant hızı), ön ağız çıkış. Eşleme durumsuzdur ve
+  yerleştirme sırasından bağımsızdır: en yakın aynı yönlü menfezlere bakılır, zincirde arkadan
+  sayılan çift sıra çıkış, tek sıra giriş olur (0 giriş, 1 çıkış, 2 yeni giriş...). Eşi olmayan
+  menfez `kopuk`tur: rozet `essiz`. Ara karolara her şey kurulabilir. `p.ozel` (es, rol,
+  mesafe) yalnız arayüz içindir ve her tik tazelenir.
+- **Çatal / birleştirme oluğu** (portlu parça + `dugum.js`): çatal tek tamponludur (giriş
+  arka; çıkışlar [ön, sol, sağ]); kip `p.ozel.kip`: `sirayla` (`dagit`: dönüşümlü, kabul
+  etmeyeni atlar) | `tasma` (`oncelikle`: ön, sol, sağ sırasıyla ilk kabul eden). Ayar
+  `tanim.ayarlar.kip` şemasıyla ve `tanim.ayarla(p, 'kip', deger)` ile yapılır (genel `ayar`
+  komutu bunu çağırmalıdır). Oluk girişi başına bir yuvalıdır (arka, sol, sağ); çıkışa
+  `yuvaVer` dönüşümlü verir, böylece hat sırası (id) adaleti bozmaz: doygun girişler ±1
+  paylaşır. İkisi de bir tik gecikir; bant hızını kısmaz. Rozet: ilerleyemeden
+  `BEKLE_ESIK = 20` tik bekleyen eşya `cikis-dolu` verir (sürekli akışta sayaç her geçişte
+  sıfırlanır).
 
 ## 9. Saman (`saman.js`)
 - Kirli bölgeler: 16×16 hücre, 15×10 (`c.kirli`). Çiftliğin yazıcıları yalnız bölge işaretler.
@@ -199,11 +246,15 @@ dolu karoların `{ x, y, r: 1 }` daireleri (karakterde yürünür parçalar hari
 
 ## 11. Kayıt (`sakla.js`, `ozellik/ciftlik/depo.js`)
 ```
-{ surum: 1, tohum, tik, zar, kaymaAdim, sonrakiId, yasak: [{x,y,r}], kaldirilan,
+{ surum: 2, tohum, tik, zar, kaymaAdim, sonrakiId, yasak: [{x,y,r}], kaldirilan,
   h: 'base64', kirli: [150], tarlaKirli, gomulu: [[esya, x, y, z, aci, alindi, ek]],
   parcalar: [[id, kod, x, y, yon, etkin, tikali, ozel]], hatEsya: [[karo, ic, kod]],
-  envanter: [[kod, n]], kuyruk: [komut...], ek: { etiket } }
+  envanter: [[kod, n]], kuyruk: [komut...], ekonomi: { kurus, pano, ..., cevrimdisiKat },
+  ek: { etiket } }
 ```
+- Göç 1 → 2: `ekonomi` eklenir; eski kurulu parçalar ödenmiş sayılır (kuruş = 300 − Σ fiyat).
+  Kalıcı ilerleme dünyada değil: `ilerlemeKodla/Coz` (ayrı anahtar), `dunyaCoz(veri, tarla,
+  { ilerleme })` bağlar; bağlanmamış dünya ilk okumada varsayılanı (damga kipi) alır.
 - `h`: eğim tahmini (sol + üst − sol üst) farkı → zigzag → sıfır koşusu → varint → base64
   (gerçek tarla ~28 KB; tüm kayıt ~30 KB).
 - Göç: `GOCLER[surum](veri) → sonraki sürüm`; `gocUygula` sırayla uygular. Bilinmeyen sürüm,
@@ -258,11 +309,39 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
 - Kayıt: ~30 KB JSON, kodlama ~5 ms.
 
 ## 16. Bilinen sınırlar / Faz 1'e kalanlar
-- Enerji, sinyal, düğüm parçaları, maliyet/envanter harcama, siparişler, çevrimdışı hesap yok
-  (kancalar hazır). Söküm maliyet iadesi yok (yalnız içerik).
+- Ekonomi (kuruş, sipariş, damga, çevrimdışı) kuralda var; oyun bağı (ilerleme kaydı, elle iğne
+  ödemesi, fiş) J/ana işte.
 - Kepçe/balya makinesi çiftlikte normal kodla çalışır; gömülü nesneyi kepçeye alırsa `c.gomulu`
   bağı korunur ama makinenin boşaltma kuralı çiftlikte özel değil.
 - Elle alınan çivi/buluntu envantere girmez (normal moddaki gibi yalnız alınır); elle alınan
   iğne envantere girer.
 - Dönemeçte bant çıtası düz çizilir; bölge önbelleği gövdeleri parça başına tarar (300 parçada
   sorun değil; binlerce parçada bölge dizini eklenmeli).
+
+## 17. Enerji (B işi: `kural/ciftlik/ag/enerji.js`, `parcalar/enerji.js`)
+- Aşama `enerji` (sıra 20, `asamaTanimla`): her tik bileşen başına `arz`/`talep` → `oran`; makinenin
+  `p.oran`'ı yazılır (parça `ctx.oran(p)` ile okur). Sıra: üreticiler (`uret`) → volan (`depo`)
+  → lokomobil (`destek`, volandan sonra kalan açık) → `oran = talep ? min(1024, arz*1024/talep) : 1024`.
+- **Şebeke** (`yenidenKur`'da, topoloji değişince): şaft + `aile: 'enerji'` parçalar iletkendir;
+  makine = `guc > 0` ya da `gucsuzOran` tanımlı parça. Kenar komşuluğu birleştirir; iki makine
+  birbirine iletmez (en az biri iletken olmalı); iletken parçasız makine şebekesizdir
+  (`oran = gucsuzOran ?? 0`). `aksYonler: [yon...]` (yon 0 çerçevesi) aks kenarlarını kısıtlar
+  (lokomobil: yalnız iki yan). `c.enerji = { aglar, yalniz }` (kayda girmez, kurulur);
+  `agiBul(c, p)` panel için `{ arz, talep, oran, uyeler }`; `gucRozeti(p)` 'guc-yok' | 'guc-az'.
+- **Makine parça sözleşmesi** (E, F, D): `guc` (bg), isteğe bağlı `gucsuzOran` (0..1024) ve talep:
+  `talep(p, ctx)` → bg (darbeli yük: pres basarken 30, dolarken 4) ya da yoksa `durum(p)`
+  `'calisiyor' | 'guc-yok' | 'guc-az'` iken `guc`, başka durumda 0 (boş makine talep etmez).
+  Durum, oran 0 olduğu için "girdi-yok"a düşmemeli (girdiyi oran'dan bağımsız ölç). Etkin oran
+  `max(gucsuzOran, oran)`; `guc: 0` ve `gucsuzOran` yoksa parça şebekeye girmez, `p.oran` 1024 kalır.
+- Parça kodları: 22 el-kranki, 23 yel-degirmeni, 24 lokomobil, 25 saft, 26 volan (parça numarası).
+- **Hava sapı**: `havaKaynagiAyarla((c, tik) => ({ yon, siddet, gok }))`; varsayılan sabit rüzgâr 2
+  (16 bg, yön 0). D gelince `hava(c.tohum, floor(tik / 1200))` bağlanır (tek satır).
+- **Krank**: komut `{ tur: 'krank', x, y, ciftci: { x, y } }` (hücre); yalnız çiftçi parçanın 1 karo
+  yakınındayken; `p.ozel.kalan = 600` (yeniler, eklemez). Sürerken çiftçi 3 karoyu aşarsa durur:
+  oyun kare döngüsü her tikten önce `c.ciftci = { x, y }` (karakter hücresi) yazmalı; yoksa
+  mesafe denetlenmez (testler, çevrimdışı). Olaylar `krank-basladi`, `krank-durdu {neden}`.
+- **Lokomobil**: tampon 4 yakıt (`kabulEder`: eşya `yakit` alanı ya da tablo; balya 1200 / kıyım 150
+  tik tam yükte = 40 bg × tik), yük oranında yakar; yanan eşya `icerik`'te kalır (saman korunumu),
+  bitince `ctx.sayac('yakilan', kod)` ve saman sistemden çıkar. Yakıt bitip açık varsa `yakit-bitti`.
+- Ölü döngü: yakıt + yel yoksa krank (bedava) hattı yürütür, sandıktaki balya yaba koluyla
+  lokomobile verilir (lokomobil girişi güç istemez). Test: `tests/ciftlik-enerji.test.js`.

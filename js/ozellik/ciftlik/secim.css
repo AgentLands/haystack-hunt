@@ -1,0 +1,100 @@
+/* Çiftlik: seç ve yapıştır şeridi + şablon penceresi. Şerit inşa paletinin (alt ortada) üstünde. */
+.ciftlik-secim-serit,
+.ciftlik-sablon-panel { display: none; }
+body.ciftlik-mod .ciftlik-secim-serit {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--hud-alt, 0px) + 72px);
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+.ciftlik-secim-dugme {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 10px;
+  font-family: var(--yazi-baslik);
+  background: var(--kagit);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  color: var(--murekkep);
+  touch-action: manipulation;
+}
+.ciftlik-secim-dugme[hidden],
+.ciftlik-secim-durum[hidden] { display: none; }
+.ciftlik-secim-dugme[aria-pressed='true'] {
+  background: var(--saman);
+  box-shadow: inset 0 0 0 2px var(--murekkep);
+}
+.ciftlik-secim-dugme.onay[aria-disabled='true'] { opacity: 0.45; }
+.ciftlik-secim-dugme.sok.onay { background: var(--damga); color: var(--kagit); }
+.ciftlik-secim-durum {
+  flex: 1 1 100%;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--murekkep);
+}
+
+body.ciftlik-mod .ciftlik-sablon-panel:not([hidden]) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(420px, calc(100% - 16px));
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.ciftlik-sablon-ust { display: flex; justify-content: space-between; align-items: center; }
+.ciftlik-sablon-satir { display: flex; align-items: center; gap: 8px; }
+.ciftlik-sablon-resim {
+  flex: none;
+  width: 56px;
+  height: 40px;
+  background: rgba(120, 90, 50, 0.12);
+  border: 1px solid var(--murekkep);
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+.ciftlik-sablon-yazi { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.ciftlik-sablon-yazi span { font-size: 0.8rem; opacity: 0.75; }
+.ciftlik-sablon-dugmeler { display: flex; flex: none; gap: 4px; }
+.ciftlik-sablon-dugme {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px 8px;
+  font-family: var(--yazi-baslik);
+  background: var(--kagit);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  color: var(--murekkep);
+  touch-action: manipulation;
+}
+.ciftlik-sablon-kod { display: flex; gap: 6px; align-items: stretch; }
+.ciftlik-sablon-kod textarea,
+.ciftlik-sablon-panel input[type='text'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 4px 6px;
+}
+.ciftlik-sablon-mesaj { min-height: 1.2em; font-size: 0.85rem; }
+@media (max-width: 480px) {
+  .ciftlik-sablon-satir { flex-wrap: wrap; }
+  .ciftlik-sablon-dugmeler { flex: 1 1 100%; justify-content: flex-end; }
+}

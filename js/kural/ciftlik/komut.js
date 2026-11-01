@@ -8,12 +8,16 @@
  * olay olarak döner: 'parca-kuruldu' { parca }, 'parca-sokuldu' { parca, iade },
  * 'parca-dondu' { parca }, 'komut-reddedildi' { komut, neden }.
  * Söküm iadesi: parçanın eşyaları envantere, ham saman katı parçanın yerine dökülür.
+ * Ekonomi (ekonomi/kurus.js): 'kur' komutu kilidi ve kuruşu denetler (red nedeni 'kilitli'
+ * | 'kurus') ve bedeli öder; 'sok' bedeli %100 iade eder (iade.kurus). parcaKur/parcaSok
+ * doğrudan çağrılınca (test, dünya kurulumu) kuruş işlemez.
  */
 import { KARO } from './olcu.js';
 import { parcaTanimi, parcaOrnegi, parcaIcerigi, portlariYenile } from './parca-kayit.js';
 import { yerlestirmeEngeli, izgarayaKoy, izgaradanAl, parcaAt } from './izgara.js';
 import { samanDok } from './saman.js';
 import { donmusBoyut } from './olcu.js';
+import { kurulumEngeli, kurulumOde, sokumIade } from './ekonomi/kurus.js';
 
 const komutlar = new Map();
 
@@ -88,15 +92,19 @@ const red = (olaylar, komut, neden) => {
 };
 
 komutTanimla('kur', (c, tarla, k, olaylar) => {
+  const engel = parcaTanimi(k.parca) ? kurulumEngeli(c, k.parca) : null;
+  if (engel) return red(olaylar, k, engel);
   const s = parcaKur(c, tarla, k.parca, k.x, k.y, k.yon ?? 0);
-  if (s.parca) olaylar.push({ ad: 'parca-kuruldu', veri: { parca: s.parca } });
-  else red(olaylar, k, s.neden);
+  if (!s.parca) return red(olaylar, k, s.neden);
+  kurulumOde(c, s.parca);
+  olaylar.push({ ad: 'parca-kuruldu', veri: { parca: s.parca } });
+  return undefined;
 });
 
 komutTanimla('sok', (c, tarla, k, olaylar) => {
   const p = parcaAt(c, k.x, k.y);
   if (!p) return red(olaylar, k, 'bos');
-  const iade = parcaSok(c, tarla, p);
+  const iade = { ...parcaSok(c, tarla, p), kurus: sokumIade(c, p) };
   olaylar.push({ ad: 'parca-sokuldu', veri: { parca: p, iade } });
   return undefined;
 });

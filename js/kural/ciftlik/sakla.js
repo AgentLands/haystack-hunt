@@ -2,13 +2,17 @@
  * Çiftlik kaydı (saf; depolama ozellik/ciftlik/depo.js'te). Dünya JSON'a çevrilir:
  *   { surum, tohum, tik, zar, kaymaAdim, sonrakiId, yasak, kaldirilan, h: 'KODLU', kirli,
  *     gomulu: [[esya, x, y, z, aci, alindi, ek]], parcalar: [[id, kod, x, y, yon, etkin,
- *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...], ek }
+ *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...],
+ *     ekonomi: { kurus, pano, ... (ekonomi/kurus.js), cevrimdisiKat }, ek }
  * Parça ve eşya türleri KOD ile yazılır. ozel genel kodlanır (sayı, dize, dizi, düz nesne;
  * tipli dizi { $t, n, s: [[i, v]] } seyrek). h: eğim tahmininden fark → zigzag → sıfır koşusu →
  * değişken uzunluk bayt → base64 (ham 77 KB, tipik 5-25 KB).
  * Göç: surum < SURUM ise GOCLER[surum] sırayla uygulanır; bozuk/tanınmayan veri hata verir
- * (çağıran yedeği dener). Kaydet → yükle → sürdür, kesintisiz koşuyla bit bit aynıdır
- * (dunyaOzeti; test: tests/ciftlik-sakla.test.js).
+ * (çağıran yedeği dener). 1 → 2: ekonomi (kuruş, pano) dünyaya girdi; eski dünyanın kurulu
+ * parçaları ödenmiş sayılır (kuruş = max(0, 300 − Σ fiyat)), yoksa söküm bedava kuruş verirdi.
+ * Kalıcı ilerleme (damgalar) dünyada DEĞİL: ayrı kayıt (ekonomi/damga.js ilerlemeKodla);
+ * dunyaCoz(veri, tarla, { ilerleme }) onu dünyaya bağlar. Kaydet → yükle → sürdür,
+ * kesintisiz koşuyla bit bit aynıdır (dunyaOzeti; test: tests/ciftlik-sakla.test.js).
  */
 import { GENISLIK, YUKSEKLIK } from '../boyut.js';
 import { ozetKat, OZET_BASI } from './olcu.js';
@@ -16,10 +20,26 @@ import { parcaTanimi, parcaOrnegi } from './parca-kayit.js';
 import { izgaraIsaretle } from './izgara.js';
 import { ciftlikKur, yenidenKur } from './benzetim.js';
 import { hatEsyalari, eskiyiYerlestir } from './tasima/hat.js';
+import { BASLANGIC_KURUS } from './ekonomi/denge.js';
+import {
+  ekonomiKur, ekonomiKodla, ekonomiCoz, parcaMaliyeti,
+} from './ekonomi/kurus.js';
+import { ilerlemeBagla } from './ekonomi/damga.js';
 
-export const SURUM = 1;
+export const SURUM = 2;
+
+/** 1 → 2: ekonomi alanı; kurulu parçalar ödenmiş sayılır. */
+function gocEkonomi(v) {
+  const odenen = v.parcalar.reduce((s, [, kod]) => {
+    const t = parcaTanimi(kod);
+    return s + (t ? parcaMaliyeti(t.anahtar) : 0);
+  }, 0);
+  const ekonomi = ekonomiKur({ kurus: Math.max(0, BASLANGIC_KURUS - odenen) });
+  return { ...v, surum: 2, ekonomi: { ...ekonomi, cevrimdisiKat: 0 } };
+}
+
 /** Göç tablosu: surum → (veri) → bir sonraki sürümün verisi. */
-export const GOCLER = {};
+export const GOCLER = { 1: gocEkonomi };
 const TIPLER = { Uint8Array, Uint16Array, Uint32Array, Int32Array, Int16Array, Float64Array };
 
 /** Değişken uzunluklu işaretsiz tam sayı baytları. */
@@ -150,7 +170,7 @@ export function dunyaKodla(c, tarla, ek = {}) {
     gomulu: c.gomulu.map((g) => [g.esya, g.x, g.y, g.z, g.aci ?? 0, g.alindi ? 1 : 0,
       gomuluEk(g)]),
     parcalar, hatEsya: hatEsyalari(c), envanter,
-    kuyruk: c.kuyruk.map((k) => ({ ...k })), ek,
+    kuyruk: c.kuyruk.map((k) => ({ ...k })), ekonomi: ekonomiKodla(c), ek,
   };
 }
 
@@ -171,9 +191,10 @@ export function gocUygula(veri, gocler = GOCLER, hedef = SURUM) {
 
 /**
  * Kayıttan dünyayı kurar: tarla.h ve kaldirilan yazılır, gömülü nesneler yeniden yaratılır.
- * Dönüş { c, ek }. Bozuk veri hata verir.
+ * ilerleme verilirse dünyaya bağlanır (yoksa ilk okumada varsayılan). Dönüş { c, ek }.
+ * Bozuk veri hata verir.
  */
-export function dunyaCoz(veri, tarla) {
+export function dunyaCoz(veri, tarla, { ilerleme = null } = {}) {
   const v = gocUygula(veri);
   tarla.h.set(hCoz(v.h, tarla.h.length));
   tarla.kaldirilan = v.kaldirilan;
@@ -185,6 +206,8 @@ export function dunyaCoz(veri, tarla) {
   Object.assign(c, { tik: v.tik, kaymaAdim: v.kaymaAdim, sonrakiId: v.sonrakiId });
   c.zar.a = v.zar >>> 0;
   c.kirli.set(v.kirli);
+  ekonomiCoz(c, v.ekonomi);
+  if (ilerleme) ilerlemeBagla(c, ilerleme);
   for (const [id, kod, x, y, yon, etkin, tikali, ozel] of v.parcalar) {
     const tanim = parcaTanimi(kod);
     if (!tanim) throw new Error(`kayıt: bilinmeyen parça kodu ${kod}`);

@@ -4,7 +4,9 @@
  * Tik sırası (tikAt): 10 komutlar (komut.js; topoloji değiştiyse hatlar ve aşamaların
  * yenidenKur'u) → 20 enerji, 30 sinyal (Faz 1; asamaTanimla ile) → 40 parçaların adim'ı
  * (id artan) → 50 hatlar (aşağı akış önce) → 60 saman (en çok KAYMA_TIK cokertKaro geçişi)
- * → tik++. Olaylar dizi olarak döner ({ ad, veri }); yayma oyun-ciftlik.js'in işidir.
+ * → tik++ → 70 ekonomi (ekonomi/siparis.js ekonomiAdim: biten kartlar ödenir, damga basılır,
+ * boş pano yuvaları dolar, saniyede bir çevrimdışı penceresi; ozet sayaçları sıfırlanmadan
+ * önce). Olaylar dizi olarak döner ({ ad, veri }); yayma oyun-ciftlik.js'in işidir.
  * Parça adim'ına verilen ctx: { c, tarla, tik, zar, oran(p), ver(p, port, kod),
  * samanAl(x, y, r, n), samanDok(x, y, n), gomuluCikar(x, y, r, p), olay(ad, veri),
  * sayac(ad, kod, n) }. Faz 1 ctx'e alan ekleyebilir (ctxGenislet).
@@ -19,6 +21,7 @@ import {
 import { hatlariKur } from './tasima/hat.js';
 import { hatlarAdim, cikisaVer } from './tasima/hat-adim.js';
 import { komutlariUygula } from './komut.js';
+import { ekonomiAdim } from './ekonomi/siparis.js';
 
 /** Bir saniyede kaç tik ('ciftlik-ozet' bu aralıkla yayılır). */
 export const SANIYE_TIK = 1000 / TIK_MS;
@@ -114,6 +117,7 @@ export function tikAt(c, tarla) {
   for (let k = 0; k < KAYMA_TIK && cokertKaro(tarla, c); k++);
   for (const a of asamalar) if (a.sira >= 60) a.adim(ctx);
   c.tik += 1;
+  ekonomiAdim(c, olaylar);
   if (c.tik % SANIYE_TIK === 0) ozetOlayi(c, olaylar);
   return olaylar;
 }
