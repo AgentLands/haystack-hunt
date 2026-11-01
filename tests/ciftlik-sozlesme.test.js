@@ -114,9 +114,13 @@ test('her parça: kaydet → yükle (JSON) özeti aynı; yüklenmiş dünya ayn�
   }
 });
 
+/** Asla tıkanmayan parçalar rozet üretmek zorunda değil (kapı sınırsız alır: ekonomi.md §2). */
+const TIKANMAZ = new Set(['komsu-kapisi']);
+
 test('aktif parçalar (adim ya da kabulEder tanımlayan) rozet üretir: sessiz tıkanma yok', () => {
   for (const t of parcaTurleri()) {
-    if (t.adim || t.kabulEder) assert.equal(typeof t.durum, 'function', `${t.anahtar}: durum yok`);
+    if (TIKANMAZ.has(t.anahtar) || !(t.adim || t.kabulEder)) continue;
+    assert.equal(typeof t.durum, 'function', `${t.anahtar}: durum yok`);
   }
 });
 

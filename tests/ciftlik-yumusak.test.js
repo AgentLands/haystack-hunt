@@ -112,19 +112,21 @@ test('taşımak = sök + kur: yığın eteğinde sökülen parça aynı hücreye
   assert.ok(s.parca, `bant (${x}, ${y}) geri kurulamadı: ${s.neden}`);
 });
 
-test('iğne, çivi ve buluntu hat boyunca korunur: gömülü + eşya + envanter sabit', () => {
+test('iğne, çivi ve buluntu hat boyunca korunur: gömülü + eşya + envanter + bulundu sabit', () => {
   const { c, tarla, sandik } = yiginDunyasi(gomuluNesneler());
   const kodlar = [IGNE, CIVI, BULUNTU];
   const bas = kodlar.map((k) => toplamTur(c, k));
   assert.deepEqual(bas, [2, 1, 1]);
+  const bulunan = {};
   let akti = false;
   for (let t = 0; t < 4000; t += 100) {
-    kos(c, tarla, 100);
-    assert.deepEqual(kodlar.map((k) => toplamTur(c, k)), bas, `tik ${c.tik}`);
-    akti = akti || sandik.ozel.toplam > 0;
+    for (let i = 0; i < 100; i++) bulunduSay(bulunan, tikAt(c, tarla));
+    // iğne/buluntu sandığa girince "bulundu" sayılır (yarı kuruş, depoda tutulmaz)
+    assert.deepEqual(kodlar.map((k) => toplamTur(c, k) + (bulunan[k] ?? 0)), bas, `tik ${c.tik}`);
+    akti = akti || sandik.ozel.toplam > 0 || Object.keys(bulunan).length > 0;
   }
   assert.ok(akti, 'hat çalıştı');
-  assert.ok(esyaSay(c, IGNE) + esyaSay(c, CIVI) > 0, 'nesneler eşya olup akışa girdi');
+  assert.ok(gomulu(c, IGNE) + gomulu(c, CIVI) < 3, 'nesneler eşya olup akışa girdi');
 });
 
 test('iğne ve buluntu her parçanın sökümünde oyuncuya (envantere) döner', () => {
@@ -171,11 +173,17 @@ const SINKLER = [
   ['seytan-yeli', 'E B', ['seytan-yeli']],
 ];
 
-/** Bu olay adları bir iğne/buluntunun "bulundu" sayılıp ödüllendirildiğini gösterir. */
-const BULUNDU_OLAYLARI = ['ciftlik-igne', 'ciftlik-buluntu', 'defter-yazildi'];
+/** `ciftlik-bulundu { kod }`: iğne/buluntu "bulundu" sayılıp ödüllendirildi (sandık, defter...). */
+const BULUNDU = 'ciftlik-bulundu';
+
+/** Olay listesinden kodlara göre bulundu sayıları ekler. */
+function bulunduSay(say, olaylar) {
+  for (const o of olaylar) if (o.ad === BULUNDU) say[o.veri.kod] = (say[o.veri.kod] ?? 0) + 1;
+}
 
 /** Gerçek parçalarla geçtiği doğrulanan sink'ler (c-dogrulama, main birleşimi): bayraksız koşar. */
-const DOGRULANAN = new Set(['sandik', 'oluk-miknatisi', 'miknatisli-tambur', 'kalbur', 'seytan-yeli']);
+const DOGRULANAN = new Set(['sandik', 'oluk-miknatisi', 'miknatisli-tambur', 'kalbur',
+  'seytan-yeli']);
 
 for (const [sink, is, parca] of SINKLER) {
   bekleyen(`iğne/buluntu korunumu: ${sink} (girer, makine çalışır, sökülür; hiçbiri yok olmaz)`,
@@ -188,20 +196,17 @@ for (const [sink, is, parca] of SINKLER) {
       const [h] = c.hatlar;
       const enjekte = [IGNE, BULUNTU];
       const kuyruk = [...enjekte];
-      const bulunan = [];
+      const bulunan = {};
       for (let t = 0; t < 600; t++) {
         if (kuyruk.length && hatBasaKoy(h, kuyruk[0])) kuyruk.shift();
-        for (const o of tikAt(c, tarla)) {
-          if (BULUNDU_OLAYLARI.includes(o.ad)) bulunan.push(o);
-        }
+        bulunduSay(bulunan, tikAt(c, tarla));
       }
       assert.equal(kuyruk.length, 0, 'iki eşya da hatta girdi');
       for (const q of [...c.parcalar.values()]) parcaSok(c, tarla, q);
       tikAt(c, tarla);
       for (const kod of enjekte) {
         const geri = c.envanter[kod];
-        const sayilan = bulunan.filter((o) => o.veri?.tur === kod || o.veri?.esya === kod).length;
-        assert.ok(geri + sayilan >= 1, `${sink}: kod ${kod} yok oldu`);
+        assert.ok(geri + (bulunan[kod] ?? 0) >= 1, `${sink}: kod ${kod} yok oldu`);
       }
     });
 }
