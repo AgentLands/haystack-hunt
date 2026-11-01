@@ -83,7 +83,11 @@
  *
  *   [B enerji] (bu ailenin/işin olayları buraya)
  *
- *   [C mantık] (bu ailenin/işin olayları buraya)
+ *   [C mantık] renk kanalları (ag/sinyal.js), mantık parçaları (parcalar/mantik.js)
+ *   sinyal-degisti   { renk, deger }               kanalın okunan değeri değişti (renk 0..5:
+ *                                                  kırmızı, çivit, sarı, yeşil, mor, beyaz;
+ *                                                  deger: o tik 1 yazan yazıcı sayısı)
+ *   kile-doldu       { parca }                     kile sayacı N'e vardı ve kapıyı kapattı
  *
  *   [D dünya] (bu ailenin/işin olayları buraya)
  *
