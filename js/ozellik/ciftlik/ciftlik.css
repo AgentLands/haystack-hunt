@@ -1,0 +1,60 @@
+/* Çiftlik modu: geçici inşa paleti (kâğıt şerit, tuvalin alt ortası) ve mod sınıfı.
+   Arayüz ajanı paleti ahşap tablaya taşıyıp aile sekmeleriyle genişletecek. */
+body.ciftlik-mod #sure,
+body.ciftlik-mod [data-rahat-gizle] { display: none; }
+body.ciftlik-mod .menu-zorluk,
+body.ciftlik-mod .menu-ayarlar,
+body.ciftlik-mod #pes-ac,
+body.ciftlik-mod .meydan-etiket.temiz { display: none; }
+
+.ciftlik-insa-ac,
+.ciftlik-palet {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--hud-alt, 0px) + 10px);
+  transform: translateX(-50%);
+  z-index: 3;
+}
+.ciftlik-insa-ac { min-height: 44px; padding: 6px 18px; }
+.ciftlik-insa-ac[hidden],
+.ciftlik-palet[hidden] { display: none; }
+
+.ciftlik-palet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 16px);
+  padding: 6px;
+  box-sizing: border-box;
+}
+.ciftlik-palet-serit {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.ciftlik-palet button {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 10px;
+  font-family: var(--yazi-baslik);
+  background: var(--kagit);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  color: var(--murekkep);
+  touch-action: manipulation;
+}
+.ciftlik-palet button[aria-pressed='true'] {
+  background: var(--saman);
+  box-shadow: inset 0 0 0 2px var(--murekkep);
+}
+.ciftlik-palet .ciftlik-sok[aria-pressed='true'] { background: var(--damga); color: var(--kagit); }
+.ciftlik-palet .ciftlik-arac { padding: 4px; font-size: 1.2rem; }
+
+@media (max-width: 480px) {
+  .ciftlik-palet { gap: 4px; padding: 4px; }
+  .ciftlik-palet-serit { gap: 4px; }
+  .ciftlik-palet button { padding: 4px 7px; font-size: 0.9rem; }
+}

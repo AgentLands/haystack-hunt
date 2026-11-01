@@ -63,6 +63,21 @@
  *   hayvan-kacti     { tur, x, y }                 bir hayvan ürkünce (tur: 'fare' | 'serce' |
  *                                                  'kurbaga' | 'kirpi' | 'kedi'); aynı fare
  *                                                  iki kez kaçarsa iki kez yayılır
+ * Modlar ve çiftlik (sözleşme: docs/ciftlik/MIMARI.md; x, y karo, gömülüde hücre birimi):
+ *   mod-kapaniyor    { durum }                     normal olmayan mod (çiftlik) yeni oyundan
+ *                                                  hemen önce kapanıyor (eşzamanlı kayıt için)
+ *   ciftlik-acildi   { durum }                     çiftlik açıldı (oyun-basladi'dan sonra)
+ *   ciftlik-kaydedildi { boyut }                   kayıt yazıldı (bayt)
+ *   parca-kuruldu    { parca }                     komut tikte uygulandı
+ *   parca-sokuldu    { parca, iade }               iade: { esya: [[kod, n]], saman: kat }
+ *   parca-dondu      { parca }                     yerinde döndürüldü
+ *   komut-reddedildi { komut, neden }              neden: 'dolu' | 'saman' | 'yasak' | ...
+ *   parca-tikandi    { parca, neden }              (Faz 1) parça tıkandı (ör. paslı çivi)
+ *   gomulu-cikti     { nesne, tur, x, y, parca }   toplayıcı gömülü nesneyi eşyaya çevirdi
+ *                                                  (tur: eşya kodu; x, y hücre)
+ *   ciftlik-igne     { kaynak, x, y }              iğne alındı: 'el' (envantere) | 'parca'
+ *   ciftlik-ozet     { tik, uretilen, depolanan }  saniyede bir; { kod: adet } (eşya başına
+ *                                                  olay YOK; ses/efekt bunu dinler)
  */
 const dinleyiciler = new Map();
 

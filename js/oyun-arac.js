@@ -18,7 +18,8 @@ export const PARILTI_SURE = 1200;
 
 /** İlk hamlede süreyi başlatır (yürümek, araç ya da makine). */
 export function baslat(durum, zaman) {
-  if (durum.baslangic !== null || durum.bitti) return;
+  // Çiftlik modunda süre yok: ilk-hamle (istatistik, yarış) yayılmaz.
+  if (durum.baslangic !== null || durum.bitti || durum.mod === 'ciftlik') return;
   durum.baslangic = zaman;
   durum.sonrakiParilti = zaman + durum.pariltiAralik;
   yay('ilk-hamle', { zaman });
@@ -100,8 +101,10 @@ function civiyiAl(durum, p) {
   const civi = alinabilirCivi(durum.tarla, p.x, p.y);
   if (!civi) return;
   const ceza = civiAl(civi, durum.rahat);
-  durum.ceza += ceza;
-  durum.baslangic -= ceza;
+  if (ceza > 0) {
+    durum.ceza += ceza;
+    durum.baslangic -= ceza;
+  }
   yay('civi-alindi', { x: civi.x, y: civi.y, ceza });
 }
 

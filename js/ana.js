@@ -37,12 +37,15 @@ import './ozellik/hayvan/hayvan.js';
 import './ozellik/dedektor-cizim.js';
 import './ozellik/kenar-isaret.js';
 import './ozellik/kulak.js';
+import { ciftlikAc } from './ozellik/ciftlik/ciftlik.js';
 
 const tuval = document.getElementById('tarla');
 const ciz = cizici(tuval);
 arayuzKur();
 girdiKur(tuval);
-yeniOyun(new URLSearchParams(location.search).get('tohum') || gununEtiketi());
+const adres = new URLSearchParams(location.search);
+if (adres.get('mod') === 'ciftlik') ciftlikAc();
+else yeniOyun(adres.get('tohum') || gununEtiketi());
 
 function kare(zaman) {
   // Duraklatılmışken (menü açık) oyun ilerlemez, yalnız çizilir; yeni tarlanın ilk karesi

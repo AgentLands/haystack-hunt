@@ -50,6 +50,7 @@ export function karakterKaresi(durum, dt, zaman) {
   const istek = yuruyusIstegi(k);
   if (istek.x || istek.y) baslat(durum, zaman);
   const engeller = [...durum.makineler.map(makineEngeli), ...balyaEngelleri(durum.balyalar)];
+  if (durum.ekEngeller) engeller.push(...durum.ekEngeller(k.x, k.y, false)); // çiftlik parçaları
   const s = karakterYuru(durum.tarla, k, istek.x, istek.y, dt, engeller);
   if (istek.hedefli && s.engel) kontrol.hedef = null; // engelde durur
   if (s.adim) yay('karakter-adim', { x: k.x, y: k.y, z: k.z });

@@ -8,7 +8,7 @@ değildir: başka oyunların adını, görselini ya da birebir mekaniğini kulla
 ```
 npm test                      # birim testleri (node --test, bağımlılık yok)
 npm run duman                 # Chromium'da uçtan uca duman testi (Playwright kurulu)
-npm run e2e                   # 9 uçtan uca senaryo (tests/e2e/*.cjs; --yavas 4: CPU 4× yavaş)
+npm run e2e                   # 10 uçtan uca senaryo (tests/e2e/*.cjs; --yavas 4: CPU 4× yavaş)
 npm run denetim               # kod kuralları denetimi ("DENETİM TEMİZ" demeli)
 node sunucu/sunucu.js --port 8080   # yarış sunucusu (oyunu da sunar; bkz. sunucu/PROTOKOL.md)
 node tests/e2e/duman.cjs --ekran KLASOR   # ekran görüntüleriyle
@@ -69,6 +69,19 @@ sayılır). Gerçek hatadan başarısız denetim silinmez: `bilinen.cjs` listesi
 - Dış kaynak yok: ikonlar, görseller ve sesler kodla çizilir/sentezlenir; yalnız üç yazı tipi
   dışarıdan gelir (`KAYNAKLAR.md`). Yeni dış varlık eklersen lisansını (CC0/MIT/BSD/Apache-2.0/
   OFL/CC-BY) kontrol et ve `KAYNAKLAR.md`'ye yaz.
+
+## Çiftlik modu (kur ve izle)
+- Sözleşme: `docs/ciftlik/MIMARI.md` (şemalar, tik sırası, olaylar, kayıt biçimi, "yeni parça
+  nasıl eklenir"). Ayrı mod: `durum.mod` ('tarla' | 'ciftlik'), `oyun.js modTanimla/modAc`;
+  çiftlik kodu `js/oyun-ciftlik.js`, `js/kural/ciftlik/`, `js/ozellik/ciftlik/`.
+- Normal mod (günün tarlası, yarış, istatistik, fiş, ön hazırlık) çiftlikten etkilenmez:
+  çiftlikte `ilk-hamle`, `bulundu`, `pes-edildi` yayılmaz; `tests/ciftlik-ayrim.test.js`
+  normal izin aynı kaldığını denetler. Normal moda dokunan değişiklikte bu test geçmeli.
+- Benzetim 20 Hz sabit tik, yalnız komutla değişir (`komutEkle`), tam sayı ve tohumlu zar
+  (`c.zar`); trigonometri yok. Parça kuralı (`parcaTanimla`) ile çizimi (`parcaCizimiTanimla`)
+  ayrı kayıtlardadır. Parça/eşya `kod`u kayıtta saklanır, hiç yeniden kullanılmaz; kayıt
+  biçimi değişirse `sakla.js SURUM`++ ve göç.
+- Ölçüm: `node araclar/ciftlik-olc.mjs` (10.000 tik, hedef ≤ 1500 ms).
 
 ## Kurallar
 - Derleme adımı ve çalışma zamanı bağımlılığı yok: düz ES modülleri, Canvas, Web API.

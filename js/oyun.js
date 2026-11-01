@@ -57,19 +57,20 @@ export function durumAl() {
 }
 
 /**
- * Yeni tarla. zorluk verilmezse önceki oyunun (yoksa varsayılanın) zorluğu sürer.
- * secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine geçer.
+ * Yeni tarlanın durumu (olay yaymaz). zorluk verilmezse önceki oyunun (yoksa varsayılanın)
+ * zorluğu sürer. secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine
+ * geçer. Başka modlar (çiftlik) kendi durumlarını bunun üstüne kurar (mod alanı değişir).
  */
-export function yeniOyun(etiket, zorluk, secenek = {}) {
+export function durumKur(etiket, zorluk, secenek = {}) {
   const arac = durum ? durum.arac : 'el';
   const ad = zorlukAdi(zorluk ?? (durum ? durum.zorluk : varsayilanZorluk));
   const ayar = zorlukAl(ad);
   const tarla = tarlaKur(zorlukTohumu(etiket, ad), ad);
   const { garaj, makineler } = garajKur(tarla, ad);
   const karakter = karakterKur(tarla, garaj, makineler.map(makineEngeli));
-  durum = {
-    etiket, zorluk: ad, tarla, garaj, makineler, karakter, balyalar: tarla.balyalar,
-    buluntular: buluntulariKur(tarla),
+  return {
+    mod: 'tarla', etiket, zorluk: ad, tarla, garaj, makineler, karakter,
+    balyalar: tarla.balyalar, buluntular: buluntulariKur(tarla),
     arac, aracYaricap: YARICAP[arac], rahat: secenek.rahat ?? varsayilanRahat,
     basili: false, fare: null, imlec: null, son: null,
     oncekiKullan: false, elKilitli: false, tirmikSayac: 0, sonZaman: null,
@@ -80,9 +81,38 @@ export function yeniOyun(etiket, zorluk, secenek = {}) {
     baslangic: null, bitis: null, bitti: false, goster: false, gorundu: false,
     parilti: null, civiPariltilar: [], sonrakiParilti: Infinity, ceza: 0, sonuc: null,
   };
+}
+
+/** Yeni tarla (normal mod): durumKur + 'oyun-basladi'. Süren başka mod önce kapanır. */
+export function yeniOyun(etiket, zorluk, secenek = {}) {
+  baslat(durumKur(etiket, zorluk, secenek));
+}
+
+/**
+ * Mod kaydı: ad → { kur(secenek) → durum (durum.mod === ad), adim(durum, dt, zaman,
+ * igneAlindi) }. Normal mod ('tarla') kayıtlı değildir; bu dosyanın adim'ı onu sürer.
+ */
+const modlar = new Map();
+
+export function modTanimla(ad, tanim) {
+  if (ad === 'tarla' || modlar.has(ad)) throw new Error(`modTanimla: "${ad}" kullanılıyor`);
+  modlar.set(ad, tanim);
+}
+
+/** Kayıtlı modu açar (ör. 'ciftlik'); oyun-basladi yayılır. */
+export function modAc(ad, secenek = {}) {
+  const tanim = modlar.get(ad);
+  if (!tanim) throw new Error(`Bilinmeyen mod: ${ad}`);
+  baslat(tanim.kur(secenek));
+}
+
+/** Durumu değiştirir: süren mod normal değilse önce 'mod-kapaniyor' (kayıt için). */
+function baslat(yeni) {
+  if (durum && durum.mod !== 'tarla') yay('mod-kapaniyor', { durum });
+  durum = yeni;
   Object.assign(kontrol, { hedef: null, binIste: false });
   yay('oyun-basladi', { durum });
-  yay('arac-secildi', { arac });
+  yay('arac-secildi', { arac: durum.arac });
 }
 
 export function aracSec(arac) {
@@ -120,7 +150,10 @@ export function pesEt(zaman) {
   yay('pes-edildi', { durum });
 }
 
-/** Bir kare: kontrol, karakter ya da makine, yığın kayması, iğne görünürlüğü ve parıltı. */
+/**
+ * Bir kare: kontrol, karakter ya da makine; normal modda yığın kayması, iğne görünürlüğü ve
+ * parıltı. Başka modda karakter/makineden sonra modun adim'ı koşar (kayma ve bitiş onun).
+ */
 export function adim(zaman) {
   const { tarla } = durum;
   const dt = durum.sonZaman === null ? 0
@@ -132,13 +165,20 @@ export function adim(zaman) {
   }
   makineKaresi(durum, dt, zaman);
   const imlec = makineImleci(durum);
+  let igneAlindi = false;
   if (imlec) {
     durum.imlec = imlec.nokta;
     durum.aracYaricap = imlec.yaricap;
   } else {
     durum.aracYaricap = YARICAP[durum.arac];
-    if (karakterKaresi(durum, dt, zaman) && !durum.bitti) kazan(zaman);
+    igneAlindi = karakterKaresi(durum, dt, zaman);
   }
+  if (durum.mod !== 'tarla') {
+    modlar.get(durum.mod).adim(durum, dt, zaman, igneAlindi);
+    yay('kare', { zaman, durum });
+    return;
+  }
+  if (igneAlindi && !durum.bitti) kazan(zaman);
   durum.kaymaBirikim = kaymaKos(() => cokert(tarla), durum.kaymaBirikim, dt);
   if (!durum.bitti) {
     const derinlik = igneDerinligi(tarla);
