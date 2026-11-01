@@ -1,0 +1,318 @@
+/*
+ * Çiftlik ekranları: sipariş panosu, sorun listesi, Komşu kapısı, damga defteri, istatistik
+ * ve çevrimdışı fişi. Kâğıt pencere tabanı pencere.css'te (kagit-pencere, pencere, fis);
+ * renkler belirteç.css'ten. Telefonda pano ve liste şeridin altında tam genişlik.
+ */
+/* --- Pano --- */
+.cf-pano,
+.cf-sorun-liste {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--hud-ust) + 44px);
+  padding: 10px 12px 12px;
+  font-family: var(--yazi-govde);
+}
+.cf-pano {
+  right: 8px;
+  width: min(268px, calc(100% - 16px));
+  max-height: calc(100% - var(--hud-ust) - 54px);
+  overflow-y: auto;
+  rotate: 0.5deg;
+}
+.cf-pano[hidden],
+.cf-sorun-liste[hidden] { display: none; }
+.cf-pano-baslik { display: flex; align-items: center; gap: 8px; }
+.cf-pano-baslik h2 { flex: 1; margin: 0; font-size: 1.05rem; }
+.cf-pano-kapat {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 1;
+  font-size: 1.2rem;
+  background: none;
+  border: 2px solid transparent;
+  box-shadow: none;
+}
+.cf-pano-kapat:hover { background: var(--kraft); border-color: var(--murekkep); }
+.cf-kartlar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+}
+.cf-kart {
+  min-width: 0;
+  padding: 5px 9px 6px;
+  background: color-mix(in srgb, var(--kagit) 55%, var(--damga-yazi));
+  border: 2px dashed var(--kraft-koyu);
+  border-radius: var(--yaricap);
+}
+.cf-kart.tur-damga { border: 2px solid var(--damga); }
+.cf-kart-ust { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.cf-kart-etiket {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  color: var(--damga);
+  font-family: var(--yazi-sayi);
+  font-size: 0.82rem;
+}
+.cf-kart:not(.tur-damga) .cf-kart-etiket { color: var(--murekkep-soluk); }
+.cf-kart-baslik { min-width: 0; font-size: 0.95rem; line-height: 1.15; }
+.cf-kart-orta { display: flex; align-items: center; gap: 8px; margin: 1px 0 5px; }
+.cf-kart-metin { flex: 1; min-width: 0; margin: 0; font-size: 0.9rem; line-height: 1.25; }
+.cf-ilerleme {
+  position: relative;
+  height: 17px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--murekkep) 22%, var(--kagit));
+  border: 2px solid var(--murekkep);
+  border-radius: 2px;
+}
+.cf-ilerleme i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--oran, 0%);
+  background: var(--saman);
+  transition: width 200ms ease-out;
+}
+.cf-kart.bitti .cf-ilerleme i { background: var(--cayir); }
+.cf-ilerleme .sayi {
+  position: relative;
+  display: block;
+  font-size: 0.74rem;
+  line-height: 14px;
+  text-align: center;
+  color: var(--murekkep);
+}
+.cf-odul,
+.cf-sure { display: inline-flex; align-items: center; gap: 3px; font-size: 0.86rem; }
+.cf-odul .cf-simge { fill: var(--saman); }
+.cf-sure[hidden] { display: none; }
+.cf-cevir { font-size: 0.8rem; white-space: nowrap; }
+.cf-kart-ust .cf-odul { margin-left: auto; }
+.cf-cevir[hidden] { display: none; }
+.cf-kapi-ac {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 38px;
+  font-size: 0.95rem;
+}
+
+/* --- Sorun listesi --- */
+.cf-sorun-liste {
+  left: 50%;
+  translate: -50% 0;
+  z-index: 6;
+  width: min(330px, calc(100% - 16px));
+  max-height: calc(100% - var(--hud-ust) - 100px);
+  overflow-y: auto;
+}
+.cf-sorun-liste h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.cf-sorun-satirlar { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cf-sorun-satir {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 9px;
+  text-align: left;
+  font-family: var(--yazi-govde);
+  background: color-mix(in srgb, var(--kagit) 55%, var(--damga-yazi));
+  border: 2px solid var(--kraft-koyu);
+  box-shadow: none;
+}
+.cf-sorun-satir.agir { border-color: var(--damga); }
+.cf-sorun-satir.sonuk { opacity: 0.7; border-style: dashed; }
+.cf-sorun-satir:hover { background: var(--kraft); }
+.cf-sorun-ust { display: flex; align-items: center; gap: 6px; }
+.cf-sorun-ust .cf-simge { color: var(--damga); }
+.cf-sorun-satir.sonuk .cf-simge { color: var(--murekkep-soluk); }
+.cf-durum-etiket {
+  margin-left: auto;
+  padding: 0 6px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.74rem;
+  font-style: normal;
+  text-transform: uppercase;
+  color: var(--damga);
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.cf-sorun-neden { font-size: 0.86rem; color: var(--murekkep-soluk); }
+.cf-sorun-bos,
+.cf-bos { color: var(--murekkep-soluk); font-size: 0.92rem; }
+.cf-bekleyenler { margin-top: 8px; }
+.cf-bekleyenler summary { cursor: pointer; color: var(--civit); font-size: 0.9rem; }
+.cf-bekleyenler .cf-sorun-satir { margin-top: 6px; }
+.cf-bekleyenler li { list-style: none; }
+
+/* --- Komşu kapısı --- */
+.cf-kapi-not { margin: 0 0 10px; }
+.cf-anahtar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  font-family: var(--yazi-govde);
+  font-size: 1rem;
+  text-align: left;
+  background: none;
+  border: 2px dashed var(--kraft-koyu);
+  box-shadow: none;
+}
+.cf-anahtar-yuva {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 22px;
+  background: var(--kraft-koyu);
+  border: 2px solid var(--murekkep);
+  border-radius: 12px;
+}
+.cf-anahtar-yuva::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--kagit);
+  border: 2px solid var(--murekkep);
+  border-radius: 50%;
+  transition: translate 120ms ease-out;
+}
+.cf-anahtar[aria-pressed='true'] .cf-anahtar-yuva { background: var(--cayir); }
+.cf-anahtar[aria-pressed='true'] .cf-anahtar-yuva::after { translate: 18px 0; }
+.cf-kapi-satir {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 2px dashed var(--kraft-koyu);
+}
+.cf-kapi-metin { display: grid; gap: 2px; min-width: 0; }
+.cf-kapi-metin small { color: var(--murekkep-soluk); font-size: 0.84rem; line-height: 1.25; }
+.cf-kapi-dugme { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; }
+.cf-kapi-dugme .cf-simge { fill: var(--saman); }
+.cf-kapi-dugme:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Damga defteri --- */
+.cf-defter { width: min(460px, calc(100vw - 24px)); }
+.cf-defter-ozet { margin: 0 0 8px; color: var(--murekkep-soluk); }
+.cf-damgalar {
+  display: grid;
+  gap: 4px;
+  max-height: min(380px, calc(100dvh - 300px));
+  margin: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.cf-damga-satir {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 2px dotted var(--kraft-koyu);
+}
+.cf-muhur {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 48px;
+  height: 48px;
+  font-family: var(--yazi-sayi);
+  font-size: 0.95rem;
+  color: var(--kraft-koyu);
+  border: 2px dashed currentColor;
+  border-radius: 50%;
+}
+.cf-muhur b { line-height: 1; }
+.cf-damga-satir.basildi .cf-muhur {
+  color: var(--damga);
+  border: 2px solid currentColor;
+  box-shadow: inset 0 0 0 3px var(--kagit), inset 0 0 0 5px currentColor;
+  rotate: -7deg;
+}
+.cf-damga-satir.sirada .cf-muhur { color: var(--civit); border-style: solid; }
+.cf-damga-satir.kilitli { opacity: 0.62; }
+.cf-damga-govde { display: grid; gap: 1px; min-width: 0; }
+.cf-damga-kosul { font-size: 0.9rem; }
+.cf-damga-acar { color: var(--murekkep-soluk); font-size: 0.8rem; }
+.cf-rozetler { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cf-rozetler h3 { flex: 1 0 100%; margin: 0; font-size: 0.95rem; }
+.cf-rozet-kart {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.85rem;
+  color: var(--murekkep-soluk);
+  border: 2px dashed var(--kraft-koyu);
+  border-radius: 12px;
+}
+.cf-rozet-kart.kazanildi { color: var(--damga); border: 2px solid currentColor; }
+
+/* --- İstatistik --- */
+.cf-istatistik { width: min(540px, calc(100vw - 24px)); }
+.cf-ist-govde {
+  max-height: calc(100dvh - 170px);
+  padding-right: 4px;
+  overflow-y: auto;
+}
+.cf-ist-govde h3 { margin: 12px 0 4px; font-size: 1rem; }
+.cf-ist-govde h3:first-child { margin-top: 0; }
+.cf-hiz-tablo { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.cf-hiz-tablo th,
+.cf-hiz-tablo td { padding: 3px 6px; border-bottom: 2px dotted var(--kraft-koyu); }
+.cf-hiz-tablo th { text-align: left; font-weight: 400; }
+.cf-hiz-tablo thead th,
+.cf-hiz-tablo tr:first-child th { color: var(--murekkep-soluk); font-size: 0.84rem; }
+.cf-hiz-tablo td { text-align: right; }
+.cf-hiz-tablo td.cf-bos { text-align: left; }
+.cf-cizgi-kap { margin: 8px 0 0; }
+.cf-cizgi {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: repeating-linear-gradient(to bottom, transparent 0 20px,
+    color-mix(in srgb, var(--kraft-koyu) 40%, transparent) 20px 22px);
+  border: 2px solid var(--murekkep);
+  border-radius: 2px;
+}
+.cf-cizgi polyline { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.cf-cizgi .cizgi-0 { stroke: var(--damga); }
+.cf-cizgi .cizgi-1 { stroke: var(--cayir); }
+.cf-cizgi-kap figcaption { display: inline; font-size: 0.85rem; color: var(--murekkep-soluk); }
+.cf-lejant { float: right; font-size: 0.85rem; color: var(--murekkep-soluk); }
+.cf-lejant i { display: inline-block; width: 14px; height: 4px; margin: 0 4px 3px 8px; }
+.cf-lejant .cizgi-0 { background: var(--damga); }
+.cf-lejant .cizgi-1 { background: var(--cayir); }
+.cf-duranlar { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+/* --- Çevrimdışı fişi --- */
+.cf-fis .fis-satirlar dd { white-space: nowrap; }
+.cf-fis .fis-not.seri { rotate: -0.6deg; }
+
+/* Alçak yatay ekran (telefon yan): şerit üst sıranın altında, ekranlar kısalır ve kayar. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cf-pano,
+  .cf-sorun-liste { top: 100px; max-height: calc(100% - 108px); }
+  .cf-pano { padding: 8px 10px 10px; }
+}
+@media (max-width: 640px) {
+  .cf-pano { left: 8px; right: 8px; width: auto; top: calc(var(--hud-ust) + 46px); }
+  .cf-sorun-liste { max-height: calc(100% - var(--hud-ust) - 60px); }
+}

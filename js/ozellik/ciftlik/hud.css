@@ -1,0 +1,320 @@
+/*
+ * Çiftlik HUD: üst şerit (kuruş, hava tahmini, damga, sorun, pano), öğretici notu ve damga
+ * mührü. Kâğıt/ahşap/damga dili belirteç.css'ten; yeni sabit renk yok. Şerit yalnız çiftlik
+ * modunda görünür; normal moddaki süre ve saman etiketi (.panel) çiftlikte gizlenir.
+ * Pano, kapı, defter, istatistik, sorun listesi ve fiş pano.css'te.
+ */
+.cf-serit,
+.cf-ogretici { display: none; }
+body.ciftlik-mod .cf-serit { display: flex; }
+body.ciftlik-mod .cf-ogretici:not([hidden]) { display: block; }
+body.ciftlik-mod .panel { display: none; }
+/* Bildirim şeridin altında dursun. */
+body.ciftlik-mod .bildirim { top: calc(var(--hud-ust) + 56px); }
+
+.cf-simge {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cf-simge .dolgu { fill: currentColor; stroke: none; }
+
+.cf-serit {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: calc(var(--hud-ust) - 8px);
+  translate: -50% 0;
+  rotate: -0.4deg;
+  align-items: stretch;
+  max-width: calc(100% - 12px);
+  padding: 2px 4px;
+  color: var(--murekkep);
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+}
+/* Raptiye: şeridi tuvale tutturan kırmızı başlı iğne. */
+.cf-serit::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: -6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--damga);
+  border: 2px solid var(--murekkep);
+}
+.cf-hucre,
+.cf-dugme {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 10px;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+.cf-hucre + .cf-hucre,
+.cf-hucre + .cf-dugme,
+.cf-dugme + .cf-dugme {
+  border-left: 2px dashed var(--kraft-koyu);
+}
+button.cf-hucre,
+.cf-dugme { cursor: pointer; }
+button.cf-hucre:hover,
+.cf-dugme:hover { background: color-mix(in srgb, var(--kraft) 55%, transparent); }
+.cf-dugme[aria-pressed='true'] { background: color-mix(in srgb, var(--kraft) 80%, transparent); }
+.cf-dugme { min-width: 44px; justify-content: center; font-family: var(--yazi-baslik); }
+.cf-dugme-yazi { font-size: 0.9rem; }
+
+/* Kuruş */
+.cf-kurus strong { font-size: 1.2rem; line-height: 1; min-width: 3.4ch; text-align: right; }
+.cf-kurus .cf-simge { fill: var(--saman); }
+.cf-fark {
+  position: absolute;
+  right: 6px;
+  top: -16px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cayir);
+  text-shadow: 0 1px 0 var(--kagit);
+  opacity: 0;
+  pointer-events: none;
+}
+.cf-fark.harca { color: var(--damga); }
+.cf-fark.gor { animation: cf-fark 2.2s ease-out forwards; }
+@keyframes cf-fark {
+  0% { opacity: 0; transform: translateY(10px); }
+  14% { opacity: 1; transform: translateY(0); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+
+/* Hava: şimdi + 3 dilim */
+.cf-hava { gap: 2px; padding: 0 6px; }
+.cf-hv {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 36px;
+  padding: 2px 2px 0;
+}
+.cf-hv::after {
+  content: attr(data-etiket);
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.58rem;
+  line-height: 1;
+  color: var(--murekkep-soluk);
+}
+.cf-hv.simdi { background: color-mix(in srgb, var(--kraft) 60%, transparent); border-radius: 2px; }
+.cf-hv.simdi::after { color: var(--murekkep); }
+.cf-hv > .cf-simge,
+.cf-hv-gok { grid-row: 1; }
+.cf-hv { grid-template-columns: auto auto; column-gap: 2px; }
+.cf-hv-gok { display: grid; }
+.cf-hv-nokta,
+.cf-hv::after { grid-column: 1 / -1; }
+.cf-hv-nokta { display: flex; gap: 2px; height: 6px; align-items: center; }
+.cf-hv-nokta i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid var(--murekkep-soluk);
+}
+.cf-hv-nokta i.dolu { background: var(--civit); border-color: var(--civit); }
+.cf-simge-ok { transform: rotate(var(--yon, 0deg)); color: var(--civit); }
+.cf-simge-ok.durgun { opacity: 0.3; }
+.cf-simge-gunes { fill: var(--saman); }
+.cf-simge-bulut { color: var(--murekkep-soluk); }
+.cf-simge-yagmur { color: var(--civit); }
+
+/* Damga */
+.cf-damga-dugme { color: var(--damga); }
+.cf-damga-dugme .cf-simge { rotate: -8deg; }
+.cf-damga-kod { font-family: var(--yazi-sayi); font-size: 1.05rem; letter-spacing: 0.04em; }
+.cf-damga-ad {
+  max-width: 8.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  color: var(--murekkep);
+}
+
+/* Sorun düğmesi */
+.cf-sorun .cf-simge { color: var(--damga); }
+.cf-sorun.bos .cf-simge { color: var(--murekkep-soluk); opacity: 0.5; }
+.cf-rozet {
+  position: absolute;
+  right: 3px;
+  top: 1px;
+  min-width: 17px;
+  padding: 1px 4px;
+  font-family: var(--yazi-sayi);
+  font-size: 0.7rem;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--damga-yazi);
+  background: var(--damga);
+  border: 1.5px solid var(--murekkep);
+  border-radius: 9px;
+}
+.cf-sorun.bos .cf-rozet { display: none; }
+
+/* Telefon ve dar tuval: şerit tam genişlik, yazılar kısalır. */
+@media (max-width: 640px) {
+  .cf-serit {
+    left: 6px;
+    right: 6px;
+    top: calc(var(--hud-ust) - 10px);
+    translate: none;
+    rotate: none;
+    max-width: none;
+    justify-content: space-between;
+  }
+  .cf-hucre,
+  .cf-dugme { min-height: 44px; padding: 0 5px; gap: 3px; }
+  .cf-damga-ad,
+  .cf-dugme-yazi { display: none; }
+  .cf-kurus .cf-simge { width: 17px; height: 17px; }
+  .cf-kurus strong { font-size: 1.05rem; min-width: 0; }
+  .cf-damga-dugme .cf-simge { width: 17px; height: 17px; }
+  .cf-hava { padding: 0 2px; gap: 0; }
+  .cf-hv { min-width: 0; padding: 2px 3px 0; }
+  .cf-hv .cf-simge { width: 13px; height: 13px; }
+  body.ciftlik-mod .bildirim { top: calc(var(--hud-ust) + 62px); }
+}
+
+@media (max-width: 380px) {
+  .cf-kurus strong { font-size: 0.95rem; }
+  .cf-hv { padding: 2px 1px 0; }
+  .cf-hv .cf-simge { width: 11px; height: 11px; }
+  .cf-damga-kod { font-size: 0.9rem; }
+  .cf-dugme { min-width: 40px; }
+}
+
+/* Öğretici notu (rehber.css deseni): tuvale tıklamayı engellemez, yalnız düğmeler tıklanır. */
+.cf-ogretici {
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  top: calc(var(--hud-ust) + 46px);
+  width: min(300px, calc(100% - 24px));
+  padding: 14px 14px 10px;
+  pointer-events: none;
+  color: var(--murekkep);
+  background-color: var(--kagit);
+  background-image: var(--kagit-doku);
+  background-blend-mode: multiply;
+  font-family: var(--yazi-govde);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge-buyuk);
+  rotate: -0.7deg;
+}
+.cf-ogretici::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--damga);
+  border: 2px solid var(--murekkep);
+  box-shadow: var(--golge);
+}
+.cf-ogretici h2 { margin: 0 0 4px; font-size: 1.02rem; line-height: 1.2; }
+.cf-ogretici p { margin: 0; font-size: 0.93rem; line-height: 1.35; }
+.cf-ogretici-sayac {
+  float: right;
+  font-size: 0.78rem;
+  color: var(--murekkep-soluk);
+}
+.cf-ogretici-dugmeler {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.cf-ogretici-dugmeler button { pointer-events: auto; font-size: 0.9rem; }
+.cf-ogretici-dugmeler .dugme-birincil { padding: 0.4em 1em; }
+@media (pointer: coarse) {
+  .cf-ogretici-dugmeler button { min-height: 44px; min-width: 44px; }
+}
+@media (max-width: 640px) {
+  /* Pano açıkken (tam genişlik) öğretici notu kapanır; pano kapanınca geri gelir. */
+  body.ciftlik-mod.cf-pano-acik .cf-ogretici:not([hidden]) { display: none; }
+  /* Telefonda not tuvalin altında (inşa düğmesinin üstünde) durur; şerit ve pano açık kalır. */
+  .cf-ogretici {
+    top: auto;
+    bottom: calc(var(--hud-alt) + 74px);
+    left: 8px;
+    width: auto;
+    right: 8px;
+    max-width: 420px;
+  }
+}
+
+/* Damga mührü: büyükten oturur, sönerek gider. */
+.cf-damga-vuru {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  rotate: -9deg;
+  padding: 8px 24px 10px;
+  text-align: center;
+  pointer-events: none;
+  color: var(--damga);
+  background: color-mix(in srgb, var(--kagit) 78%, transparent);
+  border: 5px double currentColor;
+  border-radius: 10px;
+  font-family: var(--yazi-baslik);
+  text-transform: uppercase;
+  animation: cf-vur 2.6s ease-out forwards;
+}
+.cf-damga-vuru b { display: block; font-size: 3.2rem; line-height: 1.05; }
+.cf-damga-vuru span { font-size: 1.05rem; letter-spacing: 0.08em; }
+@keyframes cf-vur {
+  0% { opacity: 0; scale: 2.6; }
+  12% { opacity: 0.95; scale: 1; }
+  17% { scale: 1.07; }
+  23% { scale: 1; }
+  78% { opacity: 0.95; }
+  100% { opacity: 0; scale: 0.97; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-fark.harca { color: var(--damga); }
+.cf-fark.gor { animation: none; opacity: 1; }
+  .cf-damga-vuru { animation: cf-sol 2.6s linear forwards; }
+  @keyframes cf-sol { 0%, 80% { opacity: 0.95; } 100% { opacity: 0; } }
+}
+
+/* Alçak yatay ekran (telefon yan): şerit üst sıranın altında. En sonda: öncekileri ezer. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cf-serit { top: 48px; }
+  .cf-hucre,
+  .cf-dugme { min-height: 38px; }
+  body.ciftlik-mod .bildirim { top: 100px; }
+  .cf-ogretici { top: 100px; }
+}

@@ -145,7 +145,20 @@
  *   ayar-tasindi     { parca }                     'ayarTasi' (pipet ortak ayarı) yazıldı
  *   komut-reddedildi neden: 'yapistir-engelli' (+ engelliKaro, eksik) | 'bos' | 'bilinmeyen'
  *
- *   [J hud] (bu ailenin/işin olayları buraya)
+ *   [J hud] (ozellik/ciftlik/hud.js, ogretici.js, sorun.js; sap.js geçici ekonomi/hava)
+ *   ciftlik-hud      { eko, hava, sorunlar, bekleyenler }   çiftlikte saniyede 4 kez: ekonomi
+ *                                                  özeti (kuruş, 3 kart, damgalar), hava satırı
+ *                                                  (şimdi + 3 dilim), tıkanan ve bekleyen parçalar
+ *   ciftlik-ekran-ac { ad }                        ad: 'pano' | 'sorun' | 'damga' | 'istatistik'
+ *                                                  | 'kapi' (inceleme paneli Komşu kapısına
+ *                                                  dokununca 'kapi' yayabilir)
+ *   ciftlik-kurus    { fark, kurus }               kuruş arttı (ses ve "+N" göstergesi)
+ *   ciftlik-sorun-secildi { parca, kx, ky }        sorun listesinden parça seçildi, kamera gitti
+ *   ogretici-adim    { kimlik, sira }              öğreticinin yeni adımı gösterildi
+ *   ogretici-bitti   { atlandi }                   öğretici bitti ya da atlandı
+ *   J'nin G/D'den beklediği (sap.js şimdilik yayar; gerçek sahibi G/D): damga-basildi {damga,
+ *   ad, odul, acilanlar}, siparis-teslim {baslik, odul}, harman-arabasi {asama, x, y},
+ *   ciftlik-cevrimdisi {dk, kazanc: {esya: {kod: adet}, kurus, dolu: [ad]}}.
  */
 const dinleyiciler = new Map();
 
