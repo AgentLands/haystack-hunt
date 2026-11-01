@@ -78,6 +78,24 @@
  *   ciftlik-igne     { kaynak, x, y }              iğne alındı: 'el' (envantere) | 'parca'
  *   ciftlik-ozet     { tik, uretilen, depolanan }  saniyede bir; { kod: adet } (eşya başına
  *                                                  olay YOK; ses/efekt bunu dinler)
+ *
+ *   [A taşıma] (bu ailenin/işin olayları buraya)
+ *
+ *   [B enerji] (bu ailenin/işin olayları buraya)
+ *
+ *   [C mantık] (bu ailenin/işin olayları buraya)
+ *
+ *   [D dünya] (bu ailenin/işin olayları buraya)
+ *
+ *   [E ayıklama] (bu ailenin/işin olayları buraya)
+ *
+ *   [F işleme-depo] (bu ailenin/işin olayları buraya)
+ *
+ *   [G ekonomi] (bu ailenin/işin olayları buraya)
+ *
+ *   [I inşa] (bu ailenin/işin olayları buraya)
+ *
+ *   [J hud] (bu ailenin/işin olayları buraya)
  */
 const dinleyiciler = new Map();
 

@@ -17,6 +17,13 @@ import { onizlemeCiz } from './onizleme.js';
 import { ekranBirim } from '../../../cizim/tuval-olcek.js';
 import { dinle } from '../../../olaylar.js';
 import './temel.js';
+import './toplama.js';
+import './tasima.js';
+import './ayiklama.js';
+import './isleme.js';
+import './depo-kol.js';
+import './enerji.js';
+import './mantik.js';
 
 export const ciftlikOlcum = { ms: 0, esya: 0, parca: 0, ornekler: null };
 
