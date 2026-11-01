@@ -124,6 +124,7 @@ async function ekranlar(s, sc) {
   await s.keyboard.press('Escape');
   await o.bekle(s, () => !document.querySelector('.cf-defter').open);
 
+  await o.kareBekle(s, 6); // defter penceresi kapanışı bitsin: açık pencere varken I çalışmaz
   await s.keyboard.press('i');
   sc.dogrula('istatistik', await o.bekle(s, () => document.querySelector('.cf-istatistik')?.open)
     && (await metin(s, '.cf-istatistik')).includes('Üretim hızı'), 'I istatistiği açmadı');

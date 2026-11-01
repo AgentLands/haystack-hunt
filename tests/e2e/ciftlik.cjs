@@ -84,7 +84,7 @@ async function telefon(tarayici, kok, sc) {
   const y = await o.yerlesim(s);
   sc.dogrula('tel-tasma-yok', !y.tasma, `scrollWidth ${y.scrollWidth} > ${y.innerWidth}`);
   const yer = await yerBul(s);
-  await odakla(s, yer.kx + 3, yer.ky, 6); // kur kipi en yakına (z 6) yaklaşır: baştan orada
+  await odakla(s, yer.kx + 3, yer.ky, 9); // kur kipi çiftlikte z 9 a dek yaklaşır: baştan orada
   const dokun = await o.dokunmaKur(s);
   const tap = async (p) => { await dokun.bas(1, p.x, p.y); await dokun.birak(1); };
   /** Palet kartı: yatay şeritte görünür alana kaydırılıp dokunulur. */

@@ -17,7 +17,7 @@ import {
   istatistikKur, ozetEkle, hizlar, dakikaSerisi, kurusOzeti, DAKIKA_N, HIZ_PENCERE,
 } from '../js/ozellik/ciftlik/istatistik-veri.js';
 import {
-  ADIMLAR, baglamKur, ilerlet, adimMetni, ipucuBul, IPUCLARI, BANT_ESIK,
+  ADIMLAR, baglamKur, ilerlet, adimMetni, ipucuBul, IPUCLARI, BANT_ESIK, paletDaraltilsin,
 } from '../js/ozellik/ciftlik/ogretici-adim.js';
 import { CIFTLIK_SEKMESI } from '../js/ozellik/yardim-ciftlik.js';
 import { esyaKodu } from '../js/kural/ciftlik/esya.js';
@@ -175,6 +175,23 @@ test('öğretici: 11 adım, ilerlet koşullara göre atlar, metin kartın sayıs
   assert.equal(ilerlet(5, d2), 9, 'D2 çivi, mıknatıs, doyma ve çivisiz adımlarını geçer');
   assert.equal(ilerlet(5, baglamKur(c, { kart, damga: D('D1', 'D2', 'D3') })), 11, 'bitti');
   assert.notEqual(adimMetni(ADIMLAR[1], b, true), adimMetni(ADIMLAR[1], b, false), 'd/t ayrı');
+});
+
+test('öğretici: damga kartı "Komşu" der, kart yokken genel metin, kapı düğmeleri', () => {
+  const { c } = hat(0, false);
+  const damga = { baslik: 'İlk teslim', metin: '30 saman tutamı', hedef: 30, damga: 'D1' };
+  assert.match(adimMetni(ADIMLAR[0], baglamKur(c, { kart: damga }), false),
+    /^Komşu: 30 saman tutamı istiyor/);
+  assert.doesNotMatch(adimMetni(ADIMLAR[0], baglamKur(c, { kart: damga }), false), /İlk teslim/);
+  assert.match(adimMetni(ADIMLAR[0], baglamKur(c, {}), false), /^Komşu: saman istiyor/);
+  const gidenler = ADIMLAR.filter((a) => a.git).map((a) => a.kimlik);
+  assert.deepEqual(gidenler, ['huni', 'bant'], 'kapı ekran dışında kalabilen adımlar');
+});
+
+test('öğretici: palet ilk damgaya (D1) dek daralır, sonra ya da öğretici yokken açılır', () => {
+  assert.equal(paletDaraltilsin(true, []), true);
+  assert.equal(paletDaraltilsin(true, ['D1']), false, 'D1 basılınca tam palet');
+  assert.equal(paletDaraltilsin(false, []), false, 'öğretici atlanınca/bitince tam palet');
 });
 
 test('öğretici: alınmış çivi ve iğne dünyadan okunur (sayfa yenilenince doğru yer)', () => {

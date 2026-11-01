@@ -1,13 +1,14 @@
 /**
  * İnşa için kamera yardımcıları: karonun ekran konumu (baloncuk, rozet), kur kipine
- * girerken yakınlaşma (karo ≥ HEDEF_KARO_PX CSS px olana dek, z en çok YAKIN_EN_COK;
+ * girerken yakınlaşma (karo ≥ HEDEF_KARO_PX CSS px olana dek, z en çok zTavan: çiftlikte
+ * telefon da 28 px karoya varsın diye tavan KAMERA_Z_COK'a çıkar; normal tarlada 6 kalır;
  * çiftçi ekranda sabit kalır, yumuşak), ⌖ çiftçiye dön ve sürüklerken tuval kenarına
  * KENAR_PX yaklaşınca kameranın kayması (iz de güncellenir). Görünümü yalnız gorunum.js
  * üzerinden değiştirir; elle yönetim takibi bırakır (kamera-takip.js; çiftçi yürüyünce döner).
  */
-import { gorunum, gorunumAyarla } from '../../gorunum.js';
+import { gorunum, gorunumAyarla, kameraPayiAyarla } from '../../gorunum.js';
 import {
-  dunyadanEkrana, gorunurAlan, odakla, kaydir, merkezle, YAKIN_EN_COK,
+  dunyadanEkrana, gorunurAlan, odakla, kaydir, merkezle, zTavan,
 } from '../../kural/gorunum.js';
 import { KARO } from '../../kural/ciftlik/olcu.js';
 import { dinle } from '../../olaylar.js';
@@ -16,6 +17,11 @@ import { takipBirak } from '../kamera-takip.js';
 
 /** Kur kipinde hedef karo boyu (CSS px; WCAG 24 px ve üstü). */
 export const HEDEF_KARO_PX = 28;
+/** Çiftlikte yakınlaştırma tavanı (normal tarla 6; dar telefonda 28 px karo için ≈ 9). */
+export const KAMERA_Z_COK = 9;
+/** Üst şerit tuvalin bu oranından genişse (telefon) kamera üst kenarın ötesine kayabilir. */
+const SERIT_GENIS = 0.6;
+const UST_TAVAN = 0.3;
 /** Bundan küçük karoda kur kipine girince yakınlaşılır. */
 const YAKLAS_ESIK_PX = 24;
 /** Sürüklerken kenar kaydırma bandı (CSS px) ve hızı (görünür alan / sn). */
@@ -44,7 +50,9 @@ export function karoPx(z = gorunum.z) {
 export function yaklas() {
   if (karoPx() >= YAKLAS_ESIK_PX) return;
   let z = gorunum.z;
-  while (z < YAKIN_EN_COK && karoPx(z) < HEDEF_KARO_PX) z = Math.min(YAKIN_EN_COK, z * 1.05);
+  while (z < zTavan(gorunum) && karoPx(z) < HEDEF_KARO_PX) {
+    z = Math.min(zTavan(gorunum), z * 1.05);
+  }
   takipBirak();
   yaklasma = { z };
 }
@@ -66,6 +74,22 @@ export function kenarIzle(e, guncelle) {
 export function kenarBirak() {
   kenar = null;
 }
+
+/**
+ * Üst şeridin örttüğü bant, tuval yüksekliğinin oranı olarak (telefonda şerit tuvali baştan
+ * başa tutar; masaüstünde dar ortalanmış bir bant olduğundan pay 0): tarlanın üst satırları
+ * şeridin altına girebilsin diye kameranın üst payı.
+ */
+export function ustPay() {
+  const serit = document.querySelector('.cf-serit');
+  const r = tuval.getBoundingClientRect();
+  if (!serit || serit.offsetParent === null || !(r.height > 0)) return 0;
+  const sr = serit.getBoundingClientRect();
+  if (sr.width < SERIT_GENIS * r.width) return 0;
+  return Math.min(UST_TAVAN, Math.max(0, (sr.bottom - r.top) / r.height));
+}
+
+let payKare = 0;
 
 function ciftciEkranda(d) {
   const k = d.karakter;
@@ -91,8 +115,10 @@ dinle('kare', ({ zaman, durum }) => {
   if (durum.mod !== 'ciftlik') {
     yaklasma = null;
     kenar = null;
+    kameraPayiAyarla(0, 0);
     return;
   }
+  if (payKare++ % 15 === 0) kameraPayiAyarla(ustPay(), KAMERA_Z_COK);
   if (kenar && dt) kenarAdim(dt);
   if (!yaklasma) return;
   const { fx, fy } = ciftciEkranda(durum);

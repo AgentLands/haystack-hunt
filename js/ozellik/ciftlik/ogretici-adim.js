@@ -38,20 +38,26 @@ export function baglamKur(c, ek = {}) {
 }
 
 const kart = (b) => b.kart ?? { baslik: 'Komşu', metin: 'saman', hedef: 0 };
+/** Siparişi isteyen: kişi kartında kişinin adı, damga kartında (kişisiz) "Komşu". */
+const isteyen = (b) => (kart(b).damga ? 'Komşu' : kart(b).baslik);
 
-/** Adımlar: kimlik, başlık, metin (t: klavye, d: dokunmatik; tek dize ikisi), vurgu seçici. */
+/**
+ * Adımlar: kimlik, başlık, metin (t: klavye, d: dokunmatik; tek dize ikisi), vurgu seçici,
+ * isteğe bağlı `git: 'kapi'` (nota "Kapıyı göster" düğmesi: kapı ekranın dışında kalabilir).
+ */
 export const ADIMLAR = [
   { kimlik: 'amac', baslik: 'Amaç', vurgu: '[data-ciftlik-pano]', elle: true,
-    metin: (b) => `${kart(b).baslik}: ${kart(b).metin} istiyor. Yığından kapıya bir hat kur.`,
+    metin: (b) => `${isteyen(b)}: ${kart(b).metin} istiyor. Yığından kapıya bir hat kur.`,
     tamam: (b) => b.elle || b.parca.huni > 0 },
   { kimlik: 'huni', baslik: 'Emici huni', vurgu: '[data-parca="huni"], .ciftlik-insa-ac',
+    git: 'kapi',
     metin: { t: 'B ile paleti aç, Emici huni\'yi seç ve saman yığınının eteğine koy.',
       d: 'İnşa\'ya dokun, Emici huni\'yi seç, yığının eteğinde bir yere dokun.' },
     tamam: (b) => b.parca.huni > 0 },
   { kimlik: 'akis', baslik: 'Yığın akar', vurgu: null,
     metin: 'Saman huninin ağzına kayıyor. Çıkış dolunca huninin üstünde "çıkış dolu" belirir.',
     tamam: (b) => b.uretilen > 0 || b.adimTik >= IZLEME_TIK },
-  { kimlik: 'bant', baslik: 'Bant', vurgu: '[data-parca="bant"]',
+  { kimlik: 'bant', baslik: 'Bant', vurgu: '[data-parca="bant"]', git: 'kapi',
     metin: { t: 'Bant seç, huniden kapıya doğru fareyi basılı sürükle.',
       d: 'Bant seç, parmağını huniden kapıya doğru sürükle.' },
     tamam: (b) => b.parca.bant >= BANT_ESIK },
@@ -109,3 +115,7 @@ export const IPUCLARI = [
 export function ipucuBul(gorulen, b) {
   return IPUCLARI.find((i) => !gorulen.has(i.kimlik) && i.kosul(b)) ?? null;
 }
+
+/** Palet ilk damgaya kadar yalnız kilidi açık parçaları gösterir (seçim seli olmasın). */
+export const paletDaraltilsin = (ogreticiSuruyor, damgalar) => ogreticiSuruyor
+  && !damgalar.includes('D1');

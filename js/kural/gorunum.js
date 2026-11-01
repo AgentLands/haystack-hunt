@@ -6,11 +6,17 @@
  * genişse z = 1'de tarlanın tamamı sığar ve fazla eksende ortalanır (kenarlarda boşluk);
  * yakınken görünür alan tarlanın içinde kalır. Tüm işlevler yeni nesne döndürür ve sonucu
  * tarla sınırlarına kenetler; oran varsa sonuca taşınır.
+ * İsteğe bağlı iki genişletme (yalnız çiftlik moduna özel; yoksa davranış değişmez ve sonuca
+ * eklenmez): `ust` (0..1): kamera görünür yüksekliğin bu oranı kadar tarlanın üst kenarından
+ * öteye kayabilir (üst şerit üst satırları örtmesin); `zCok`: yakınlaştırma tavanı (> 6).
  */
 import { GENISLIK, YUKSEKLIK } from './boyut.js';
 
 export const YAKIN_EN_AZ = 1;
 export const YAKIN_EN_COK = 6;
+
+/** Yakınlaştırma tavanı: görünümde `zCok` varsa (çiftlik inşa) o, yoksa YAKIN_EN_COK. */
+export const zTavan = (g) => (g.zCok > YAKIN_EN_COK ? g.zCok : YAKIN_EN_COK);
 
 export function varsayilan() {
   return { z: YAKIN_EN_AZ, gx: 0, gy: 0 };
@@ -19,6 +25,8 @@ export function varsayilan() {
 /** g'nin kutu oranını (varsa) yeni görünüme taşır. */
 function oranli(g, yeni) {
   if (g.oran > 0 && Number.isFinite(g.oran)) yeni.oran = g.oran;
+  if (g.ust > 0) yeni.ust = g.ust;
+  if (g.zCok > YAKIN_EN_COK) yeni.zCok = g.zCok;
   return yeni;
 }
 
@@ -32,18 +40,22 @@ export function tabanAlan(g, W = GENISLIK, H = YUKSEKLIK) {
   return o >= W / H ? { en: H * o, boy: H } : { en: W, boy: W / o };
 }
 
-/** Bir eksen: görünür boy tarladan büyükse ortalar, değilse tarla içine kenetler. */
-function eksen(deger, tarla, gorunur) {
+/**
+ * Bir eksen: görünür boy tarladan büyükse ortalar, değilse tarla içine kenetler; pay (0..1)
+ * başlangıç kenarından öteye görünür boyun bu oranı kadar kayma izni verir.
+ */
+function eksen(deger, tarla, gorunur, pay = 0) {
   if (gorunur >= tarla) return (tarla - gorunur) / 2;
-  return Math.min(tarla - gorunur, Math.max(0, deger));
+  return Math.min(tarla - gorunur, Math.max(pay > 0 ? -pay * gorunur : 0, deger));
 }
 
 /** Yakınlaştırmayı 1×–6× arasına, görünür alanı tarla sınırlarına kenetler. */
 export function sinirla(g, W = GENISLIK, H = YUKSEKLIK) {
   if (![g.z, g.gx, g.gy].every(Number.isFinite)) return oranli(g, varsayilan());
-  const z = Math.min(YAKIN_EN_COK, Math.max(YAKIN_EN_AZ, g.z));
+  const z = Math.min(zTavan(g), Math.max(YAKIN_EN_AZ, g.z));
   const t = tabanAlan(g, W, H);
-  return oranli(g, { z, gx: eksen(g.gx, W, t.en / z), gy: eksen(g.gy, H, t.boy / z) });
+  return oranli(g, { z, gx: eksen(g.gx, W, t.en / z),
+    gy: eksen(g.gy, H, t.boy / z, g.ust > 0 ? g.ust : 0) });
 }
 
 /** Görünür alan: sol üst köşe ve genişlik/yükseklik (hücre birimi). */
@@ -72,7 +84,7 @@ export function dunyadanEkrana(g, x, y, W = GENISLIK, H = YUKSEKLIK) {
 
 /** Yeni yakınlaştırmaya geç; (fx, fy) ekran noktasının altındaki tarla noktası sabit kalır. */
 export function odakla(g, fx, fy, yeniZ, W = GENISLIK, H = YUKSEKLIK) {
-  const z = Math.min(YAKIN_EN_COK, Math.max(YAKIN_EN_AZ, yeniZ));
+  const z = Math.min(zTavan(g), Math.max(YAKIN_EN_AZ, yeniZ));
   const n = ekrandanDunyaya(g, fx, fy, W, H);
   const t = tabanAlan(g, W, H);
   return sinirla(oranli(g, { z, gx: n.x - (fx * t.en) / z, gy: n.y - (fy * t.boy) / z }),
@@ -99,7 +111,7 @@ export function merkezle(g, x, y, W = GENISLIK, H = YUKSEKLIK) {
  */
 export function takipEt(g, x, y, z, oran, W = GENISLIK, H = YUKSEKLIK) {
   const k = Math.min(1, Math.max(0, oran));
-  const hz = Math.min(YAKIN_EN_COK, Math.max(YAKIN_EN_AZ, z));
+  const hz = Math.min(zTavan(g), Math.max(YAKIN_EN_AZ, z));
   const nz = g.z + (hz - g.z) * k;
   const hedef = merkezle(oranli(g, { z: nz, gx: 0, gy: 0 }), x, y, W, H);
   return sinirla(oranli(g, { z: nz, gx: g.gx + (hedef.gx - g.gx) * k,
@@ -112,7 +124,8 @@ export function takipEt(g, x, y, z, oran, W = GENISLIK, H = YUKSEKLIK) {
  */
 export function oranDegistir(g, oran, W = GENISLIK, H = YUKSEKLIK) {
   const a = gorunurAlan(g, W, H);
-  return merkezle({ z: g.z, gx: 0, gy: 0, oran }, a.x + a.en / 2, a.y + a.boy / 2, W, H);
+  const taban = { ...oranli(g, { z: g.z, gx: 0, gy: 0 }), oran };
+  return merkezle(taban, a.x + a.en / 2, a.y + a.boy / 2, W, H);
 }
 
 /** Takip yakınlığının ayarlandığı tuval genişliği (CSS px; masaüstü 1280 düzeni). */

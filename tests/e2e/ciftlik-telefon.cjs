@@ -38,7 +38,7 @@ async function yonDene(tarayici, kok, sc, ad, viewport) {
     const pk = await import('./js/kural/ciftlik/parca-kayit.js');
     const dugmeler = [...document.querySelectorAll('.ciftlik-parca')].map((b) => {
       const r = b.getBoundingClientRect();
-      return { parca: b.dataset.parca, en: r.width, boy: r.height };
+      return { parca: b.dataset.parca, en: r.width, boy: r.height, gizli: b.hidden };
     });
     const sinirlar = document.querySelector('.ciftlik-palet').getBoundingClientRect();
     return { kayitli: pk.parcaTurleri().filter((t) => !t.paletDisi).map((t) => t.anahtar),
@@ -47,7 +47,8 @@ async function yonDene(tarayici, kok, sc, ad, viewport) {
   });
   const eksik = palet.kayitli.filter((a) => !palet.dugmeler.some((d) => d.parca === a));
   sc.dogrula(`${ad}-palet-tam`, eksik.length === 0, `palette olmayan parçalar: ${eksik}`);
-  const kucuk = palet.dugmeler.filter((d) => d.en < 44 || d.boy < 44);
+  // öğretici sürerken kilitli kartlar gizlidir (ciftlik-ogretici.cjs); gizliler ölçülmez
+  const kucuk = palet.dugmeler.filter((d) => !d.gizli && (d.en < 44 || d.boy < 44));
   sc.dogrula(`${ad}-hedef-boyu`, kucuk.length === 0,
     `44 px altı dokunma hedefi: ${JSON.stringify(kucuk)}`);
   sc.dogrula(`${ad}-palet-sinir`, palet.palet.sol >= 0 && palet.palet.sag <= palet.en + 0.5,

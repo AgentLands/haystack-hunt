@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   varsayilan, sinirla, odakla, kaydir, merkezle, gorunurAlan,
   ekrandanDunyaya, ekrandanHucre, dunyadanEkrana, takipEt, YAKIN_EN_AZ, YAKIN_EN_COK,
-  ekranaGoreYakinlik, TAKIP_REFERANS_EN, tabanAlan, oranDegistir,
+  ekranaGoreYakinlik, TAKIP_REFERANS_EN, tabanAlan, oranDegistir, zTavan,
 } from '../js/kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../js/kural/boyut.js';
 
@@ -173,4 +173,34 @@ test('oranDegistir: görünür alanın merkezi aynı kalır', () => {
   yakin(a.x + a.en / 2, 100);
   yakin(a.y + a.boy / 2, 70);
   assert.deepEqual(oranDegistir(d, 1.5).z, 4);
+});
+
+test('çiftlik payları: ust üst kenarın ötesine, zCok 6 üstüne izin verir; yoksa değişmez', () => {
+  const normal = sinirla({ z: 6, gx: 20, gy: -50, oran: 0.54 });
+  assert.equal(normal.gy, 0, 'pay yoksa üst kenarda kenetli');
+  assert.equal(normal.ust, undefined, 'pay yoksa sonuca eklenmez');
+  assert.equal(zTavan({ z: 1 }), YAKIN_EN_COK);
+  assert.equal(sinirla({ z: 9, gx: 0, gy: 0 }).z, YAKIN_EN_COK, 'normal tarla 6 ile sınırlı');
+  const g = sinirla({ z: 6, gx: 20, gy: -50, oran: 0.54, ust: 0.14 });
+  const a = gorunurAlan(g);
+  yakin(g.gy, -0.14 * a.boy);
+  assert.equal(g.ust, 0.14, 'pay sonuca taşınır');
+  const yakinG = sinirla({ z: 9, gx: 0, gy: 0, zCok: 9 });
+  assert.equal(yakinG.z, 9);
+  assert.equal(zTavan(yakinG), 9);
+  assert.equal(sinirla({ z: 99, gx: 0, gy: 0, zCok: 9 }).z, 9, 'tavan zCok');
+  assert.equal(odakla({ z: 5, gx: 0, gy: 0, zCok: 9 }, 0.5, 0.5, 8).z, 8);
+  assert.equal(odakla({ z: 5, gx: 0, gy: 0 }, 0.5, 0.5, 8).z, YAKIN_EN_COK);
+  const d = oranDegistir({ ...g, z: 6 }, 0.9);
+  assert.equal(d.ust, 0.14, 'oran değişince pay korunur');
+  assert.equal(d.oran, 0.9, 'yeni oran eskinin üstüne yazılır');
+  assert.equal(takipEt({ z: 6, gx: 0, gy: 0, zCok: 9 }, 100, 80, 9, 1).z, 9);
+});
+
+test('çiftlik payı: tarlanın üst satırı şeridin altına kaydırılabilir (ekran oranı)', () => {
+  const g = sinirla({ z: 9, gx: 40, gy: -100, oran: 0.89, ust: 0.14, zCok: 9 });
+  const a = gorunurAlan(g);
+  // görünür boyun %14'ü boş pay: tarlanın 0. satırı ekranda tam %14 aşağıdadır
+  yakin(dunyadanEkrana(g, 40, 0).fy, 0.14);
+  assert.ok(a.y < 0);
 });

@@ -366,8 +366,15 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
 - Elle alınan iğne ve buluntu "bulundu" sayılır ('tam'); buluntu envantere girmez.
 - Dik yığının eteğinde sökülen parçanın karosunu yığın doldurabilir (h > 8): aynı yere geri
   kurmak için önce temizlemek gerekir (test todo; gerçek tarlada nadir).
-- Telefonda tarlanın en üst satırları HUD şeridinin altında kalır (kamera dünyanın kenarından
-  öteye kaymaz); inşa kipinde daha yakın zoom (≈ 28 px karo) eklenmedi.
+- Telefonda üst satırlar: kamera çiftlikte üst kenarın ötesine `ust` payı kadar kayar (HUD
+  şeridi genişliği tuvalin %60'ından fazlaysa; `insa-kamera.js ustPay`), yakınlaştırma tavanı
+  çiftlikte `zCok = 9` (28 px karo; normal tarla 6). İkisi `kural/gorunum.js` görünümüne
+  isteğe bağlı alanlardır (yoksa davranış aynı); `gorunum.js kameraPayiAyarla` yazar.
+- Öğretici: normal tarla rehberi çiftlikte açılmaz (`ciftlik-acildi` kapatır, görüldü
+  işaretlenmez). Palet ilk damgaya (D1) dek yalnız kilidi açık parçaları gösterir
+  (`paletDaraltilsin`). Huni/bant adımlarında "Kapıyı göster" ve masaüstünde pano kapanır.
+- Öğretici huni önerisi (`ogreticiHuniYeri`) kapıya 40+ karo uzak olabilir (tohuma göre ilk
+  bant 6-270 karo); arayüz öneriyi göstermez, oyuncu kapıya yakın eteği kendisi seçer.
 - Kepçe/balya makinesi çiftlikte normal kodla çalışır; gömülü nesneyi kepçeye alırsa `c.gomulu`
   bağı korunur ama makinenin boşaltma kuralı çiftlikte özel değil.
 - Dönemeçte bant çıtası düz çizilir; bölge önbelleği gövdeleri parça başına tarar (300 parçada

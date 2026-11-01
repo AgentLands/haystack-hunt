@@ -221,8 +221,8 @@ button.cf-hucre:hover,
   z-index: 5;
   left: 12px;
   top: calc(var(--hud-ust) + 46px);
-  width: min(300px, calc(100% - 24px));
-  padding: 14px 14px 10px;
+  width: min(270px, calc(100% - 24px));
+  padding: 12px 13px 8px;
   pointer-events: none;
   color: var(--murekkep);
   background-color: var(--kagit);
@@ -246,8 +246,8 @@ button.cf-hucre:hover,
   border: 2px solid var(--murekkep);
   box-shadow: var(--golge);
 }
-.cf-ogretici h2 { margin: 0 0 4px; font-size: 1.02rem; line-height: 1.2; }
-.cf-ogretici p { margin: 0; font-size: 0.93rem; line-height: 1.35; }
+.cf-ogretici h2 { margin: 0 0 3px; font-size: 0.98rem; line-height: 1.2; }
+.cf-ogretici p { margin: 0; font-size: 0.88rem; line-height: 1.32; }
 .cf-ogretici-sayac {
   float: right;
   font-size: 0.78rem;
@@ -276,7 +276,15 @@ button.cf-hucre:hover,
     width: auto;
     right: 8px;
     max-width: 420px;
+    padding: 9px 12px 4px;
+    rotate: 0deg;
   }
+  .cf-ogretici h2 { margin: 0 0 1px; font-size: 0.92rem; }
+  .cf-ogretici p { font-size: 0.84rem; line-height: 1.25; }
+  .cf-ogretici-dugmeler { gap: 8px; margin-top: 2px; }
+  /* İnşa açıkken (palet altta) not tuvalin en altına iner: harita ve yakınlaştırma düğmelerinin
+     üstüne biner (adım sürerken gerekmezler), sahne ve hayalet görünür kalır. */
+  body.ciftlik-insa .cf-ogretici { bottom: 6px; }
 }
 
 /* Damga mührü: büyükten oturur, sönerek gider. */

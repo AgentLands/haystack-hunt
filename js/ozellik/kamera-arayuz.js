@@ -6,7 +6,7 @@
  * haritaKaynagiKur ile verilen renkli küçük noktalardır.
  */
 import { gorunum, gorunumAyarla } from '../gorunum.js';
-import { gorunurAlan, merkezle, YAKIN_EN_AZ, YAKIN_EN_COK } from '../kural/gorunum.js';
+import { gorunurAlan, merkezle, YAKIN_EN_AZ, zTavan } from '../kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { katmanEkle, tarlaResmi } from '../cizim.js';
 import { ikon } from './ikon.js';
@@ -111,7 +111,7 @@ export function kameraArayuzuKur({ yakinlastir, uzaklastir, sigdir, elleKaydiril
   const haritaCiz = miniHaritaKur(kap, elleKaydirildi);
   // Her kare, çizimden sonra (ust katman) düğme durumları ve mini harita tazelenir.
   katmanEkle((ctx, durum) => {
-    arti.disabled = gorunum.z >= YAKIN_EN_COK - 1e-6;
+    arti.disabled = gorunum.z >= zTavan(gorunum) - 1e-6;
     const sigmis = gorunum.z <= YAKIN_EN_AZ + 1e-6;
     eksi.disabled = sigmis;
     sigdirDugme.disabled = sigmis;

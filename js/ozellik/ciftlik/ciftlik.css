@@ -148,6 +148,16 @@ canvas#tarla.ciftlik-parca-ustu { cursor: pointer; }
 }
 .ciftlik-palet .ciftlik-parca { background: var(--kagit); box-shadow: var(--golge); }
 .ciftlik-parca canvas { width: 30px; height: 30px; }
+.ciftlik-parca[hidden], .ciftlik-sekme[hidden] { display: none; }
+.ciftlik-daha-not {
+  flex: none;
+  align-self: center;
+  width: 108px;
+  padding: 0 6px 0 10px;
+  font: italic 0.74rem/1.25 var(--yazi-govde);
+  color: var(--murekkep-soluk);
+}
+.ciftlik-daha-not[hidden] { display: none; }
 .ciftlik-kart-ad {
   font-family: var(--yazi-govde);
   font-size: 0.7rem;

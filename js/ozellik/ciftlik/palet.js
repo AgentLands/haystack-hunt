@@ -7,6 +7,8 @@
  * ad, fiyat. Kuruş yetmezse kart soluk ve fiyat kırmızı; kilitli parça gri siluet + damga
  * ("D4'te açılır"), seçilemez. Karta uzun bas / fareyle bekle: ayrıntı kâğıdı (ne işe
  * yarar, kapılar, boyut, enerji, sorduğu soru: tanımın `aciklama`, `soru` alanları).
+ * İlk damgaya (D1) dek öğretici sürüyorsa kilitli kartlar ve boş kalan sekmeler gizlenir
+ * (yalnız huni, bant, sandık; seçim seli olmasın), serit sonunda "daha fazlası" notu durur.
  * Kartlar parcaTurleri()'nden kendiliğinden üretilir. Palet kapalıyken çiftlikte "İnşa (B)"
  * düğmesi görünür. Masaüstünde tuvalin altına, telefonda alet rafının yerine (kumanda
  * tablasının üstü) oturur; açıkken gövdede `ciftlik-insa` sınıfı vardır.
@@ -20,6 +22,8 @@ import {
 } from './insa.js';
 import { simgeCiz } from './parca-simge.js';
 import { ayrintiKur } from './palet-ayrinti.js';
+import { ogreticiAktif } from './ogretici.js';
+import { paletDaraltilsin } from './ogretici-adim.js';
 
 const AILE_ADI = { toplama: 'Topla', tasima: 'Taşı', ayiklama: 'Ayıkla', isleme: 'İşle',
   depo: 'Depo', enerji: 'Enerji', mantik: 'Mantık' };
@@ -68,6 +72,9 @@ const sekmeler = oge('div', 'ciftlik-sekmeler');
 sekmeler.setAttribute('role', 'tablist');
 sekmeSatiri.append(hizli, sekmeler);
 const serit = oge('div', 'ciftlik-palet-serit');
+const dahaNot = oge('span', 'ciftlik-daha-not');
+dahaNot.textContent = 'Yeni parçalar ilk teslimden sonra açılır.';
+dahaNot.hidden = true;
 palet.append(ust, sekmeSatiri, serit);
 document.querySelector('main').after(palet);
 const ayrinti = ayrintiKur(palet);
@@ -84,6 +91,7 @@ function kartlariKur() {
   turler.sort((a, b) => sira(a.aile) - sira(b.aile) || a.kod - b.kod);
   kartlar.clear();
   serit.replaceChildren();
+  serit.append(dahaNot);
   sekmeler.replaceChildren();
   for (const t of turler) {
     const kart = dugme('ciftlik-parca', '', t.ad, () => {
@@ -98,7 +106,7 @@ function kartlariKur() {
     kart.querySelector('.ciftlik-kart-ad').textContent = t.ad;
     ayrinti.bagla(kart, t);
     kartlar.set(t.anahtar, kart);
-    serit.append(kart);
+    dahaNot.before(kart);
     if (!sekmeler.querySelector(`[data-aile="${t.aile}"]`)) {
       const s = dugme('ciftlik-sekme', AILE_ADI[t.aile] ?? t.aile, '', () => sekmeyeGit(t.aile));
       s.setAttribute('role', 'tab');
@@ -138,12 +146,17 @@ serit.addEventListener('scroll', () => {
 function kartlariTazele() {
   const d = durumAl();
   const kurus = d?.mod === 'ciftlik' ? kaynak.kurus(d) : null;
+  const daralt = d?.mod === 'ciftlik' && paletDaraltilsin(ogreticiAktif(),
+    d.ciftlik.ilerleme?.damgalar ?? []);
+  const gorunen = new Set();
   let simgeDegisti = false;
   for (const [anahtar, kart] of kartlar) {
     const t = parcaTurleri().find((x) => x.anahtar === anahtar);
     const kilit = d ? kaynak.kilit(t, d) : null;
     const fiyat = kaynak.fiyat(t);
     if (kart.classList.contains('kilitli') !== Boolean(kilit)) simgeDegisti = true;
+    kart.hidden = daralt && Boolean(kilit);
+    if (!kart.hidden) gorunen.add(kart.dataset.aile);
     kart.classList.toggle('kilitli', Boolean(kilit));
     kart.classList.toggle('pahali', fiyat !== null && kurus !== null && fiyat > kurus);
     kart.querySelector('.ciftlik-kart-fiyat').textContent = fiyat === null ? '' : `${fiyat}`;
@@ -152,6 +165,8 @@ function kartlariTazele() {
     kart.setAttribute('aria-pressed', String(insa.kip === 'kur' && insa.secili === anahtar));
     kart.setAttribute('aria-disabled', String(Boolean(kilit)));
   }
+  for (const sk of sekmeler.children) sk.hidden = !gorunen.has(sk.dataset.aile);
+  dahaNot.hidden = !daralt;
   if (simgeDegisti) simgeleriCiz();
 }
 
@@ -218,4 +233,9 @@ insaDinle((d) => {
 dinle('ciftlik-ozet', () => {
   if (!palet.hidden) kartlariTazele();
 });
+for (const ad of ['ogretici-adim', 'ogretici-bitti', 'damga-basildi']) {
+  dinle(ad, () => {
+    if (!palet.hidden) kartlariTazele();
+  });
+}
 kartlariKur();

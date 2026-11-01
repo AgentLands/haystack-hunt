@@ -44,7 +44,8 @@ araçlar çalışmaz; kamera takibi bırakılır, ⌖ **Çiftçi** düğmesi (C 
 - **Döndürme**: R (Shift+R ters), fare tekerleği kur kipinde döndürür (yakınlaştırma Ctrl+
   tekerlek); dokunmatikte eylem şeridindeki ⟳ (kalıcı). Kip son yönü hatırlar.
 - **Yakınlık** (karar §10-3): kur kipine girerken z < 3,5 ise kamera seçili noktaya z = 3,5
-  (karo ≈ 28 CSS px) yumuşakça yaklaşır. Uzak görünümde yalnız izleme ve inceleme.
+  (karo ≈ 28 CSS px) yumuşakça yaklaşır; telefonda bunun için çiftlikte tavan 6 → 9
+  (`zCok`), normal tarlada 6 kalır. Uzak görünümde yalnız izleme ve inceleme.
 - **Pipet** (Q / parçaya çift dokunuş): alttaki parçanın türünü ve ayarlarını (yön,
   filtre, renk) kur kipine alır.
 

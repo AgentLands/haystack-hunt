@@ -107,6 +107,20 @@ function kapat() {
   gorulduYaz();
 }
 
+/**
+ * Çiftliğe geçilince normal tarla rehberi kapanır (iğne arama metni çiftlikte yanıltır;
+ * çiftliğin kendi öğreticisi var). Görüldü işaretlenmez: normal tarlada yine açılır.
+ */
+function ciftlikteKapat() {
+  if (!kutu) return;
+  kutu.remove();
+  kutu = null;
+  vurguyuKaldir();
+  document.removeEventListener('pointerdown', oyunBasladi, true);
+  document.removeEventListener('keydown', tusBasildi, true);
+}
+dinle('ciftlik-acildi', ciftlikteKapat);
+
 function oyunBasladi(e) {
   if (e.target.id === 'tarla') kapat();
 }
@@ -185,7 +199,7 @@ dugmeEkle('ust', {
 function ilkAcilis() {
   const menu = document.getElementById('menu');
   if (menu && menu.open) menu.addEventListener('close', ilkAcilis, { once: true });
-  else if (!goruldu()) rehberiAc();
+  else if (!goruldu() && !document.body.classList.contains('ciftlik-mod')) rehberiAc();
 }
 // Menü ilk oyunla (ana.js, bu modülden sonra) açılır; karar o kurulduktan sonra verilir.
 if (!goruldu()) setTimeout(ilkAcilis, 0);

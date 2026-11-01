@@ -10,7 +10,7 @@ import { dinle, yay } from '../../olaylar.js';
 import { durumAl } from '../../oyun.js';
 import { esyaKodu } from '../../kural/ciftlik/esya.js';
 import { ADIMLAR, baglamKur, adimMetni, ilerlet, ipucuBul } from './ogretici-adim.js';
-import { yap, dugme, dokunmatikMi, tuvalKap } from './yap.js';
+import { yap, dugme, dokunmatikMi, tuvalKap, kameraGit } from './yap.js';
 import { stilYukle } from '../pencere.js';
 
 stilYukle('./ciftlik/hud.css');
@@ -27,6 +27,8 @@ let elle = false;
 let ipucuNot = null;
 let ipucuZamani = 0;
 let kutu = null;
+let yazilanMetin = '';
+let sonKimlik = null;
 
 function oku() {
   try {
@@ -77,8 +79,11 @@ function kutuKur() {
 }
 
 /** Notu yazar: sayaç (isteğe bağlı), başlık, metin, düğmeler. */
-function notYaz({ sayac, baslik, metin, tamam, atla }) {
+function notYaz({ sayac, baslik, metin, tamam, atla, git }) {
   const dugmeler = yap('div', 'cf-ogretici-dugmeler');
+  yazilanMetin = metin;
+  if (git) dugmeler.append(dugme('dugme-metin', 'Kapıyı göster', 'Kamerayı Komşu kapısına götür',
+    git));
   if (atla) dugmeler.append(dugme('dugme-metin', 'Atla', 'Öğreticiyi bırak', atla));
   if (tamam) dugmeler.append(dugme('dugme-birincil', tamam.ad, tamam.ad, tamam.islev));
   const ust = yap('h2', '', baslik);
@@ -95,10 +100,31 @@ function bitir(atlandi) {
   yay('ogretici-bitti', { atlandi });
 }
 
+/** Komşu kapısı ekranın dışında olabilir (kapı yığından çok uzakta durabilir). */
+function kapiyaGit() {
+  const k = durumAl()?.ciftlik?.arazi?.kapi;
+  if (k) kameraGit(k.x, k.y, k.en, k.boy);
+}
+
+/**
+ * Masaüstünde pano sağda durur ve kapı hep sağ kenardadır: huni ve bant adımlarında pano
+ * kapanır (kapı görünsün), teslim beklerken açılır (sayaç görünsün). Telefonda dokunulmaz.
+ */
+function panoyuAyarla(kimlik) {
+  const acilsin = kimlik === 'teslim';
+  if (!matchMedia('(min-width: 900px)').matches) return;
+  if (!['huni', 'bant', 'teslim'].includes(kimlik)) return;
+  if (document.body.classList.contains('cf-pano-acik') !== acilsin) {
+    yay('ciftlik-ekran-ac', { ad: 'pano' });
+  }
+}
+
 function adimGoster(b) {
   const a = ADIMLAR[sira];
+  if (a.kimlik !== sonKimlik) panoyuAyarla(a.kimlik);
+  sonKimlik = a.kimlik;
   notYaz({ sayac: `${sira + 1}/${ADIMLAR.length}`, baslik: a.baslik,
-    metin: adimMetni(a, b, dokunmatikMi()), atla: () => bitir(true),
+    metin: adimMetni(a, b, dokunmatikMi()), atla: () => bitir(true), git: a.git && kapiyaGit,
     tamam: a.elle ? { ad: 'Tamam', islev: () => { elle = true; } } : null });
   vurgula(a.vurgu);
   yay('ogretici-adim', { kimlik: a.kimlik, sira });
@@ -117,7 +143,7 @@ function yokla({ durum, eko, sorunlar, bekleyenler }) {
   const c = durum.ciftlik;
   const durumlar = [...sorunlar, ...bekleyenler].map((s) => s.durum);
   const damga = new Set(eko.damgalar.filter((d) => d.basildi).map((d) => d.kod));
-  const b = baglamKur(c, { durumlar, kart: eko.kartlar[0], elle, uretilen,
+  const b = baglamKur(c, { durumlar, kart: eko.kartlar.find((k) => k.damga) ?? null, elle, uretilen,
     adimTik: c.tik - adimTik0, damga });
   if (!kayit.bitti) {
     const yeni = ilerlet(sira, b);
@@ -132,8 +158,9 @@ function yokla({ durum, eko, sorunlar, bekleyenler }) {
         return;
       }
       adimGoster(b);
-    } else if (kutu.hidden && !ipucuNot) {
-      adimGoster(b);
+    } else if ((kutu.hidden && !ipucuNot)
+      || (!ipucuNot && adimMetni(ADIMLAR[sira], b, dokunmatikMi()) !== yazilanMetin)) {
+      adimGoster(b); // sipariş kartı geç gelince ya da değişince not güncellenir
     }
     return;
   }
