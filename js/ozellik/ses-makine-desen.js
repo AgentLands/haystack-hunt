@@ -15,7 +15,7 @@ export const DOLGUN_YUKSEKLIK = 60;
 export function adimDeseni(z) {
   const yuk = Number.isFinite(z) ? Math.max(0, z) : 0;
   if (yuk < TOPRAK_ESIGI) {
-    return { tur: 'toprak', dolgunluk: 0, f0: 760, f1: 420, sure: 0.035, duzey: 0.09, q: 1.2 };
+    return { tur: 'toprak', dolgunluk: 0, f0: 760, f1: 420, sure: 0.035, duzey: 0.13, q: 1.2 };
   }
   const d = kirp((yuk - TOPRAK_ESIGI) / (DOLGUN_YUKSEKLIK - TOPRAK_ESIGI), 0, 1);
   const f0 = dogrusal(3400, 1400, d);
