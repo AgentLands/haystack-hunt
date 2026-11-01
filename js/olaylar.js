@@ -94,6 +94,13 @@
  *   [G ekonomi] (bu ailenin/işin olayları buraya)
  *
  *   [I inşa] (bu ailenin/işin olayları buraya)
+ *   [I2 seçim-şablon]
+ *   yapistirildi     { parcalar }                  'yapistir' komutu kümeyi tek işlemde kurdu
+ *                                                  (ayrıca parça başına 'parca-kuruldu')
+ *   alan-sokuldu     { parcalar }                  'sokAlan' komutu alandakileri söktü
+ *                                                  (ayrıca parça başına 'parca-sokuldu')
+ *   ayar-tasindi     { parca }                     'ayarTasi' (pipet ortak ayarı) yazıldı
+ *   komut-reddedildi neden: 'yapistir-engelli' (+ engelliKaro, eksik) | 'bos' | 'bilinmeyen'
  *
  *   [J hud] (bu ailenin/işin olayları buraya)
  */
