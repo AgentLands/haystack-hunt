@@ -5,17 +5,21 @@
  * Birleştirme sonrası ana ajan:  CIFTLIK_BEKLEYEN=1 npm test  → kırılanları düzeltir, sonra
  * aşağıdaki `BEKLEYEN_ACIK` varsayılanını true yapar (tek satır) ve bu sarmalayıcıyı kaldırır.
  *
- * Bekleyen testler ve beklediği işler (parça adları `docs/ciftlik/parcalar.md` kod adlarıdır;
- * harfler `yol-haritasi.md` §2 iş parçalarıdır):
- *   ciftlik-denge       Hat A/B/C 6000 tik ±%10 ........ A B D E F G (+ test kancası: havaSabit)
- *   ciftlik-denge       rüzgârlı beklenen değer (2 yel ≈ %76) ... D (hava) + B (yel tablosu)
- *   ciftlik-senaryo     D1-D5 ≤ 30 oyun dk sabit komut dizisi ... hepsi (G damga, J öğretici)
- *   ciftlik-yumusak     (a) söküm → kuruş = 300 + kazanç ... G
- *                       (b) ölü döngüden çıkış (krank, sandık→kol→lokomobil) ... B F
- *                       (c) iğne/buluntu her sink/makine/söküm yolunda ... E F G (sink'ler)
- *                       (d) öğretici çivileriyle D2'ye ≤ 10 dk ... D G J
- *   ciftlik-ayrim       (hazır) hepsi şimdiki çekirdekle çalışır; yeni satırlar J gelince açılır
- *   e2e ciftlik-ogretici  ilk 10 dakika tablosu adım adım ... J (pano/öğretici) D G
+ * Durum (K doğrulama, main + F birleşimiyle denendi; `dogrulandi` = bayraksız koşar):
+ *   ciftlik-denge     Hat C kıyım 120/dk ±%10 ............ dogrulandi (F gelince)
+ *                     Hat A saman balyası 11/dk .......... BEKLİYOR D (toz 1/8 ve pasif huni
+ *                       50/dk yok: şimdi 12,5/dk = pres tavanı), + test kancası `havaSabit`
+ *                     Hat B ot balyası 10,5/dk ........... BEKLİYOR D (çayır, tırmık, hava), F
+ *                     rüzgârlı beklenen değer (%76) ...... BEKLİYOR D (`dunya/hava.js`)
+ *   ciftlik-senaryo   D1-D5 ≤ 30 dk (iki test) ........... BEKLİYOR D (arazi, öğretici hayalet
+ *                       `c.ogretici.huni`), F (parçalar), J (UYARLAYICI.damgalar → G ilerleme)
+ *   ciftlik-yumusak   (a) kuruş iadesi ................... dogrulandi (G)
+ *                     (b1) sandık→kol→lokomobil, (b2) krank dogrulandi (B, F)
+ *                     (c) 12 sink/makine iğne korunumu ... dogrulandi (F: bulundu olayı)
+ *                     (d) öğretici çivi D2 ≤ 10 dk ....... BEKLİYOR D G J
+ *   ciftlik-sozlesme  parça çizimi (yedek kutu yok) ...... dogrulandi (H2)
+ *   e2e ciftlik-ogretici  ilk 10 dakika tablosu .......... BEKLİYOR J (pano/öğretici), D, G
+ *   e2e ciftlik-telefon   perf hedefi (katman ≤ 4 ms) .... BEKLİYOR H1 (şimdi ≈ 8-9 ms yakın)
  * Yazım hatası "bekliyor" gibi görünmesin diye `bekleyen` bilinmeyen parça adında hemen hata
  * verir; `PARCALAR` listesi `docs/ciftlik/parcalar.md` ile `ciftlik-sozlesme.test.js`'te
  * karşılaştırılır.

@@ -183,7 +183,7 @@ test('olay kataloğu: çiftlikte yayılan her olay js/olaylar.js kataloğunda ya
 });
 
 bekleyen('her parçanın çizimi (govde) gorsel/*.js içinde tanımlı (yedek kutu kalmadı)', {
-  is: 'H1 H2', dosya: ['js/ozellik/ciftlik/gorsel/bant.js'],
+  is: 'H2', dosya: ['js/ozellik/ciftlik/gorsel/parca-ortak.js'], dogrulandi: true,
 }, () => {
   const kaynak = jsDosyalari('js/ozellik/ciftlik/gorsel/').map(oku).join('\n');
   for (const t of parcaTurleri()) {
