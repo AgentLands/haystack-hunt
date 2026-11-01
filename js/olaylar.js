@@ -122,8 +122,9 @@
  *                                                  iğne/buluntu "bulundu" (defter + kutlama
  *                                                  dinleyicinin işi): kaynak 'masa' | 'sandik' |
  *                                                  'ambar' | 'kapi' | 'gubre' | 'temizle' |
- *                                                  'sokum' | 'bosalt'; kip 'tam' | 'yari' | 'kurussuz'
- *                                                  (kurus: ödenen); buluntu: tür adı ya da null
+ *                                                  'sokum' | 'bosalt'; kip 'tam' | 'yari' |
+ *                                                  'kurussuz' (kurus: ödenen); buluntu: tür
+ *                                                  adı ya da null
  *   parca-temizlendi { parca, komut }              sıkışmış pres açıldı (eşya envantere)
  *   parca-onarildi   { parca, komut }              kıyıcı onarımı başladı (50 kuruş, 200 tik)
  *   parca-ayarlandi  { parca, komut, ad, deger }   'ayar' komutu uygulandı (tek tanım)

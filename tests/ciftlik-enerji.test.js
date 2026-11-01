@@ -2,7 +2,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { esyaTanimla, esyaKodu } from '../js/kural/ciftlik/esya.js';
-import { parcaTanimla } from '../js/kural/ciftlik/parca-kayit.js';
+import { parcaTanimla, parcaTanimi as parcaTanimiAl } from '../js/kural/ciftlik/parca-kayit.js';
 import { komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { ENERJI, agiBul, gucRozeti } from '../js/kural/ciftlik/ag/enerji.js';
@@ -360,4 +360,15 @@ test('kaydet → yükle → sürdür: bit bit aynı', () => {
   kos(a.c, a.tarla, 400);
   kos(yuklu, b.tarla, 400);
   assert.equal(dunyaOzeti(yuklu, b.tarla), dunyaOzeti(a.c, a.tarla));
+});
+
+test('çizim verisi: şaft p.bag bağlı kenarları, üreticide p.oran = üretim / en çok', () => {
+  const { c, tarla, yel } = yelHatti(2);
+  kos(c, tarla, 150);
+  const saft = [...c.parcalar.values()].find((p) => p.tanim.anahtar === 'saft');
+  assert.equal(saft.bag, 0b0101, 'doğu (yel) ve batı (makine)');
+  assert.equal(yel.oran, Math.floor((16 * 1024) / 24), 'şiddet 2: 16/24 bg');
+  assert.deepEqual(yel.tanim.doluluk, undefined);
+  const v = parcaTanimiAl('volan');
+  assert.deepEqual(v.doluluk({ ozel: { dolu: 600 } }), { n: 600, kap: ENERJI.VOLAN_KAP });
 });

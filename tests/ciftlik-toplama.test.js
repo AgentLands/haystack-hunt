@@ -151,8 +151,11 @@ test('tırmık kolu: halkadan yığma karosuna 2 kat/tik, korunur, 40 katta duru
   assert.equal(p.tanim.durum(p), 'cikis-dolu');
   const yavas = dunya(7, duzTarla(5));
   const q = kur(yavas.c, yavas.tarla, 'tirmik-kolu', 30, 30, 0);
+  q.oran = 0; // şebekesiz (enerji aşaması yazar)
+  const h0 = [...yavas.tarla.h];
   elleSur(elleCtx(yavas.c, yavas.tarla, 0), q, 20);
-  assert.equal(q.tanim.durum(q), 'girdi-yok', 'güçsüz (oran 0) çalışmaz');
+  assert.deepEqual([...yavas.tarla.h], h0, 'güçsüz (oran 0) çalışmaz');
+  assert.equal(q.tanim.durum(q), 'guc-yok', 'halkada saman var: talep sürer, rozet güç yok');
 });
 
 test('tırmık kolu açıktaki nesneyi her 20 tikte bir hücre yığma karosuna sürükler', () => {

@@ -10,8 +10,8 @@
  * Ayarlar: tanım `ayarlar` şemasıyla; `ag/ayar.js` `ayarUygula(p, ad, deger)` doğrular ve
  * p.ozel'e yazar ('ayar' komutu bunu çağırır). ozel yalnız JSON'lanabilir veri taşır.
  *
- * Hava dunya/hava.js'ten (dilimHavasi; testler havaSabitle). SAP: depo doluluğu
- * (`tanim.doluluk(p)` → { n, kap }; B/E/F kendi depolarına ekler, o zamana kadar DOLULUK_SAP).
+ * Hava dunya/hava.js'ten (dilimHavasi; testler havaSabitle). Kantar depo doluluğunu
+ * `tanim.doluluk(p)` → { n, kap } ile okur (sandık, ambar, kurutma, gübre, volan, mıknatıs).
  * Sabitler (denge.js'e G taşır): MANTIK.
  */
 import { parcaTanimla } from '../parca-kayit.js';
@@ -19,7 +19,6 @@ import { esyaTanimi } from '../esya.js';
 import { DX, DY } from '../olcu.js';
 import { parcaAt } from '../izgara.js';
 import { renkAdi } from '../ag/ayar.js';
-import { SANDIK_KAP } from './temel.js';
 import { dilimHavasi, DILIM_TIK } from '../dunya/hava.js';
 
 /** Mantık sabitleri (tek kaynak ekonomi/denge.js'e taşınabilir). */
@@ -32,13 +31,9 @@ export const MANTIK = {
   dikSiddet: 2, // "dik esiyor" kipinin en az şiddeti
 };
 
-/** GEÇİCİ SAP: `doluluk` tanımlamayan depolar için { n, kap } okuyucuları (anahtar → işlev). */
-const DOLULUK_SAP = new Map([['sandik', (p) => ({ n: p.ozel.toplam, kap: SANDIK_KAP })]]);
-
-/** Deponun { n, kap } doluluğu; depo değilse null. */
+/** Deponun { n, kap } doluluğu (tanim.doluluk); depo değilse null. */
 export function dolulukOku(p) {
-  const oku = p.tanim.doluluk ?? DOLULUK_SAP.get(p.tanim.anahtar);
-  return oku ? oku(p) : null;
+  return p.tanim.doluluk ? p.tanim.doluluk(p) : null;
 }
 
 // --- Geçit (savak ve kile): arka giriş, ön çıkış, tek eşyalık tampon ---

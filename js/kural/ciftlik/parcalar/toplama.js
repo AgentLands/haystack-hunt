@@ -17,6 +17,7 @@ import { agizKarolari } from '../dunya/ogretici.js';
 import '../dunya/hava.js';
 import { enYakinAcik } from '../dunya/gomulu.js';
 import '../dunya/araba.js';
+import { gucRozeti } from '../ag/enerji.js';
 
 const SAMAN = esyaKodu('saman');
 const YAS_OT = esyaKodu('yas-ot');
@@ -180,13 +181,17 @@ parcaTanimla('tirmik-kolu', {
       kirliIsaretle(c, dip % GENISLIK, (dip / GENISLIK) | 0);
     }
     o.ilerleme &= 1023;
-    o.durum = o.son > 0 ? 'calisiyor' : 'girdi-yok';
+    // Halkada saman varsa çalışıyor sayılır (güç yoksa da: talep sürsün, rozet 'guc-yok')
+    o.durum = o.son > 0 || alan.halka.some((i) => h[i] > 0) ? 'calisiyor' : 'girdi-yok';
     if (ctx.tik % TIRMIK.surukle === 0 && ctx.oran(p) > 0) surukle(c, tarla, alan);
   },
   etki(p) {
     return { halka: p.ozel.yaricap, yigma: [[p.x + DX[p.yon], p.y + DY[p.yon]]] };
   },
-  durum: (p) => p.ozel.durum ?? 'bos',
+  durum(p) {
+    const d = p.ozel.durum ?? 'bos';
+    return d === 'calisiyor' ? gucRozeti(p) ?? d : d;
+  },
   incele(p) {
     const neden = {
       'cikis-dolu': 'Yığın taştı: öndeki huni yetişemiyor ya da önü kapalı.',
@@ -204,7 +209,7 @@ const TAS_ISI = TAS_TOPLAYICI.aralik * 1024;
 
 function tasDurumu(p) {
   if (p.ozel.cikis.length >= TAS_TOPLAYICI.tampon) return 'cikis-dolu';
-  return p.ozel.son ? 'calisiyor' : 'girdi-yok';
+  return p.ozel.son ? gucRozeti(p) ?? 'calisiyor' : 'girdi-yok';
 }
 
 parcaTanimla('tas-toplayici', {

@@ -36,6 +36,8 @@ parcaTanimla('sandik', {
   kabulEder(p, port, kod) {
     return p.ozel.toplam < SANDIK_KAP || degerliMi(kod);
   },
+  /** Kantar için doluluk. */
+  doluluk: (p) => ({ n: p.ozel.toplam, kap: SANDIK_KAP }),
   al(p, port, kod, ctx) {
     if (degerliMi(kod)) {
       bulundu(ctx, kod, 'sandik', 'yari', p);

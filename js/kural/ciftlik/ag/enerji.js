@@ -11,13 +11,15 @@
  *   guc          makinenin tam yükteki talebi (bg); `gucsuzOran` (0..1024): şebekesizken oran
  *   talep(p, ctx) bu tik gerçek talep (bg); yoksa durum(p) 'calisiyor' | 'guc-yok' |
  *                'guc-az' ise `guc`, başka her durumda (girdi yok, çıkış dolu...) 0
- *   uret(p, ctx, hava)   koşulsuz üretim (bg) ve kendi durumunu günceller (krank, yel)
+ *   uret(p, ctx, hava)   koşulsuz üretim (bg) ve kendi durumunu günceller (krank, yel);
+ *                enCokBg: en çok üretim (üreticinin p.oran'ı = üretim / enCokBg, çizim için)
  *   depo { kap, sarj, desarj }   volan: p.ozel.dolu (bg·tik) tutar
  *   destek(p, ctx, acik) → bg   açığı (volandan sonra kalan) kapatan üretici (lokomobil)
  *   iletken      şaft gibi aks taşır (varsayılan: aile 'enerji'); aksYonler: [yon...] aksın
  *                çıktığı kenarlar (yon 0 çerçevesinde; yoksa dört kenar)
  *   krank        true: `krank` komutu bu parçaya uygulanır (p.ozel.kalan tik)
- * Sıra: üreticiler → volan (şarj/deşarj) → lokomobil (kalan açık) → oran.
+ * Sıra: üreticiler → volan (şarj/deşarj) → lokomobil (kalan açık) → oran. Topoloji
+ * kurulurken aks parçalarına `p.bag` (bağlı kenar bitleri; kayda girmez) yazılır.
  *
  * Dış girdi: `c.ciftci = { x, y }` (hücre; oyun karesi yazar, kayda girmez; yoksa uzaklık
  * denetlenmez). Komut: `{ tur: 'krank', x, y, ciftci: { x, y } }` yalnız çiftçi parçanın
@@ -57,6 +59,7 @@ function aksKenari(p, yon) {
 /** Bileşenler (birleşim-bul): { uyeler, uretici, volan, destek, makine }, id sırasıyla. */
 function aglariKur(c) {
   const aks = [...c.parcalar.values()].filter(aksMi);
+  for (const p of aks) p.bag = 0;
   const ata = new Map(aks.map((p) => [p.id, p.id]));
   const kok = (id) => (ata.get(id) === id ? id : ata.set(id, kok(ata.get(id))).get(id));
   for (const p of aks) {
@@ -65,7 +68,9 @@ function aglariKur(c) {
         for (let yon = 0; yon < 4; yon++) {
           const q = parcaAt(c, kx + DX[yon], ky + DY[yon]);
           if (!q || q === p || !aksMi(q) || !(iletkenMi(p) || iletkenMi(q))) continue;
-          if (aksKenari(p, yon) && aksKenari(q, tersYon(yon))) ata.set(kok(p.id), kok(q.id));
+          if (!aksKenari(p, yon) || !aksKenari(q, tersYon(yon))) continue;
+          ata.set(kok(p.id), kok(q.id));
+          p.bag |= 1 << yon; // çizim: bağlı kenarlar (0 doğu, 1 güney, 2 batı, 3 kuzey)
         }
       }
     }
@@ -92,6 +97,8 @@ function aglariKur(c) {
 }
 
 const gucsuz = (p) => p.tanim.gucsuzOran ?? 0;
+/** Üreticinin p.oran'ı (çizim: dönüş hızı) = üretim / tanım.enCokBg × 1024. */
+const uretimOrani = (p, bg) => Math.min(1024, Math.floor((bg * 1024) / (p.tanim.enCokBg || 1)));
 
 /** Makinenin bu tikteki bg talebi: tanım `talep` verirse o, yoksa duruma göre guc ya da 0. */
 function talepOku(p, ctx) {
@@ -120,11 +127,19 @@ function volanlar(ag) {
 function agAdim(ag, ctx, hava) {
   ag.arz = 0;
   ag.talep = 0;
-  for (const p of ag.uretici) if (p.etkin) ag.arz += p.tanim.uret(p, ctx, hava);
+  for (const p of ag.uretici) {
+    if (!p.etkin) continue;
+    const bg = p.tanim.uret(p, ctx, hava);
+    ag.arz += bg;
+    p.oran = uretimOrani(p, bg);
+  }
   for (const p of ag.makine) if (p.etkin) ag.talep += talepOku(p, ctx);
   volanlar(ag);
   for (const p of ag.destek) {
-    if (p.etkin) ag.arz += p.tanim.destek(p, ctx, Math.max(0, ag.talep - ag.arz));
+    if (!p.etkin) continue;
+    const bg = p.tanim.destek(p, ctx, Math.max(0, ag.talep - ag.arz));
+    ag.arz += bg;
+    p.oran = uretimOrani(p, bg);
   }
   ag.oran = ag.talep ? Math.min(1024, Math.floor((ag.arz * 1024) / ag.talep)) : 1024;
   for (const p of ag.makine) p.oran = Math.max(gucsuz(p), ag.oran);

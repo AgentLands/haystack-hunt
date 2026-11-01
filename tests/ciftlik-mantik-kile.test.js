@@ -161,8 +161,9 @@ test('kantar: doluluk(p) bildiren her depo türü okunur (sandık + sentetik 5 t
 });
 
 test('gerçek depolar doluluk bildirmeli (ambar, kurutma ambarı, gübre çukuru, volan, mıknatıs)',
-  { todo: 'F/B/E birleşince: tanim.doluluk(p) → { n, kap }' }, () => {
-    const adlar = ['ambar', 'kurutma-ambari', 'gubre-cukuru', 'volan', 'oluk-miknatisi'];
+  () => {
+    const adlar = ['sandik', 'ambar', 'kurutma-ambari', 'gubre-cukuru', 'volan',
+      'oluk-miknatisi'];
     for (const ad of adlar) {
       const t = parcaTurleri().find((x) => x.anahtar === ad);
       assert.ok(t?.doluluk, `${ad}: doluluk(p) yok`);

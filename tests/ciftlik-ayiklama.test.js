@@ -185,7 +185,7 @@ test('tambur: doymaz (50 çivi hepsi sağdan); güçsüz durur; yan çıkış do
   kos(g, 300);
   assert.equal(g.p.oran, 0);
   assert.equal(say(g.sandiklar[0], K('saman')), 0, 'güçsüz durur');
-  assert.equal(parcaDurumu(g.p), 'calisiyor', 'durum güç oranına bakmaz (talep döngüsü yok)');
+  assert.equal(parcaDurumu(g.p), 'guc-yok', 'girdi orana bakmaz; rozet güç yok (talep sürer)');
   gucVer(g.c, g.tarla, g.p); // enerji bağlanınca kaldığı yerden sürer
   kos(g, 10);
   assert.equal(g.p.oran, 1024);

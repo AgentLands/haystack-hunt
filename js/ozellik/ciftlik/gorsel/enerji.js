@@ -7,14 +7,16 @@
  * - yel-degirmeni (2×2, yönsüz): sekizgen ahşap kule, koyu başlık; hareketli: 4×4'e uzanan
  *   dört bezli kanat ve yerdeki gölgesi.
  * - lokomobil (3×2): kara kazan, kırmızı tekerlekler, arkada ocak, önde baca, yanda kasnak;
- *   hareketli: yükle koyulaşan baca dumanı, ocak ışığı (p.ozel.yakit > 0), dönen kasnak.
+ *   hareketli: yükle koyulaşan baca dumanı, ocak ışığı (yanan yakıt p.ozel.kalan > 0),
+ *   dönen kasnak.
  * - saft (1×1, yönsüz): alçak kızak üstünde demir mil; bağlı yanlar p.bag (4 bit: doğu,
  *   güney, batı, kuzey; enerji ağı yazar, kayda girmez), yoksa doğu-batı. Hareketli: milde
  *   kayan burgu çizgileri.
  * - volan (2×2, yönsüz): demir ayaklar; hareketli: dökme demir çark, hızı doluluğa
- *   (p.ozel.enerji / 2400) bağlı, hızlıyken bulanık iz.
+ *   (p.ozel.dolu / ENERJI.VOLAN_KAP) bağlı, hızlıyken bulanık iz.
  */
 import { parcaCizimiTanimla } from './kayit.js';
+import { ENERJI } from '../../../kural/ciftlik/ag/enerji.js';
 import {
   yerelCizim, golge, kutu, daire, duz, donus, hizOrani, puf, kolYolu, hatliCizgi,
   kanatYolu, percin, TUR,
@@ -128,7 +130,7 @@ function lokoGovde(ctx, L, p) {
 function lokoHareketli(ctx, L, p, an) {
   const hiz = hizOrani(p);
   const a = donus(p, an, 1.2, hiz);
-  if ((p.ozel?.yakit ?? 0) > 0 && hiz > 0) {
+  if ((p.ozel?.kalan ?? 0) > 0 && hiz > 0) {
     const titre = 0.5 + 0.5 * Math.sin(an.zaman / 90);
     ctx.fillStyle = `rgba(255, ${140 + titre * 60}, 40, ${0.6 + titre * 0.3})`;
     ctx.fillRect(-1.37, -0.18, 0.08, 0.36);
@@ -208,7 +210,7 @@ function volanGovde(ctx, L) {
 }
 
 function volanHareketli(ctx, L, p, an) {
-  const dolu = Math.max(0, Math.min(1, (p.ozel?.enerji ?? 0) / 2400));
+  const dolu = Math.max(0, Math.min(1, (p.ozel?.dolu ?? 0) / ENERJI.VOLAN_KAP));
   const a = donus(p, an, 1.6 * dolu, 1);
   ctx.beginPath();
   ctx.arc(0, 0, 0.88, 0, TUR);

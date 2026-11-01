@@ -22,7 +22,7 @@ const yanmaYuzdesi = (o) => Math.ceil((o.kalan * 100) / (yakitTik(o.yanan) * ENE
 
 parcaTanimla('el-kranki', {
   kod: 22, ad: 'El krankı', aile: 'enerji', boyut: [1, 1], yonlu: false,
-  maliyet: { kurus: 20 }, krank: true,
+  maliyet: { kurus: 20 }, krank: true, enCokBg: ENERJI.KRANK_BG,
   kur(p) {
     Object.assign(p.ozel, { kalan: 0 });
   },
@@ -46,7 +46,7 @@ parcaTanimla('el-kranki', {
 
 parcaTanimla('yel-degirmeni', {
   kod: 23, ad: 'Yel değirmeni', aile: 'enerji', boyut: [2, 2], yonlu: false,
-  maliyet: { kurus: 120 },
+  maliyet: { kurus: 120 }, enCokBg: ENERJI.YEL_BG[ENERJI.YEL_BG.length - 1],
   kur(p, { c }) {
     Object.assign(p.ozel, { yon: havaAl(c, c.tik).yon, bekle: 0, bg: 0 });
   },
@@ -77,6 +77,7 @@ parcaTanimla('yel-degirmeni', {
 parcaTanimla('lokomobil', {
   kod: 24, ad: 'Lokomobil', aile: 'enerji', boyut: [3, 2], yonlu: true,
   girisler: [{ x: 0, y: 0, yon: 2 }], aksYonler: [1, 3], maliyet: { kurus: 300 },
+  enCokBg: ENERJI.LOKO_BG,
   kur(p) {
     Object.assign(p.ozel, { tampon: [], yanan: 0, kalan: 0, yuk: 0, uyari: 0 });
   },
@@ -145,6 +146,8 @@ parcaTanimla('volan', {
   kur(p) {
     Object.assign(p.ozel, { dolu: 0 });
   },
+  /** Kantar için doluluk (bg·tik). */
+  doluluk: (p) => ({ n: p.ozel.dolu, kap: ENERJI.VOLAN_KAP }),
   durum: (p) => (p.ozel.dolu > 0 ? 'calisiyor' : 'bos'),
   incele: (p) => [['Depolanan', `${p.ozel.dolu}/${ENERJI.VOLAN_KAP} bg·tik`]],
 });

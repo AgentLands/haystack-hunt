@@ -18,6 +18,7 @@ import { parcaAt } from '../izgara.js';
 import { esyaTanimi } from '../esya.js';
 import { hedefKabul } from '../tasima/hat-adim.js';
 import { bulundu } from '../isleme/bulundu.js';
+import { gucRozeti } from '../ag/enerji.js';
 import {
   TUTUCU_YUVA, TAMBUR_TIK, KALBUR_TIK, TINAZ_TIK, YEL_TIK, TAMBUR_GUC, YEL_GUC, SIVA_ESIK,
   SIVA_TAVAN, SIVA_COZ_TIK, manyetikMi, yasOtMu, yuvaDolu, ruzgarOku, tinazHali, tinazYolu,
@@ -67,7 +68,8 @@ function yuvaliTanimla(anahtar, ayar) {
       const ek = ayar.durum?.(p);
       if (ek) return ek;
       if (!yuvaDolu(o)) return 'girdi-yok';
-      return o.ilerleme < hedef ? 'calisiyor' : 'cikis-dolu';
+      if (o.ilerleme >= hedef) return 'cikis-dolu';
+      return (ayar.guc && gucRozeti(p)) || 'calisiyor';
     },
     incele: (p) => [yuvaSatiri(p.ozel), ...(ayar.incele?.(p) ?? [])],
   });
