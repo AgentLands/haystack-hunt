@@ -3,13 +3,17 @@
  *   { surum, tohum, tik, zar, kaymaAdim, sonrakiId, yasak, kaldirilan, h: 'KODLU', kirli,
  *     gomulu: [[esya, x, y, z, aci, alindi, ek]], parcalar: [[id, kod, x, y, yon, etkin,
  *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...],
- *     ekonomi: { kurus, pano, ... (ekonomi/kurus.js), cevrimdisiKat }, ek }
+ *     ekonomi: { kurus, pano, ... (ekonomi/kurus.js), cevrimdisiKat },
+ *     sayaclar: { ad: [[kod, n]] }, ek }
  * Parça ve eşya türleri KOD ile yazılır. ozel genel kodlanır (sayı, dize, dizi, düz nesne;
  * tipli dizi { $t, n, s: [[i, v]] } seyrek). h: eğim tahmininden fark → zigzag → sıfır koşusu →
  * değişken uzunluk bayt → base64 (ham 77 KB, tipik 5-25 KB).
  * Göç: surum < SURUM ise GOCLER[surum] sırayla uygulanır; bozuk/tanınmayan veri hata verir
  * (çağıran yedeği dener). 1 → 2: ekonomi (kuruş, pano) dünyaya girdi; eski dünyanın kurulu
  * parçaları ödenmiş sayılır (kuruş = max(0, 300 − Σ fiyat)), yoksa söküm bedava kuruş verirdi.
+ * sayaclar: saniye içi eşya sayaçları (c.sayaclar, saniyede bir sıfırlanır); çevrimdışı
+ * ölçüm penceresi saniye sonunda bunları okuduğundan durumdur ve kayda girer (yoksa saniye
+ * ortasında kesilen kayıt o saniyenin sayımını yitirir; eski kayıtta yoksa boş).
  * Kalıcı ilerleme (damgalar) dünyada DEĞİL: ayrı kayıt (ekonomi/damga.js ilerlemeKodla);
  * dunyaCoz(veri, tarla, { ilerleme }) onu dünyaya bağlar. Kaydet → yükle → sürdür,
  * kesintisiz koşuyla bit bit aynıdır (dunyaOzeti; test: tests/ciftlik-sakla.test.js).
@@ -152,6 +156,23 @@ export function ozelCoz(v) {
   return v;
 }
 
+/** Saniye içi sayaçlar → seyrek { ad: [[kod, n]] } (sıfır sayaçlar da anahtarını korur). */
+function sayacKodla(sayaclar) {
+  return Object.fromEntries(Object.entries(sayaclar).map(([ad, s]) => {
+    const kayit = [];
+    s.forEach((n, kod) => { if (n) kayit.push([kod, n]); });
+    return [ad, kayit];
+  }));
+}
+
+function sayacCoz(c, kayit = {}) {
+  for (const [ad, liste] of Object.entries(kayit)) {
+    const s = new Uint32Array(c.envanter.length);
+    for (const [kod, n] of liste) s[kod] = n;
+    c.sayaclar[ad] = s;
+  }
+}
+
 const gomuluEk = (g) => {
   const { x, y, z, aci, alindi, esya, kepcede, balyada, ...ek } = g;
   return ek;
@@ -170,7 +191,8 @@ export function dunyaKodla(c, tarla, ek = {}) {
     gomulu: c.gomulu.map((g) => [g.esya, g.x, g.y, g.z, g.aci ?? 0, g.alindi ? 1 : 0,
       gomuluEk(g)]),
     parcalar, hatEsya: hatEsyalari(c), envanter,
-    kuyruk: c.kuyruk.map((k) => ({ ...k })), ekonomi: ekonomiKodla(c), ek,
+    kuyruk: c.kuyruk.map((k) => ({ ...k })), ekonomi: ekonomiKodla(c),
+    sayaclar: sayacKodla(c.sayaclar), ek,
   };
 }
 
@@ -207,6 +229,7 @@ export function dunyaCoz(veri, tarla, { ilerleme = null } = {}) {
   c.zar.a = v.zar >>> 0;
   c.kirli.set(v.kirli);
   ekonomiCoz(c, v.ekonomi);
+  sayacCoz(c, v.sayaclar);
   if (ilerleme) ilerlemeBagla(c, ilerleme);
   for (const [id, kod, x, y, yon, etkin, tikali, ozel] of v.parcalar) {
     const tanim = parcaTanimi(kod);
