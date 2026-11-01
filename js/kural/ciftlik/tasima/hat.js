@@ -7,7 +7,10 @@
  *
  * Ardıl kuralı: A'nın ardılı varsayılan olarak önündeki karodur (A + yön), o karo hat parçası
  * ve A'ya geri bakmıyorsa. tanim.hat.ardil(p, c) → karo indeksi | -1 bunu değiştirir
- * (Faz 1 yeraltı bandı), tanim.hat.uzunluk(p, c) → birim karonun hat boyunu verir.
+ * (menfez), undefined dönerse varsayılan kural geçerlidir; tanim.hat.uzunluk(p, c) → birim
+ * karonun hat boyunu verir; tanim.hat.kopuk(p, c) true ise parça hat dışı sayılır (eşi
+ * olmayan menfez: eşya girmez, önündeki bant orada biter). Bir karoya hem sanal bağ (ardil
+ * işlevi değer verdi) hem sıradan bant akıyorsa sanal bağ öncül olur (menfez çıkışı).
  * Bir karoya birden çok hat parçası akıyorsa öncül: tam arkadaki aynı yönlü, yoksa en küçük
  * karo indeksli (tek şerit; yan yükleme yok, diğerleri orada tıkanır). Hat; ardıl yoksa,
  * hız değişirse, HAT_EN_UZUN karoya varınca ya da halka kapanınca biter. Halka en küçük
@@ -25,13 +28,16 @@ export const HAT_EN_UZUN = 32;
 /** Hat parçalarının karo haritası ve ardıl/öncül tabloları. */
 function hatParcalari(c) {
   const karoda = new Map();
-  for (const p of c.parcalar.values()) if (p.tanim.hat) karoda.set(karoIndeks(p.x, p.y), p);
+  for (const p of c.parcalar.values()) {
+    if (p.tanim.hat && !p.tanim.hat.kopuk?.(p, c)) karoda.set(karoIndeks(p.x, p.y), p);
+  }
   const ardil = new Map();
+  const sanal = new Set(); // ardılı tanım işleviyle belirlenen (sanal bağ) karolar
   const adaylar = new Map(); // hedef karo → ona akan karolar (parça sırasıyla)
   for (const [k, p] of karoda) {
-    let hedef;
-    if (p.tanim.hat.ardil) {
-      hedef = p.tanim.hat.ardil(p, c);
+    let hedef = p.tanim.hat.ardil?.(p, c);
+    if (hedef !== undefined) {
+      sanal.add(k);
     } else {
       const fx = p.x + DX[p.yon];
       const fy = p.y + DY[p.yon];
@@ -50,7 +56,7 @@ function hatParcalari(c) {
       const p = karoda.get(k);
       return p.yon === q.yon && p.x + DX[p.yon] === q.x && p.y + DY[p.yon] === q.y;
     });
-    oncul.set(hedef, arka ?? Math.min(...liste));
+    oncul.set(hedef, liste.find((k) => sanal.has(k)) ?? arka ?? Math.min(...liste));
   }
   return { karoda, ardil, oncul };
 }
