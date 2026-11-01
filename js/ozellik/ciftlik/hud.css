@@ -202,6 +202,11 @@ button.cf-hucre:hover,
   body.ciftlik-mod .bildirim { top: calc(var(--hud-ust) + 62px); }
 }
 
+/* Dar telefon: Akış düğmesine yer açmak için hava tahmini şimdi + 2 dilim (sonuncusu
+   ekran okuyucu metninde ve geniş ekranda kalır). */
+@media (max-width: 420px) {
+  .cf-hv:last-child { display: none; }
+}
 @media (max-width: 380px) {
   .cf-kurus strong { font-size: 0.95rem; }
   .cf-hv { padding: 2px 1px 0; }
