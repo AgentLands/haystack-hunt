@@ -11,6 +11,7 @@ import { gorunum } from '../gorunum.js';
 import { kulakBasamagi } from '../kural/sinyal.js';
 import { makineTanimi } from '../kural/makineler/kayit.js';
 import { kulakDeseni, tikZamani } from './kulak-desen.js';
+import { sapmali } from './ses-seviye.js';
 import * as motor from './ses-motor.js';
 
 const PIRILTI_SURE = 520;
@@ -18,15 +19,18 @@ const PIRILTI_SURE = 520;
 const SESSIZLIK_MS = 500;
 
 let sonTik = -Infinity;
+let aralikCarpani = 1; // her tıktan sonra yeniden çekilir: tıklar metronom gibi olmaz
 let sonBasamak = 0;
 let sonOlay = -Infinity;
 const piriltilar = [];
 
+/** Metal tını: her tık hafifçe farklı perde ve düzeyde (makineli tüfek olmasın). */
 function tini(desen) {
-  motor.nota({ frekans: desen.frekans, sure: 0.09, duzey: desen.duzey, atak: 0.002,
-    bitisFrekans: desen.frekans * 0.97 });
-  motor.nota({ frekans: desen.frekans * 2.71, sure: 0.05, duzey: desen.duzey * 0.35,
-    atak: 0.002 });
+  const f = sapmali(desen.frekans, 0.035);
+  const d = desen.duzey * sapmali(1, 0.18);
+  motor.nota({ frekans: f, sure: sapmali(0.09, 0.15), duzey: d, atak: 0.002,
+    bitisFrekans: f * 0.97 });
+  motor.nota({ frekans: f * 2.71, sure: 0.05, duzey: d * 0.35, atak: 0.002 });
 }
 
 function kazildi(x, y, yaricap) {
@@ -37,10 +41,11 @@ function kazildi(x, y, yaricap) {
   sonOlay = simdi;
   const basamak = kulakBasamagi(durum.tarla, x, y);
   const desen = kulakDeseni(basamak);
-  const tik = tikZamani(basamak, sonBasamak, simdi, sonTik);
+  const tik = tikZamani(basamak, sonBasamak, simdi, sonTik, aralikCarpani);
   sonBasamak = basamak;
   if (!tik) return;
   sonTik = simdi;
+  aralikCarpani = sapmali(1, 0.2);
   if (motor.hazirMi()) {
     tini(desen);
     return;

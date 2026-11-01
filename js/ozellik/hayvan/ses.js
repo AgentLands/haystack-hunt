@@ -15,8 +15,8 @@ const izin = hizSinirlayici(ARALIK_MS);
 export function hayvanSesiCal(tur, varyasyon) {
   if (!hazirMi()) return;
   for (const { tip, ...o } of hayvanSesDeseni(tur, varyasyon)) {
-    if (tip === 'hisirti') hisirti(o);
-    else nota(o);
+    if (tip === 'hisirti') hisirti({ kat: 'ortam', ...o });
+    else nota({ kat: 'ortam', ...o });
   }
 }
 

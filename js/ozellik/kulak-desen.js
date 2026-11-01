@@ -7,9 +7,9 @@
 
 const DESENLER = [
   null,
-  { aralikMs: 720, frekans: 1180, duzey: 0.07, pirilti: 0.4 },
-  { aralikMs: 400, frekans: 1580, duzey: 0.1, pirilti: 0.55 },
-  { aralikMs: 190, frekans: 2100, duzey: 0.13, pirilti: 0.7 },
+  { aralikMs: 720, frekans: 1180, duzey: 0.14, pirilti: 0.4 },
+  { aralikMs: 400, frekans: 1580, duzey: 0.19, pirilti: 0.55 },
+  { aralikMs: 190, frekans: 2100, duzey: 0.22, pirilti: 0.7 },
 ];
 
 /** Basamağın deseni ya da (0 ve geçersiz basamak için) null. */
@@ -20,10 +20,11 @@ export function kulakDeseni(basamak) {
 /**
  * Tık zamanı geldi mi: son tıktan bu yana desenin aralığı geçtiyse true. Basamak
  * yükselince beklemeden çalınsın diye öncekinden yüksek basamak hemen geçer.
+ * aralikCarpani (varsayılan 1): aralığı ölçekler; çağıran her tıktan sonra küçük bir sapma verir.
  */
-export function tikZamani(basamak, oncekiBasamak, simdi, sonTik) {
+export function tikZamani(basamak, oncekiBasamak, simdi, sonTik, aralikCarpani = 1) {
   const desen = kulakDeseni(basamak);
   if (!desen) return false;
   if (basamak > oncekiBasamak) return true;
-  return simdi - sonTik >= desen.aralikMs;
+  return simdi - sonTik >= desen.aralikMs * aralikCarpani;
 }

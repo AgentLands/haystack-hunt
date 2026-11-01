@@ -2,6 +2,7 @@
  * Ses desenleri: olay verisinden ses parametrelerine saf eşlemeler ve hız sınırlayıcı.
  * DOM ve WebAudio yok; Node'da test edilir. Sentez ses-motor.js'te.
  */
+import { sapmali } from './ses-seviye.js';
 
 /** Dedektör seviyesi → bip dizisi: sıcaklık arttıkça daha çok, tiz ve hızlı bip. */
 const BIP_DESENLERI = {
@@ -26,12 +27,18 @@ export function bipZamanlari(desen) {
   return Array.from({ length: desen.adet }, (_, i) => i * desen.aralikMs);
 }
 
-/** Her ihtimalde en çok `aralikMs`'de bir geçit açan sınırlayıcı: izin(zaman) → bool. */
-export function hizSinirlayici(aralikMs) {
+/**
+ * Her ihtimalde en çok `aralikMs`'de bir geçit açan sınırlayıcı: izin(zaman) → bool.
+ * sapma > 0 ise her geçitten sonra bir sonraki aralık ±sapma oranında değişir; tekrar eden
+ * sesler metronom gibi ("makineli tüfek") çıkmaz. rastgele: 0..1 üreteci (testte verilir).
+ */
+export function hizSinirlayici(aralikMs, sapma = 0, rastgele = Math.random) {
   let son = -Infinity;
+  let aralik = aralikMs;
   return (zaman) => {
-    if (zaman - son < aralikMs) return false;
+    if (zaman - son < aralik) return false;
     son = zaman;
+    aralik = sapma > 0 ? sapmali(aralikMs, sapma, rastgele()) : aralikMs;
     return true;
   };
 }
