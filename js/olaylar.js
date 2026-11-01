@@ -79,11 +79,22 @@
  *   ciftlik-ozet     { tik, uretilen, depolanan }  saniyede bir; { kod: adet } (eşya başına
  *                                                  olay YOK; ses/efekt bunu dinler)
  *
- *   [A taşıma] (bu ailenin/işin olayları buraya)
+ *   [A taşıma] olay yaymaz: çatal, oluk ve menfez durumu rozet kodlarıyla bildirir
+ *                ('cikis-dolu', 'essiz'; parca-durum olayı ortak sözlüktedir)
  *
- *   [B enerji] (bu ailenin/işin olayları buraya)
+ *   [B enerji] (şebeke: kural/ciftlik/ag/enerji.js, parcalar/enerji.js)
+ *   krank-basladi    { parca }                     Kullan komutu kabul edildi (600 tik)
+ *   krank-durdu      { parca, neden }              'sure' (600 tik doldu) | 'uzak' (çiftçi > 3
+ *                                                  karo)
+ *   yakit-bitti      { parca }                     lokomobil açıkta yakıtsız kaldı (geçişte bir
+ *                                                  kez; ipucu notu: krank ya da yaba kolu)
+ *   ('ciftlik-ozet' sayacı 'yakilan': lokomobilde yanan yakıt eşyaları)
  *
- *   [C mantık] (bu ailenin/işin olayları buraya)
+ *   [C mantık] renk kanalları (ag/sinyal.js), mantık parçaları (parcalar/mantik.js)
+ *   sinyal-degisti   { renk, deger }               kanalın okunan değeri değişti (renk 0..5:
+ *                                                  kırmızı, çivit, sarı, yeşil, mor, beyaz;
+ *                                                  deger: o tik 1 yazan yazıcı sayısı)
+ *   kile-doldu       { parca }                     kile sayacı N'e vardı ve kapıyı kapattı
  *
  *   [D dünya] (bu ailenin/işin olayları buraya)
  *
