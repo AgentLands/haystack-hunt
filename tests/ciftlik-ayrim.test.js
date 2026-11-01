@@ -81,7 +81,8 @@ test('çiftlikte elle alınan iğne envantere girer, oyun bitmez, aranan iğne d
   assert.equal(igne.alindi, true);
   assert.deepEqual(yayilan, ['el']);
   assert.equal(d.ciftlik.envanter[esyaKodu('igne')], 1);
-  assert.equal(d.tarla.igne.yok, true, 'aranacak iğne kalmadı');
+  assert.notEqual(d.tarla.igne, igne, 'aranan iğne sıradakine geçti (çiftlikte 5+ iğne)');
+  assert.equal(d.tarla.igne.alindi, false);
   assert.equal(d.bitti, false);
 });
 

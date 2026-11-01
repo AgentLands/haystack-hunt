@@ -4,7 +4,7 @@
  *     gomulu: [[esya, x, y, z, aci, alindi, ek]], parcalar: [[id, kod, x, y, yon, etkin,
  *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...],
  *     ekonomi: { kurus, pano, ... (ekonomi/kurus.js), cevrimdisiKat },
- *     sayaclar: { ad: [[kod, n]] }, ek }
+ *     sayaclar: { ad: [[kod, n]] }, ek, alanlar: { ad: deger } (kayitAlaniTanimla) }
  * Parça ve eşya türleri KOD ile yazılır. ozel genel kodlanır (sayı, dize, dizi, düz nesne;
  * tipli dizi { $t, n, s: [[i, v]] } seyrek). h: eğim tahmininden fark → zigzag → sıfır koşusu →
  * değişken uzunluk bayt → base64 (ham 77 KB, tipik 5-25 KB).
@@ -44,6 +44,17 @@ function gocEkonomi(v) {
 
 /** Göç tablosu: surum → (veri) → bir sonraki sürümün verisi. */
 export const GOCLER = { 1: gocEkonomi };
+const alanlar = new Map();
+
+/**
+ * Faz 1 dünya alanı (arazi, araba, öğretici...): kayıtta `alanlar[ad]`. kodla(c) → JSON'lanabilir
+ * değer; coz(c, deger) yüklemede (parçalardan ve hatlardan önce) çağrılır. Alanı olmayan
+ * eski kayıtta deger undefined gelir: coz varsayılanı kurar (bu yüzden SURUM artmaz).
+ */
+export function kayitAlaniTanimla(ad, { kodla, coz }) {
+  if (alanlar.has(ad)) throw new Error(`kayitAlaniTanimla: "${ad}" zaten var`);
+  alanlar.set(ad, { kodla, coz });
+}
 const TIPLER = { Uint8Array, Uint16Array, Uint32Array, Int32Array, Int16Array, Float64Array };
 
 /** Değişken uzunluklu işaretsiz tam sayı baytları. */
@@ -193,6 +204,7 @@ export function dunyaKodla(c, tarla, ek = {}) {
     parcalar, hatEsya: hatEsyalari(c), envanter,
     kuyruk: c.kuyruk.map((k) => ({ ...k })), ekonomi: ekonomiKodla(c),
     sayaclar: sayacKodla(c.sayaclar), ek,
+    alanlar: Object.fromEntries([...alanlar].map(([ad, a]) => [ad, a.kodla(c)])),
   };
 }
 
@@ -231,6 +243,7 @@ export function dunyaCoz(veri, tarla, { ilerleme = null } = {}) {
   ekonomiCoz(c, v.ekonomi);
   sayacCoz(c, v.sayaclar);
   if (ilerleme) ilerlemeBagla(c, ilerleme);
+  for (const [ad, a] of alanlar) a.coz(c, v.alanlar?.[ad]);
   for (const [id, kod, x, y, yon, etkin, tikali, ozel] of v.parcalar) {
     const tanim = parcaTanimi(kod);
     if (!tanim) throw new Error(`kayıt: bilinmeyen parça kodu ${kod}`);

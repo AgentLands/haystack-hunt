@@ -18,6 +18,7 @@ import { ekranBirim } from '../../../cizim/tuval-olcek.js';
 import { dinle } from '../../../olaylar.js';
 import './temel.js';
 import './toplama.js';
+import './dunya.js';
 import './tasima.js';
 import './ayiklama.js';
 import './isleme.js';

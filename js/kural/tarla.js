@@ -26,7 +26,15 @@ export const CAPRAZ_ESIK = 4;
  */
 export function tarlaKur(tohum, zorluk) {
   const ad = zorlukAdi(zorluk);
-  const ayar = zorlukAl(ad);
+  return tarlaKurAyar(tohum, zorlukAl(ad), ad);
+}
+
+/**
+ * tarlaKur'un iç gövdesi: ayar = { yigin, igne, civi } (zorluk.js biçimi). ad verilirse
+ * tarla.zorluk odur ve ön hazırlık önbelleği kullanılır; verilmezse (ör. çiftlik arazisi)
+ * önbellek atlanır ve tarla.zorluk null olur. Normal tarla bit bit değişmez.
+ */
+export function tarlaKurAyar(tohum, ayar, ad = null) {
   const { taban, ek, r, t: tepe } = ayar.yigin;
   const zar = uretec(tohum);
   const n = GENISLIK * YUKSEKLIK;
@@ -59,7 +67,7 @@ export function tarlaKur(tohum, zorluk) {
     tohum, zorluk: ad, h, doku, igne: null, civiler: [], kaldirilan: 0, balyalar: [],
     kirli: true,
   };
-  const hazir = hazirlar.get(hazirAnahtar(tohum, ad));
+  const hazir = ad === null ? null : hazirlar.get(hazirAnahtar(tohum, ad));
   if (hazir) {
     h.set(hazir.h);
     tarla.adim = hazir.adim;

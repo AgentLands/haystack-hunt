@@ -44,9 +44,12 @@ export function standartCiftlik() {
     }
     h.n = HALKA_ESYA;
   }
-  const esya = c.hatlar.reduce((s, h) => s + h.n, 0);
-  return { c, tarla, parca: c.parcalar.size, esya };
+  return { c, tarla, parca: c.parcalar.size, esya: c.hatlar.reduce((s, h) => s + h.n, 0) };
 }
+
+/** Halka hatlarındaki eşya (huni hatlarında yoldaki eşya sayılmaz; başta hepsi halkada). */
+const halkaEsyasi = (c) => c.hatlar.filter((h) => h.cikis?.hat === h)
+  .reduce((s, h) => s + h.n, 0);
 
 /** Sandıkları boşaltır (huniler hiç durmasın, tarla sürekli kirlensin). */
 function bosalt(c) {
@@ -65,7 +68,7 @@ export function olc(n = 10000) {
     if (huniler.every((p) => p.ozel.son > 0)) calisan += 1;
   }
   const ms = performance.now() - bas;
-  const esya = d.c.hatlar.reduce((s, h) => s + h.n, 0);
+  const esya = halkaEsyasi(d.c);
   return {
     ms, tikUs: (ms / n) * 1000, parca: d.parca, esyaBas: d.esya, esyaSon: esya, d,
     huniOrani: calisan / n,

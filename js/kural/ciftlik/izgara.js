@@ -2,13 +2,15 @@
  * İnşa ızgarası: 120×80 karo (karo = 2×2 tarla hücresi). Doluluk dizini (dolu: parça id + 1,
  * 0 boş), parça tabanı hücre maskesi (taban: cokertKaro duvarı) ve yasak karolar (garaj
  * park alanı, tarla kenarı). Yerleştirme kuralları: kutu ızgarada, yasak değil, boş ve
- * altındaki her hücrede saman ≤ KURMA_ESIK. Kurulunca alttaki saman 1 hücrelik çevre
- * halkasına dağıtılır (toplam korunur) ve alttaki gömülü nesneler halkadaki en yakın hücreye
- * (yere, z = 0) itilir. Çarpışma: karakter yürünmez parçalara, makineler hepsine çarpar.
+ * altındaki her hücrede saman ≤ KURMA_ESIK (çayır karosunda eşik yok: ayakta ot). Kurulunca
+ * alttaki saman 1 hücrelik çevre halkasına dağıtılır (toplam korunur) ve alttaki gömülü
+ * nesneler halkadaki en yakın hücreye (yere, z = 0) itilir. Çarpışma: karakter yürünmez
+ * parçalara, makineler hepsine çarpar.
  */
 import { GENISLIK, YUKSEKLIK } from '../boyut.js';
 import { KARO, KARO_EN, KARO_BOY, KARO_SAYISI, karoIndeks, donmusBoyut } from './olcu.js';
 import { cevreyeDagit, alaniKirlet } from './saman.js';
+import { ZEMIN, hucreZemini } from './dunya/zemin.js';
 
 /** Bir karonun herhangi bir hücresinde bundan fazla kat saman varsa kurulmaz. */
 export const KURMA_ESIK = 8;
@@ -66,6 +68,7 @@ export function yerlestirmeEngeli(c, tarla, tanim, x, y, yon, haric = -1) {
   for (let hy = y * KARO; hy < (y + boy) * KARO; hy++) {
     for (let hx = x * KARO; hx < (x + en) * KARO; hx++) {
       if (haric >= 0 && dolu[karoIndeks((hx / KARO) | 0, (hy / KARO) | 0)] - 1 === haric) continue;
+      if (hucreZemini(c, hx, hy) === ZEMIN.CAYIR) continue;
       if (tarla.h[hy * GENISLIK + hx] > KURMA_ESIK) return 'saman';
     }
   }
