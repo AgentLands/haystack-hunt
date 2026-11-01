@@ -31,27 +31,28 @@ Kenar: `2px solid var(--murekkep)`. Kâğıt dokusu: tek küçük SVG `feTurbule
 64×64 PNG, `background-blend-mode: multiply`, ≤ 2 KB. Gradyan yalnız ikonda bile yok.
 
 ### 2 Tipografi (OFL; lisanslar google/fonts METADATA.pb'den doğrulandı)
-| Rol | Yazı | Tasarımcı | woff2 boyutu (latin + latin-ext) |
+| Rol | Yazı | Tasarımcı | woff2 boyutu (uygulanan, Latin + Türkçe tek alt küme) |
 |---|---|---|---|
-| Logo, başlık, düğme | **Alfa Slab One** 400 | JM Solé | 19.1 + 19.5 KB ≈ 38 KB |
-| Gövde, rehber, pencere metni | **Bree Serif** 400 | TypeTogether | 10.3 + 6.5 KB ≈ 17 KB |
-| Sayılar, etiket, fiş satırları | **Courier Prime** 700 (ops. 400) | Alan Dague-Greene | 19.3 + 12.9 KB ≈ 32 KB (+31 KB) |
+| Logo, başlık, düğme | **Alfa Slab One** 400 | JM Solé | 17.7 KB |
+| Gövde, rehber, pencere metni | **Bree Serif** 400 | TypeTogether | 9.8 KB |
+| Sayılar, etiket, fiş satırları | **Courier Prime** 700 | Alan Dague-Greene | 18.9 KB |
 
-Toplam ≈ 87 KB (400 eklenirse ≈ 118 KB). Türkçe için ğ ş ı İ latin-ext'te olduğundan iki alt
-küme de gerekli; daha iyisi `pyftsubset --unicodes=U+0020-007E,U+00A0-00FF,U+011E-011F,U+0130-0131,U+015E-015F,U+2013-2026,U+00D7`
-ile tek dosyaya indirmek (tahmini toplam ≈ 50-60 KB). Dosyalar `font/` altına, `OFL.txt`
-yanlarına, `KAYNAKLAR.md`'ye satır; `font-display: swap`; sw.js önbellek listesine eklenir.
+Toplam ≈ 46 KB. Uygulandı: üç yazı tipi de `fontTools.subset` ile tek dosyaya (Latin + Türkçe
+harfler) indirildi; dosyalar `font/` altında, OFL metinleri yanlarında, `KAYNAKLAR.md`'de
+satırları var; `font-display: swap`; hepsi `sw.js` `KABUK` listesinde. Courier Prime'ın 400
+ağırlığı eklenmedi (yalnız 700).
 Alternatif (daha "boyalı tabela"): başlıkta Rye (OFL, ≈ 50 KB); önermiyorum, fazla western.
 
 ### 3 İkonografi: elle çizilmiş SVG sprite
 - Tek dosya `ikon/arayuz.svg`, `<symbol>`'ler; 24×24 viewBox, `stroke-width:2`, yuvarlak uç,
   `currentColor`; çizgiler kasıtlı hafif eğri (elle çizilmiş gibi, ızgaraya oturmayan uçlar).
   Kodla yazılır, dış kaynak gerekmez. Kullanım: `<svg><use href="ikon/arayuz.svg#el"/></svg>`.
-- Liste (≈ 22): el, tirmik, dedektor, miknatis, ses-acik, ses-kapali, defter (istatistik),
+- Liste (27): el, tirmik, dedektor, miknatis, ses-acik, ses-kapali, defter (istatistik),
   soru (rehber), bayrak (yarış), menu (üç saman çöpü), buyutec-arti, buyutec-eksi, cerceve
   (sığdır), igne, civi, balya, traktor, ufleyici, balya-makinesi, kurdele (rekor; 🏆 yerine),
-  gunes (seri; 🔥 yerine), tik/kutu (çözüldü), kopyala, damla (yakıt), kapat (×).
-- Uygulama: `ikon/arayuz.svg` (26 sembol, 24 ve 48 px'te denetlendi). JS'te
+  gunes (seri; 🔥 yerine), tik/kutu (çözüldü), kopyala, damla (yakıt), kapat (×), anahtar
+  (Buluntular defteri düğmesi).
+- Uygulama: `ikon/arayuz.svg` (27 sembol, 24 ve 48 px'te denetlendi). JS'te
   `ikon(ad, { boy })` (`js/ozellik/ikon.js`) aria-hidden bir `<svg><use/></svg>` döndürür;
   `ikonDegistir(svg, ad)` ikonu değiştirir (ses aç/kapa), `metinDegistir(dugme, metin)`
   ikonlu düğmenin yazısını ikonu silmeden değiştirir. `dugmeEkle(..., { ikon: ikon('defter') })`.
@@ -113,8 +114,28 @@ Alternatif (daha "boyalı tabela"): başlıkta Rye (OFL, ≈ 50 KB); önermiyoru
   ve oyun saati durur. Yeni tarla açılınca ya da pes edilince kapanır; zorluk damgası kartı
   açık bırakır (süren tarlada onay ister, yarışta kilitlidir).
 - "Nasıl oynanır" defteri (`js/ozellik/yardim.js`, içerik `yardim-icerik.js`; sayılar kural
-  modüllerinden okunur): Yürüme · Aletler · Makineler · İpuçları · Puan sekmeleri;
-  dokunmatikte tuş adları yerine kol, Kullan, Bin/İn yazılır.
+  modüllerinden okunur): Yürüme · Aletler · Makineler · İpuçları · Diğer · Puan
+  sekmeleri; dokunmatikte tuş adları yerine kol, Kullan, Bin/İn yazılır.
+
+### 8 Uygulanan sınıflar (arayüz parçaları)
+Hepsi `belirtec.css` değişkenlerini kullanır; sabit renk yok, gradyan yalnız çizgili sayfa
+ve delikli kenar gibi desenlerde.
+| Parça | Sınıf / kimlik | Dosya |
+|---|---|---|
+| Kâğıt pencere tabanı, ip deliği süsü, × düğmesi | `.kagit-pencere`, `.pencere`, `.pencere-kapat` | `pencere.css` |
+| Açılış menüsü (çuval etiketi) | `#menu`, `.menu-kart`, `.menu-damga`, `.menu-zorluk`, `.zorluk-damga`, `.menu-onay` | `menu.css` |
+| Nasıl oynanır defteri | `#yardim`, `.yardim-sekme`, `.yardim-liste`, `.yardim-puan` | `menu.css` |
+| Kantar fişi | `#bitis.fis-pencere`, `.fis`, `.fis-satirlar`, `.fis-damga`, `.fis-toplam`, `.fis-notlar` | `pencere.css` |
+| Tarla defteri (istatistik) | `.defter`, `.defter-*`, çizgili sayfa | `istatistik.css` |
+| Buluntu defteri | `#buluntu-pencere`, `.buluntu-izgara`, `.buluntu-kart`, `.buluntu-damga` (nadirlik), `.buluntu-yeni` | `buluntu-defter.css` |
+| Tuval köşesi kâğıt etiketleri | `.meydan-yigin` > `.meydan-etiket.hedef` / `.temiz`, `.akis-cubuk` | `meydan.css` |
+| Rahat mod | `body.rahat-mod`, `[data-rahat-gizle]`, `#bitis.rahat-fis` | `meydan.css` |
+| Rehber (ilk açılış notu) | `.rehber`, `.rehber-vurgu`, `.rehber-dugmeler` | `rehber.css` |
+| Yarış etiket kartı ve tablo | `.yaris-*` | `yaris.css` |
+| Dokunmatik kumanda | `body.dokunmatik`, sanal kol, Kullan / Bin-İn | `dokunmatik.css` |
+| HUD, alet rafı, makine kartı | `.hud-etiket`, `.araclar`, `.arac-kart`, `.hak-nokta`, `.makine-karti`, `.serit` | `stil-hud.css` |
+Hareketi azalt tercihinde (`prefers-reduced-motion`) CSS animasyonları ve tuval içi efektler
+(`sade-hareket.js`) yumuşar; ipucu bilgisi kaybolmaz.
 
 
 ## Oyun içi görseller
@@ -169,6 +190,17 @@ yok: ekleme (sade kal).
   şerit**; ya da mavi), arkada açılır kapak; balya bırakınca kapak açılıp balya yuvarlanır.
 - Üfleyici: yerde sırt çantası çerçevesi + yakıt deposu + çekme ipi + sarılı hortum; boy
   ~1.3×1.6 hücre. Hava akımı: yarı saydam koni + akış çizgileri (glif gibi yaylar yok).
+
+**Dedektör halkaları, kulak ve kenar işareti** (üst/alt katmanlarda, ekran-sabit dış hat):
+dedektör okuması yerde kalıcı, kesik çizgili, yarı saydam bir halkadır (yarıçap seviyenin gerçek
+uzaklığı; Soğuk mavi ve içi hafif karartılı); kulak ses kapalıyken kazı noktasında ara sıra çok
+hafif metal pırıltı gösterir (iğnenin beyaz, çivinin turuncu pırıltısından ayrı); ekran dışı
+parıltı için ekran kenarında ~3 sn nabız gibi atan küçük ışık oku vardır.
+
+**Buluntular ve hayvanlar**: buluntular (20 tür) de boyalı oyuncak tarzında, koyu kahve dış hatlı
+düz kütlelerdir (`buluntu-sekil.js`; defterde bulunmayanlar silüet); açığa çıkınca küçük "pop" ve
+altın halka, alınınca "+1 Yüksük" yazısı süzülür. Hayvanlar (fare, serçe, kurbağa, kirpi, kedi)
+samanda saklıdır, yaklaşınca ürküp kaçar ya da uçar (`hayvan/`); yalnız süstür.
 
 **Garaj (yeni)**: `durum.garaj`'dan, 'alt' katmanda makinelerin altında: beton zemin
 (`#b9b1a2`, çatlaklar), her park yerine sarı-beyaz çizgi, arka kenarda **açık önlü sundurma**

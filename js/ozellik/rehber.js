@@ -1,7 +1,8 @@
 /**
- * İlk açılış rehberi: oyunu ilk kez açana 8 adımlık, atlanabilir kâğıt not (yürüme, El /
- * Tırmık / Dedektör, traktör, üfleyici, balya makinesi, güneş parıltısı); metin girdiye
- * göre (klavye ya da dokunmatik). Görüldüğü localStorage'ta tutulur.
+ * İlk açılış rehberi: oyunu ilk kez açana kısa, atlanabilir kâğıt not (yürüme, El / Tırmık /
+ * Dedektör, kulak, traktör ve garaj ikmali, üfleyici, balya makinesi, güneş parıltısı,
+ * buluntular, rahat mod ve meydan okuma); metin girdiye göre (klavye ya da dokunmatik).
+ * Görüldüğü localStorage'ta tutulur.
  * Üst sıradaki "?" düğmesi rehberi yeniden açar. Bindirme tuvale tıklamayı engellemez:
  * tuvale ilk dokunuşta, hareket tuşlarında ya da 1-4 tuşlarında kendiliğinden kapanır.
  */
@@ -22,11 +23,20 @@ const ADIMLAR = [
     klavye: 'Boşluk basılıyken yürü, samanı önüne katıp tarlanın dışına itersin.',
     dokunmatik: 'Kullan basılıyken kolu it, samanı tarlanın dışına itersin.' },
   { arac: 'dedektor', baslik: 'Dedektör',
-    klavye: 'Boşluğa bas, iğneye ne kadar yakın olduğun yazılır; hakkın sınırlı.',
-    dokunmatik: 'Kullan\'a bas, iğneye ne kadar yakın olduğun yazılır; hakkın sınırlı.' },
+    klavye: 'Boşluğa bas, iğneye ne kadar yakın olduğun yazılır ve yerde bir halka kalır; '
+      + 'hakkın sınırlı.',
+    dokunmatik: 'Kullan\'a bas, iğneye ne kadar yakın olduğun yazılır ve yerde bir halka '
+      + 'kalır; hakkın sınırlı.' },
+  { arac: null, baslik: 'Kulak',
+    klavye: 'Kazarken iğneye yaklaşırsan (ses açıksa) metal tınılar duyulur; sıklaştıkça '
+      + 'ısınıyorsun.',
+    dokunmatik: 'Kazarken iğneye yaklaşırsan (ses açıksa) metal tınılar duyulur; sıklaştıkça '
+      + 'ısınıyorsun.' },
   { arac: null, baslik: 'Kepçeli traktör',
-    klavye: 'Garajdaki traktöre yaklaş, E ile bin; W/S gaz, A/D dön, Boşluk kepçe.',
-    dokunmatik: 'Traktöre yaklaş, Bin\'e bas; kolla sür, Kullan kepçeyi çalıştırır.' },
+    klavye: 'Garajdaki traktöre yaklaş, E ile bin; W/S gaz, A/D dön, Boşluk kepçe. Yakıt '
+      + 'azalınca park yerine dönüp dur: depo bir kez dolar.',
+    dokunmatik: 'Traktöre yaklaş, Bin\'e bas; kolla sür, Kullan kepçeyi çalıştırır. Yakıt '
+      + 'azalınca park yerine dönüp dur: depo bir kez dolar.' },
   { arac: null, baslik: 'Sırt üfleyicisi',
     klavye: 'E ile tak, Boşlukla samanı önüne savur; yakıtı sınırlı.',
     dokunmatik: 'Bin\'e basıp tak, Kullan ile samanı önüne savur; yakıtı sınırlı.' },
@@ -34,8 +44,19 @@ const ADIMLAR = [
     klavye: 'Samanı balyalar ama iğneyi de yutabilir; balyayı El ile aç.',
     dokunmatik: 'Samanı balyalar ama iğneyi de yutabilir; balyayı El ile aç.' },
   { arac: null, baslik: 'Güneş parıltısı',
-    klavye: 'İğne yüzeye yakınsa güneşte parlar; açığa çıkınca yanına gidip al.',
-    dokunmatik: 'İğne yüzeye yakınsa güneşte parlar; açığa çıkınca yanına gidip al.' },
+    klavye: 'İğne yüzeye yakınsa güneşte parlar; ekran dışındaysa kenarda bir ok gösterir. '
+      + 'Açığa çıkınca yanına gidip al.',
+    dokunmatik: 'İğne yüzeye yakınsa güneşte parlar; ekran dışındaysa kenarda bir ok '
+      + 'gösterir. Açığa çıkınca yanına gidip al.' },
+  { arac: null, baslik: 'Buluntular',
+    klavye: 'Samanın altında küçük eşyalar da saklı; elinle al, Buluntular defterine yazılır.',
+    dokunmatik: 'Samanın altında küçük eşyalar da saklı; elinle al, Buluntular defterine '
+      + 'yazılır.' },
+  { arac: null, baslik: 'Rahat oyna',
+    klavye: 'Süre canını sıkarsa menüden Rahat mod\'u aç. Bitirince Meydan oku ile süreni '
+      + 'arkadaşına gönder.',
+    dokunmatik: 'Süre canını sıkarsa menüden Rahat mod\'u aç. Bitirince Meydan oku ile süreni '
+      + 'arkadaşına gönder.' },
 ];
 
 /** Ana işaretçi parmaksa (dokunmatik) metinler kol / Bin / Kullan diye yazılır. */
