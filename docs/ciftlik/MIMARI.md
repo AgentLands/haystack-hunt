@@ -83,8 +83,13 @@ esyaTanimla('saman', { kod: 1, ad: 'Saman tutamı', renk: '#e3b341', agirlik: 12
 ```
 - `kod` 1..511 (`ESYA_KAP = 512`; depolar `Uint32Array(ESYA_KAP)` tutabilir), benzersiz, **hiç
   yeniden kullanılmaz**. Kayıtlar dondurulur; bilinmeyen alanlar saklanır (Faz 1: `yakit`...).
-- Mevcut kodlar: 1 saman, 2 iğne, 3 çivi, 100-119 `buluntu:<tur>` (sabit tablo, katalog sırası
-  değişse de kayıt bozulmaz; yeni buluntu tabloya eklenmezse yükleme hata verir).
+- Kodlar `esyalar.md` §2 ile aynı: 1 saman, 2 yas-ot, 3 kuru-ot, 4 toz, 5 kiyim, 6-8 balyalar,
+  9 curuk-ot, 10 igne, 11 cuvaldiz, 12 altin-igne, 13 civi, 14 tas (15-20 dalga 2, ayrılı),
+  100-119 `buluntu:<tur>` (sabit tablo, katalog sırası değişse de kayıt bozulmaz; yeni buluntu
+  tabloya ve `BULUNTU_OZELLIK` satırına eklenmezse yükleme hata verir).
+- Fizik alanları (varsayılanlı, geçersiz değer hata): `hafiflik` 0|1|2, `boyut` ince|iri,
+  `manyetik`, `nem` 0|1, `sert`, `uzunluk` kisa|uzun, `yogunluk` 0..2, `deger`, `sinif`
+  (saman|urun|igne|metal|cop|buluntu). Ayıklayıcılar yalnız bunları okur.
 
 ## 5. Parça tanımı (`parca-kayit.js`)
 ```js
@@ -126,6 +131,14 @@ sayac(ad, kod, n) }`. Koordinatlar samanda HÜCRE (parça merkezi `p.x * KARO + 
 konur → sürekli besleme tam verim), parça portuysa `kabulEder` → `al`. Bir çıkış portu
 yalnız **hat başına** (öncülü olmayan bant karosu, porta geri bakmayan) ya da komşu parçanın
 **o kenara bakan giriş portuna** bağlanır; aksi `null` (eşya tamponda bekler).
+
+**Ayıklama ailesi** (parça kodları 40-44, `parcalar/ayiklama.js`; kurallar `ayiklama/ayirma.js`):
+oluk mıknatısı (tamponsuz; `ozel.tutucu` kod dizisi; tanımda `cek(p, uygun)` yaba kolu için,
+`doluluk(p)` kantar için, `bosalt(c, p)`; komut `{ tur: 'bosalt', x, y }`), mıknatıslı tambur,
+kalbur (`ozel.siva`), tınaz, şeytan yeli. Yuvalı makineler `ozel = { kod, ilerleme, ... }`
+(tek eşya; çıkış kabul etmezse yuvada bekler). Rozetler: `doymus`, `sivali`, `cikis-dolu`,
+`girdi-yok`, `calisiyor` (durum güç oranına bakmaz: talep döngüsü olmasın). Rüzgâr:
+`ayirma.js` `ruzgarOku(ctx)` GEÇİCİ sap (D'nin `hava` işlevi gelince gövdesi değişir).
 
 ## 6. Çizim kaydı (`ozellik/ciftlik/gorsel/kayit.js`)
 `parcaCizimiTanimla(anahtar, { govde(ctx, p, eb), hareketli(ctx, p, an, eb) })`.

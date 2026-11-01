@@ -98,7 +98,15 @@
  *
  *   [D dünya] (bu ailenin/işin olayları buraya)
  *
- *   [E ayıklama] (bu ailenin/işin olayları buraya)
+ *   [E ayıklama]
+ *   tutucu-doldu     { parca }                     oluk mıknatısının tutucusu 6/6 oldu
+ *                                                  (doymuş: bundan sonra manyetikler geçer)
+ *   tutucu-bosaldi   { parca, bulunan, atilan }    Boşalt komutu: bulunan = iğne/buluntu eşya
+ *                                                  kodları (oyuncunun envanterine döner;
+ *                                                  defter + kuruş dinleyicinin işi), atilan =
+ *                                                  atılan çöp/çivi sayısı
+ *   kalbur-sivandi   { parca }                     kalbur sıva eşiğine (4) vardı: delikler
+ *                                                  kapandı, her şey öne gider
  *
  *   [F işleme-depo] (bu ailenin/işin olayları buraya)
  *
