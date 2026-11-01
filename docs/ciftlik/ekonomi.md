@@ -34,6 +34,9 @@ döker; çayır kendiliğinden büyür. Tarla hiç "biten bir kaynak" olarak oyu
   kuyusu** (kapı panelinde): **Araba çağır** 300 (6000 tikte en çok 1: hemen yığın + iğne
   ailesi + dedektör/mıknatıs hakkı; `c.arabaKat`), **Çayır genişlet** 400/800/1200 (çayıra +6
   karo sütunu, en çok 3; komut `cayirGenislet`). Başka gider yok (bakım ücreti, kira, vergi yok).
+  **Kuyu tabanı**: kuyu harcaması kuruş + kurulu parçaların iade değerini `KUYU_TABAN` (100:
+  huni + 30 bant) altına indiremez (red `'taban'`); kuruş bitse de her şey sökülünce yeni ham
+  hat kurulur (soft-lock testi).
 - **Kuruşun rolü (dürüst not)**: 30 parçanın tamamı ≈ 2400 kuruş, D1-D8 ödülleri ≈ 3950; yani
   oyuncu ≈ D6'dan (35. dk) sonra her şeyi alabilir. Kuruş **ilk saatte kapıdır** (kaç parça
   birden), sonra kuyular ve koleksiyon içindir; sonraki hedefler damga, defter ve rozettir.
@@ -60,7 +63,7 @@ süresi dolmaz (süreli türde yalnız ikramiye kaçar).
 | Tür | Örnek kart | Zorladığı | Çarpan |
 |---|---|---|---|
 | hacim | "Muhtar: 12 saman balyası" | toplama, işleme hızı | ×2 |
-| temiz | "Ahırcı: tozsuz 40 kuru ot" (yabancı her eşya −%10, en az %50) | ayıklama | ×3 |
+| temiz | "Ahırcı: tozsuz 40 kuru ot" (kapıda hiçbir karta uymayan her eşya −%10, en az %50) | ayıklama | ×3 |
 | karışım | "Kışlık: 6 ot balyası + 30 kıyım" | iki hat, çatal/kile | ×2,5 |
 | süreli | "Pazar arabası 5 dk'da kalkıyor: 10 balya" | hat hızı, tampon | ×3 zamanında, ×1,5 geç |
 | çöp | "Kümes altlığı: 30 toz", "Demirci: 4 paslı çivi", "Duvarcı: 6 taş" | atığı ayırıp toplamak | sabit: toz 2/eşya, çivi ve taş 12/eşya |
@@ -68,12 +71,12 @@ süresi dolmaz (süreli türde yalnız ikramiye kaçar).
 Ödül = Σ miktar × `deger` × çarpan (çöp türünde `deger` yerine tablodaki sabit). Kart ödülü önceden yazar.
 Nadir siparişe giden buluntu da deftere yazılır (bulunmuş sayılır), eşyanın kendisi komşuya gider.
 
-**Üretim** (`ciftlik/siparis.js`, saf): `siparisUret(tohum, sira, acik)`; zar
+**Üretim** (`ekonomi/siparis.js`, saf): `siparisUret(tohum, sira, { acik, gorulen, onceki, d })`; zar
 `uretec(tohum ^ (sira × 0x9e3779b1))`. Yalnız **üretilebilir** ürünler seçilir (açık
 parçalarla zinciri kurulabilen). Tür ağırlıkları: hacim 40, temiz 20, karışım 15, süreli
 10, çöp 10, nadir 5. Aynı tür arka arkaya iki kez gelmez (bir önceki kartla kıyas).
 **Boy**: `miktar = yuvarla5(taban × (1 + 0,25 × d))`, `d` = o sırada etkin damganın numarası
-(D2 iken 2; hepsi bittiyse 8). Taban (≈ tek tipik hattın 3 dakikası): tutam 120, kuru ot 80,
+(D2 iken 2; hepsi bittiyse ya da D9-D10 etkinken 8). Taban (≈ tek tipik hattın 3 dakikası): tutam 120, kuru ot 80,
 kıyım 150, saman balyası 20, ot balyası 15, toz 30. **Çivi ve taş siparişleri damgayla
 büyümez**, sabit: çivi 4, taş 6 (çivi ≈ 3-7 dk'da bir geldiğinden; tutucuda ya da sandıkta
 biriken stok yaba koluyla kapıya verilir); nadir kartlar zaten 1 eşyadır.
@@ -125,7 +128,7 @@ iki kez alınamasın; dünya bozulursa damgalar yine kaybolmaz.
 damgalar ve açık parçalar kalır, tamamlanan damga siparişleri panoya gelmez.
 
 ## 6 Kilit kaynağı katmanı (araştırma isteğe bağlı)
-Kilit verisi tek tabloda, kural kodundan ayrı: `js/kural/ciftlik/acilis.js`.
+Kilit verisi tek tabloda, kural kodundan ayrı: `js/kural/ciftlik/ekonomi/acilis.js`.
 ```js
 export const ACILIS = {
   'balya-presi': { damga: 'D3', arastirma: { kurus: 300, numune: { saman: 40 } } },
@@ -145,7 +148,7 @@ damga ile eksiksiz çalışır. Proje sahibi "güzel olursa" dediği için ilk s
 veri sütunu ve `acikMi` dalı** yazılır; pencere dalga 2'de karar sonrası.
 
 ## 7 Çevrimdışı ilerleme (isteğe bağlı, varsayılan açık)
-`ciftlik/cevrimdisi.js` (saf): `verim[tur]` = son 5 dk'da **depolara** (sandık, ambar, silo)
+`ciftlik/ekonomi/cevrimdisi.js` (saf): `verim[tur]` = son 5 dk'da **depolara** (sandık, ambar, silo)
 giren eşya/dk ve `satis` = son 5 dk'da Komşu kapısının **taban satışından** gelen kuruş/dk.
 Açılışta `dk = min(480, geçen dk)`; `kazanc = floor(verim × dk × 0,5)` depoların boş yeriyle
 kenetli ve depolara orantılı; `kurus += floor(satis × dk × 0,5)`. **Değişmeyenler**: tarla,
@@ -189,7 +192,7 @@ güvenilmez) → kıyıcı
 (120/dk) → 240 kuruş/dk taban. Tutam başına en iyi saman getirisi; bedeli temizlik.
 Harman alanı stoku ≈ 40 bin tutam: Hat A ile ≈ 7 saat; arabalar (15 bin kat tüketimde bir,
 10 bin kat döker) net 5 bin ekleyerek tüketimi geri çeker, stok bitmez. Sayı değişikliği
-yalnız `ciftlik/denge.js` sabit tablosundan (tek kaynak); bu bölüm ondan türetilir.
+yalnız `ciftlik/ekonomi/denge.js` sabit tablosundan (tek kaynak); bu bölüm ondan türetilir.
 Denge doğrulaması: **turnuva/uzun simülasyon yok**; yalnız `tests/ciftlik-denge.test.js`
 referans hatları 6000 tik koşar ve oranların ±%10 içinde olduğunu doğrular (rüzgâr **sabit
 şiddet 3**, yön sabit; rüzgârlı verim ayrı bir "beklenen değer" testidir: 2 yel ≈ %76).
