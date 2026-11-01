@@ -24,7 +24,7 @@ const ZEMIN = {
   gecersiz: ['rgba(200, 50, 30, 0.45)', 'rgba(255, 220, 200, 0.95)', '#9E3A26', '#F4E9D0'],
 };
 const NEDEN = {
-  disarida: 'tarlanın dışında', yasak: 'yasak bölge', dolu: 'dolu',
+  disarida: 'tarlanın dışında', yasak: 'garaj ya da kenar', dolu: 'dolu',
   saman: 'saman çok yüksek: önce temizle',
 };
 const denetimler = [];

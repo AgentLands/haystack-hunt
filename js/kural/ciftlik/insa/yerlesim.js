@@ -62,7 +62,7 @@ export function yerlesimDurumu(c, tarla, anahtar, x, y, yon, secenek = {}) {
 
 /** Oyuncuya görünen kısa neden metni. */
 export const NEDEN_METNI = {
-  kilitli: 'kilitli', disarida: 'tarla dışında', yasak: 'yasak bölge', dolu: 'dolu',
+  kilitli: 'kilitli', disarida: 'tarla dışında', yasak: 'garaj ya da kenar', dolu: 'dolu',
   saman: 'saman çok yüksek: önce temizle', kurus: 'kuruş yetmez',
   kesisme: 'başka bir hattı kesiyor: menfez gerekir', bagsiz: 'bağlantısız: kapı boşa bakıyor',
 };

@@ -9,6 +9,7 @@ import { katmanEkle } from '../../cizim.js';
 import { ekranBirim } from '../../cizim/tuval-olcek.js';
 import { insa } from './insa.js';
 import { KARO_PX } from './gorsel/kayit.js';
+import './yasak-cizim.js';
 
 const SARI = 'rgba(227, 179, 65, 0.95)';
 const KIRMIZI = 'rgba(200, 50, 30, 0.9)';

@@ -202,7 +202,10 @@ export function yinele() {
 dinle('komut-reddedildi', ({ komut, neden }) => {
   if (!ciftlikte()) return;
   gecmisReddet(gecmis, komut);
-  if (neden !== 'bilinmeyen') bildir(`Yapılamadı: ${NEDEN_METNI[neden] ?? neden}`);
+  if (neden === 'yasak') {
+    bildir('Garajın çevresine ve tarla kenarına kurulmaz (çizgili kırmızı alan). Biraz uzaklaş.',
+      3600);
+  } else if (neden !== 'bilinmeyen') bildir(`Yapılamadı: ${NEDEN_METNI[neden] ?? neden}`);
   degisti();
 });
 dinle('oyun-basladi', () => {
