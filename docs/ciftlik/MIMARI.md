@@ -24,8 +24,10 @@ js/kural/ciftlik/             saf kural (DOM yok, Node'da test edilir, Math.rand
   tasima/hat.js       hat topolojisi: hatlariKur, hatKonumu, hatEsyalari, HAT_EN_UZUN
   tasima/hat-adim.js  hat adımı ve port protokolü: hatAdim, hatlarAdim, hatBasaKoy,
                       hatBasiBos, hedefKabul, hedefeVer, cikisaVer
-  tasima/dugum.js     ayırıcı/birleştirici altyapısı: dagit, sirayla, tampon*
+  tasima/dugum.js     düğüm altyapısı: dagit, oncelikle, sirayla, tampon*, yuva*, bekleIsle
+  tasima/menfez.js    menfez eşleme kuralı: menfezEsi, MENFEZ_ARA_EN_AZ/EN_COK
   parcalar/temel.js   dikey dilim: bant (kod 1), huni (2), sandik (3)
+  parcalar/tasima.js  çatal (40), birleştirme oluğu (41), menfez (42)
   parcalar/hepsi.js   aile dosyalarını yükler (yeni aile = bir satır)
 js/oyun-ciftlik.js            modTanimla('ciftlik'): durum kurulumu, tik, iğneler, olay yayma
 js/ozellik/ciftlik/           tarayıcı tarafı
@@ -166,10 +168,28 @@ pikseli kayması; sade harekette 0). Dünya pikseli: karo `(kx, ky)` = `(kx*8, k
   (bant: 18 → 4,5 eşya/sn). Sıkışma doğal; üst üste binme yok.
 - Topoloji değişince bütün hatlar yeniden kurulur; eşyalar karo + karo içi konumla taşınır,
   karosu kalmayan ya da sığmayan **envantere** düşer (`c.envanter`).
-- Faz 1 kancaları: yeraltı/kaldırıcı = hat parçası + `hat.ardil` (çıkış karosu) +
-  `hat.uzunluk` (sanal uzun karo; çizimde tek karo boyunda gösterilir). Ayırıcı/birleştirici
-  = portlu parça + `dugum.js` (`dagit`: dönüşümlü ve filtreli çıkış, `sirayla`: adil seçim).
-  Şalter: `hat.etkin = false` hattı durdurur (çizimde eşyalar da durur).
+- Hat kancaları (`tanim.hat`): `ardil(p, c)` ardıl karo indeksi, `-1` (yok) ya da `undefined`
+  (varsayılan: önündeki karo); `uzunluk(p, c)` karonun hat boyu (sanal uzun karo; çizimde tek
+  karo boyunda gösterilir); `kopuk(p, c)` true ise parça hat dışıdır (önündeki bant orada
+  biter, eşya girmez). Bir karoya hem `ardil` işlevi değer vermiş (sanal bağ) hem sıradan
+  bant akıyorsa **sanal bağ öncül olur** (menfez çıkışının arkasına bant konsa da tünel
+  besler). Şalter: `hat.etkin = false` hattı durdurur (çizimde eşyalar da durur).
+- **Menfez** (`parcalar/tasima.js`, `tasima/menfez.js`): aynı yöne bakan iki ağız aynı
+  doğruda, **arada 1-5 karo** (mesafe 2-6) kalırsa çift olur: arka ağız giriş (`ardil` = çıkış
+  karosu, `uzunluk` = mesafe × BIRIM, bant hızı), ön ağız çıkış. Eşleme durumsuzdur ve
+  yerleştirme sırasından bağımsızdır: en yakın aynı yönlü menfezlere bakılır, zincirde arkadan
+  sayılan çift sıra çıkış, tek sıra giriş olur (0 giriş, 1 çıkış, 2 yeni giriş...). Eşi olmayan
+  menfez `kopuk`tur: rozet `essiz`. Ara karolara her şey kurulabilir. `p.ozel` (es, rol,
+  mesafe) yalnız arayüz içindir ve her tik tazelenir.
+- **Çatal / birleştirme oluğu** (portlu parça + `dugum.js`): çatal tek tamponludur (giriş
+  arka; çıkışlar [ön, sol, sağ]); kip `p.ozel.kip`: `sirayla` (`dagit`: dönüşümlü, kabul
+  etmeyeni atlar) | `tasma` (`oncelikle`: ön, sol, sağ sırasıyla ilk kabul eden). Ayar
+  `tanim.ayarlar.kip` şemasıyla ve `tanim.ayarla(p, 'kip', deger)` ile yapılır (genel `ayar`
+  komutu bunu çağırmalıdır). Oluk girişi başına bir yuvalıdır (arka, sol, sağ); çıkışa
+  `yuvaVer` dönüşümlü verir, böylece hat sırası (id) adaleti bozmaz: doygun girişler ±1
+  paylaşır. İkisi de bir tik gecikir; bant hızını kısmaz. Rozet: ilerleyemeden
+  `BEKLE_ESIK = 20` tik bekleyen eşya `cikis-dolu` verir (sürekli akışta sayaç her geçişte
+  sıfırlanır).
 
 ## 9. Saman (`saman.js`)
 - Kirli bölgeler: 16×16 hücre, 15×10 (`c.kirli`). Çiftliğin yazıcıları yalnız bölge işaretler.
@@ -258,7 +278,7 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
 - Kayıt: ~30 KB JSON, kodlama ~5 ms.
 
 ## 16. Bilinen sınırlar / Faz 1'e kalanlar
-- Enerji, sinyal, düğüm parçaları, maliyet/envanter harcama, siparişler, çevrimdışı hesap yok
+- Enerji, sinyal, maliyet/envanter harcama, siparişler, çevrimdışı hesap yok
   (kancalar hazır). Söküm maliyet iadesi yok (yalnız içerik).
 - Kepçe/balya makinesi çiftlikte normal kodla çalışır; gömülü nesneyi kepçeye alırsa `c.gomulu`
   bağı korunur ama makinenin boşaltma kuralı çiftlikte özel değil.

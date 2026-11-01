@@ -79,7 +79,8 @@
  *   ciftlik-ozet     { tik, uretilen, depolanan }  saniyede bir; { kod: adet } (eşya başına
  *                                                  olay YOK; ses/efekt bunu dinler)
  *
- *   [A taşıma] (bu ailenin/işin olayları buraya)
+ *   [A taşıma] olay yaymaz: çatal, oluk ve menfez durumu rozet kodlarıyla bildirir
+ *                ('cikis-dolu', 'essiz'; parca-durum olayı ortak sözlüktedir)
  *
  *   [B enerji] (bu ailenin/işin olayları buraya)
  *
