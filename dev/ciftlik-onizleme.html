@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Çiftlik parçaları: önizleme</title>
+<style>
+  body { margin: 0; padding: 12px 16px; background: #2a2118; color: #eadfc6;
+    font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 6px; }
+  h2 { font-size: 14px; margin: 18px 0 6px; color: #f0c870; }
+  .arac { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  button { background: #4b3a28; color: inherit; border: 1px solid #7a6240; padding: 4px 10px;
+    border-radius: 4px; cursor: pointer; }
+  canvas { display: block; max-width: 100%; }
+  pre { color: #b8d8a0; margin: 4px 0; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>Çiftlik parçaları: önizleme</h1>
+<div class="arac">
+  <label><input type="checkbox" id="anim" checked> Canlandır</label>
+  <button id="olc">Süre ölç</button>
+</div>
+<pre id="olcum"></pre>
+<div id="bolumler"></div>
+<script type="module" src="ciftlik-onizleme.js"></script>
+</body>
+</html>
