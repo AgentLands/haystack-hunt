@@ -29,6 +29,7 @@ body.ciftlik-mod .ciftlik-secim-serit {
   touch-action: manipulation;
 }
 .ciftlik-secim-dugme[hidden],
+body.ciftlik-mod .ciftlik-secim-serit[hidden],
 .ciftlik-secim-durum[hidden] { display: none; }
 .ciftlik-secim-dugme[aria-pressed='true'] {
   background: var(--saman);

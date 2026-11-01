@@ -7,9 +7,12 @@
 const path = require('node:path');
 const o = require('./ortak.cjs');
 
+/** Rehber ve çiftlik öğreticisi görülmüş sayılır (öğretici kartı tuvali örtmesin). */
 const REHBER_GORULDU = () => {
   try {
     localStorage.setItem('haystack-hunt:rehber-goruldu', '1');
+    localStorage.setItem('haystack-hunt:ciftlik-ogretici', JSON.stringify({ bitti: true,
+      sira: 0, ipucu: [] }));
   } catch (hata) {
     console.error(hata);
   }
@@ -31,7 +34,7 @@ const yerBul = (s, en, boy) => s.evaluate(async ([en_, boy_]) => {
   const pk = await import('./js/kural/ciftlik/parca-kayit.js');
   const { ciftlik: c, tarla: t } = window.__e2e.durumAl();
   const bant = pk.parcaTanimi('bant');
-  for (let ky = 4; ky < 76 - boy_; ky++) {
+  for (let ky = 12; ky < 76 - boy_; ky++) { // üst satırlar telefonda HUD şeridi altında
     for (let kx = 30; kx < 112 - en_; kx++) {
       let bos = true;
       for (let y = ky; y < ky + boy_ && bos; y++) {
@@ -61,13 +64,14 @@ const odakla = (s, kx, ky, z) => s.evaluate(async ([x, y, zz]) => {
   gorunumAyarla(g.merkezle({ ...gorunum, z: zz }, x * 2 + 1, y * 2 + 1));
 }, [kx, ky, z]);
 
-/** Parçalar: [{ a: anahtar, x, y, yon }] (id sırasıyla). */
+/** Oyuncunun parçaları: [{ a: anahtar, x, y, yon }] (id sırasıyla; Komşu kapısı hariç). */
 const parcalar = (s) => s.evaluate(() => [...window.__e2e.durumAl().ciftlik.parcalar.values()]
+  .filter((p) => !p.tanim.sokulmez)
   .map((p) => ({ a: p.tanim.anahtar, x: p.x, y: p.y, yon: p.yon })));
 
-/** n parça olunca (ya da zaman aşımında) döner. */
-const parcaSayisi = (s, n) => o.bekle(s, (k) => window.__e2e.durumAl().ciftlik?.parcalar.size
-  === k, n, 6000);
+/** Oyuncunun n parçası olunca (ya da zaman aşımında) döner (dünyanın kapısı sayılmaz). */
+const parcaSayisi = (s, n) => o.bekle(s, (k) => [...(window.__e2e.durumAl().ciftlik?.parcalar
+  .values() ?? [])].filter((p) => !p.tanim.sokulmez).length === k, n, 6000);
 
 /** Ekran görüntüsü (--ekran KLASOR verilmişse). */
 function ekranAl(s, ad) {

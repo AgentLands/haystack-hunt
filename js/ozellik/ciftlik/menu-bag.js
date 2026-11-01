@@ -6,6 +6,7 @@
  * gizlidir (ciftlik.css). Bölüm menü her açıldığında tazelenir (modSatırı kancası).
  */
 import { bildir } from '../../arayuz.js';
+import { dinle } from '../../olaylar.js';
 import { durumAl } from '../../oyun.js';
 import { menuAnaEkle, menuModSatiriEkle } from '../menu-kanca.js';
 import { menuKapat } from '../menu.js';
@@ -117,6 +118,8 @@ dosyaSec.addEventListener('change', async () => {
 });
 
 menuAnaEkle(blok);
+// Mod değişince (menü açık kalsa da) düğmeler güncel olsun: "Çiftliğe devam" tarlada görünür
+dinle('oyun-basladi', ({ durum }) => yenile(durum));
 menuModSatiriEkle((d) => {
   yenile(d);
   return d.mod === 'ciftlik'

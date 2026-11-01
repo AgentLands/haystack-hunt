@@ -18,7 +18,7 @@ const bekleyenAcik = process.env.CIFTLIK_BEKLEYEN === '1';
 const ciftlikOzet = (s) => s.evaluate(() => {
   const d = window.__e2e.durumAl();
   if (d.mod !== 'ciftlik') return { mod: d.mod };
-  const parcalar = [...d.ciftlik.parcalar.values()];
+  const parcalar = [...d.ciftlik.parcalar.values()].filter((p) => !p.tanim.sokulmez); // kapı
   const sandik = parcalar.find((p) => p.tanim.anahtar === 'sandik');
   return { mod: d.mod, parca: parcalar.map((p) => p.tanim.anahtar).sort(),
     sandik: sandik ? sandik.ozel.toplam : null, tik: d.ciftlik.tik };

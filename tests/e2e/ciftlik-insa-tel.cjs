@@ -45,6 +45,10 @@ async function dokunucu(s) {
  */
 async function kutuTap(s, d, secici) {
   for (let i = 0; i < 3; i++) {
+    // palet şeridi yatay kayar: kart görünür alana getirilir (sekmeye dokunmak gibi)
+    await s.evaluate((sec) => document.querySelector(sec)?.scrollIntoView({ block: 'nearest',
+      inline: 'center' }), secici);
+    await s.waitForTimeout(50);
     const k = await o.kutu(s, secici);
     if (!k || !k.w) {
       if (i) return; // önceki dokunuş geç de olsa işledi, öğe kapandı
@@ -160,10 +164,17 @@ async function panelVeKrank(s, sc, d, kx, ky) {
     Object.defineProperty(c, 'kuyruk', { configurable: true, enumerable: true,
       get: () => kuyruk, set: (v) => { kuyruk = sar(v); } });
     c.kuyruk = kuyruk;
-    const x = Math.floor(dd.karakter.x / 2);
-    const y = Math.floor(dd.karakter.y / 2);
-    return [[2, 0], [-2, 0], [0, 2], [0, -2], [2, 2], [3, 0], [0, 3]]
-      .some(([a, b]) => parcaKur(c, dd.tarla, 'el-kranki', x + a, y + b).parca);
+    // Çiftçinin başladığı garaj çevresi kurma yasağı: krank boş bir yere kurulur, çiftçi
+    // yanına (bir hücre sağına) taşınır (kuralın başlatma menzili 1 karo).
+    for (let ky = 12; ky < 70; ky += 3) {
+      for (let kx = 20; kx < 100; kx += 3) {
+        const p = parcaKur(c, dd.tarla, 'el-kranki', kx, ky).parca;
+        if (!p) continue;
+        Object.assign(dd.karakter, { x: kx * 2 + 2.5, y: ky * 2 + 1 });
+        return true;
+      }
+    }
+    return false;
   });
   await kullanTap(s, d);
   const bir = await s.evaluate(() => window.__krank);

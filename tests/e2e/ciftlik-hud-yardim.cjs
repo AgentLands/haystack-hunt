@@ -60,6 +60,15 @@ const olayYay = (s, ad, veri) => s.evaluate(async ([a, v]) => {
   const { yay } = await import('./js/olaylar.js');
   yay(a, v);
 }, [ad, veri]);
+/** Komşu kapısına n eşya teslim eder (kapının al'ının yaptığı G çağrısı: teslimEt). */
+const teslim = (s, anahtar, n) => s.evaluate(async ([a, say]) => {
+  const { teslimEt } = await import('./js/kural/ciftlik/ekonomi/siparis.js');
+  const { esyaKodu } = await import('./js/kural/ciftlik/esya.js');
+  const { yay } = await import('./js/olaylar.js');
+  const c = window.__e2e.durumAl().ciftlik;
+  for (let i = 0; i < say; i++) teslimEt(c, esyaKodu(a), yay);
+}, [anahtar, n]);
+
 /** Koşul (sayfada eşzamanlı işlev) sağlanana dek adım adım ileri sarar; sağlandı mı? */
 async function ileriKadar(s, kosul, adim = 40, azami = 60) {
   for (let i = 0; i < azami; i++) {
@@ -69,4 +78,4 @@ async function ileriKadar(s, kosul, adim = 40, azami = 60) {
   return s.evaluate(kosul);
 }
 
-module.exports = { yerBul, hatKur, ileri, ileriKadar, metin, olayYay };
+module.exports = { yerBul, hatKur, ileri, ileriKadar, metin, olayYay, teslim };

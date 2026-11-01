@@ -1,12 +1,13 @@
 /**
  * Seç ve yapıştır düğmeleri (DOM; ciftlik.js'in tek içe aktardığı giriş: çizim, girdi ve şablon
- * penceresini de yükler). Tuvalin altında, inşa paletinin üstünde küçük kâğıt şerit:
- *   boşta      ▢ Seç · Şablon (· Yapıştır: panoda küme varsa)
+ * penceresini de yükler). Seç kipi inşa paletinin kip düğmesidir (I1 kipTanimla('sec'): ▢ Seç,
+ * V); şerit yalnız kip açıkken görünür (boşta inşa düğmeleriyle çakışmasın), paletin üstünde:
  *   seç kipi   ▢ Seç · Kopyala · Sök · Şablon kaydet · ✕       (+ "N parça · M karo")
  *   yapıştır   ⟳ döndür · ⇋ aynala · ✓ onayla · ✕              (+ "N karo engelli · M kuruş")
  * ✓ engel ya da kuruş eksiği varken soluk (aria-disabled): hepsi ya hiç. Düğmeler ≥ 44 px.
  * Yalnız çiftlik modunda görünür (CSS: body.ciftlik-mod). Kısayollar: V, Ctrl+C, Ctrl+V, R, T.
  */
+import { insa, kipTanimla, kipAc } from './insa.js';
 import { kumeKaroSayisi } from '../../kural/ciftlik/izgara/kume.js';
 import { sayacMetni } from '../../kural/ciftlik/izgara/denetim.js';
 import {
@@ -74,7 +75,26 @@ function metin(s) {
   return '';
 }
 
+// I1 kip kaydı: palette ▢ Seç düğmesi ve V; kip değişince karşılıklı kapanır.
+let kapaniyor = false;
+const SEC_TUSLARI = new Set(['KeyR', 'KeyT', 'Enter', 'Delete', 'Backspace']);
+kipTanimla('sec', {
+  dugme: { metin: '▢ Seç', baslik: 'Seç ve kopyala (V)', tus: 'KeyV' },
+  gir() {
+    if (secim.kip !== 'sec') secimKipi(true);
+  },
+  cik() {
+    kapaniyor = true;
+    if (secim.kip) kipKapat();
+    kapaniyor = false;
+  },
+  /** Seç/yapıştır tuşları inşa kısayollarına (R döndür, Delete sök) düşmesin. */
+  tus: (e) => Boolean(secim.kip) && SEC_TUSLARI.has(e.code),
+});
+
 secimDinle((s) => {
+  if (!s.kip && insa.kip === 'sec' && !kapaniyor) kipAc('gez');
+  serit.hidden = !s.kip;
   const yap = s.kip === 'yapistir';
   const sec = s.kip === 'sec';
   secDugme.setAttribute('aria-pressed', String(sec));

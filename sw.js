@@ -10,7 +10,7 @@
  * önbellek silinir, yeni işçi hemen devralır; sayfa (ozellik/pwa.js) "Yeni sürüm hazır"
  * der, yenileyince yeni sürüm açılır. Her yayında SURUM'u artır.
  */
-const SURUM = 'v4';
+const SURUM = 'v5';
 const ONBELLEK = `haystack-hunt-${SURUM}`;
 const KABUK = [
   './', './belirtec.css', './stil.css', './stil-hud.css', './stil-telefon.css', './js/ana.js',
@@ -18,7 +18,9 @@ const KABUK = [
   './font/alfa-slab-one.woff2', './font/bree-serif.woff2', './font/courier-prime-bold.woff2',
   './ikon/arayuz.svg',
 ];
-const ICE_AKTAR = /(?:from\s*|import\s*\(?\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
+// Statik/dinamik içe aktarma ve `new URL('./x', import.meta.url)` (işçi betiği, stil):
+// çevrimdışı açılışta arka plan işçisi de önbellekten yüklensin.
+const ICE_AKTAR = /(?:from\s*|import\s*\(?\s*|new\s+URL\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
 
 /** Bir modülün göreli içe aktarmalarını (özyinelemeli) bulur. */
 async function zincir(adres, goruldu = new Set()) {

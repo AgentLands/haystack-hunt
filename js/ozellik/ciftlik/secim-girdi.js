@@ -10,11 +10,10 @@ import { dinle } from '../../olaylar.js';
 import { escOnleyiciEkle } from '../menu-kanca.js';
 import { KARO } from '../../kural/ciftlik/olcu.js';
 import { komutEkle } from '../../kural/ciftlik/benzetim.js';
-import { parcaAt } from '../../kural/ciftlik/izgara.js';
 import { kumeAlKonumlu, ortakAyar } from '../../kural/ciftlik/izgara/kume.js';
 import { insaDinle } from './insa.js';
 import {
-  secim, degisti, ciftlikte, kipKapat, secimKipi, denetimYenile, kopyala, alaniSok,
+  secim, degisti, ciftlikte, kipKapat, denetimYenile, kopyala, alaniSok,
   yapistirBaslat, yapistirDondur, yapistirAynala, yapistirOnayla, pipetAl, pipetAyari,
 } from './secim.js';
 
@@ -96,10 +95,8 @@ function tusBasildi(e) {
     return;
   }
   if (e.repeat) return;
-  const k = secim.sonKaro;
-  if (e.code === 'KeyV') secimKipi();
-  else if (e.code === 'KeyQ' && k) pipetAl(parcaAt(durumAl().ciftlik, k.kx, k.ky));
-  else if (secim.kip === 'yapistir') {
+  // V (seç kipi) ve Q (pipet) inşa kısayollarındadır (kisayol.js; I1 'sec' kipi düğmesi)
+  if (secim.kip === 'yapistir') {
     if (e.code === 'KeyR') yapistirDondur(e.shiftKey ? 3 : 1);
     else if (e.code === 'KeyT') yapistirAynala();
     else if (e.code === 'Enter') yapistirOnayla();
@@ -122,9 +119,9 @@ escOnleyiciEkle(() => {
   return true;
 });
 
-// İnşa paleti açılınca bu kip kapanır; kur kipinden çıkılınca pipet ayarı unutulur.
+// İnşa paletinde başka kip seçilince bu kip kapanır; kur kipinden çıkılınca pipet unutulur.
 insaDinle((d) => {
-  if (d.acik && secim.kip) kipKapat();
+  if (d.acik && secim.kip && d.kip !== 'sec') kipKapat();
   if (!d.secili) pipetAl(null);
 });
 

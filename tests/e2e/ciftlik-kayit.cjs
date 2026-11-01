@@ -18,7 +18,7 @@ const KAYIT_HATALARI = ['Çiftlik kaydı bozuk', 'Çiftlik kaydı yüklenemedi',
 
 const kayitliParca = (s) => s.evaluate(([a]) => {
   const m = localStorage.getItem(a);
-  return m ? JSON.parse(m).parcalar.length : -1;
+  return m ? JSON.parse(m).parcalar.filter((p) => p[1] !== 31).length : -1; // 31: kapı
 }, [ANAHTAR]);
 
 /** Sandık + iki bant kurar (kurulabilir yerde); 3 parçalı kayıt yazılana dek bekler. */
@@ -30,7 +30,7 @@ async function kurVeKaydet(s) {
   await komut(s, { tur: 'kur', parca: 'bant', x: kx + 3, y: ky, yon: 0 });
   return o.bekle(s, () => {
     const m = localStorage.getItem('haystack-hunt:ciftlik');
-    return Boolean(m) && JSON.parse(m).parcalar.length === 3;
+    return Boolean(m) && JSON.parse(m).parcalar.filter((p) => p[1] !== 31).length === 3;
   }, null, 8000);
 }
 
@@ -77,7 +77,8 @@ async function kayitAkisi(tarayici, kok, sc) {
 
   // bozuk son kayıt → yedek. Sayfa kapanırken (pagehide) güncel kayıt yazıldığından bozma,
   // YENİ sayfanın başında (addInitScript, bir kez) yapılır.
-  const yedekSayisi = JSON.parse(await depoOku(s, YEDEK)).parcalar.length;
+  const yedekSayisi = JSON.parse(await depoOku(s, YEDEK)).parcalar.filter((p) => p[1] !== 31)
+    .length;
   await s.addInitScript(([a, ad]) => {
     if (sessionStorage.getItem(ad)) return;
     sessionStorage.setItem(ad, '1');

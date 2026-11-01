@@ -1,7 +1,8 @@
 /**
  * Senaryo: çiftlik HUD ve ekranları. Menüden çiftliğe girilir; üst şerit (kuruş, 4 hava
  * dilimi, damga, sorun, pano), öğreticinin README "ilk 10 dakika" adımları (huni → bant →
- * teslim D1 → çivi → D2 → kol → ilk iğne D3, sap ekonomiyle), damga mührü, sorun listesi ve
+ * teslim D1 → çivi → D2 → kol → ilk iğne D3; G ekonomisi, kapı teslimi teslimEt ile), damga
+ * mührü, sorun listesi ve
  * kameranın parçaya gitmesi, damga defteri, istatistik, kapı paneli, çevrimdışı fişi, menü
  * bölümü (Yeni çiftlik, kayıt yuvaları), "Nasıl oynanır" Çiftlik sekmesi, ses olayları ve
  * normal moda dönüşte HUD'un eski haline gelmesi. Telefonda (390×844) taşma ve dokunma.
@@ -10,7 +11,9 @@
  */
 const o = require('./ortak.cjs');
 const g = require('./ortak-girdi.cjs');
-const { yerBul, hatKur, ileri, ileriKadar, metin, olayYay } = require('./ciftlik-hud-yardim.cjs');
+const {
+  yerBul, hatKur, ileri, ileriKadar, metin, olayYay, teslim,
+} = require('./ciftlik-hud-yardim.cjs');
 
 const REHBER_GORULDU = () => {
   try {
@@ -57,28 +60,38 @@ async function ogretici(s, sc, yer) {
   await ileri(s, 60);
   sc.dogrula('ogr-teslim', await o.bekle(s, () => /^Teslim/.test(
     document.querySelector('.cf-ogretici h2')?.textContent ?? '')), `adım: ${await adimNo(s)}`);
+  const kurus0 = Number((await metin(s, '.cf-kurus strong')).replace('.', ''));
+  await teslim(s, 'saman', 30);
   sc.dogrula('d1-damga', await ileriKadar(s, () => document.querySelector('.cf-damga-kod')
     .textContent === 'D2'), `D1 basılmadı: ${await metin(s, '.cf-damga-kod')}`);
   await o.kareBekle(s, 20);
   sc.dogrula('d1-muhur', await gorunur(s, '.cf-damga-vuru'), 'damga mührü yok');
-  sc.dogrula('d1-kurus', Number((await metin(s, '.cf-kurus strong')).replace('.', '')) >= 450,
-    'D1 ödülü kuruşa eklenmedi');
+  sc.dogrula('d1-kurus', Number((await metin(s, '.cf-kurus strong')).replace('.', ''))
+    >= kurus0 + 150, 'D1 ödülü kuruşa eklenmedi');
   sc.dogrula('d1-fark', /^\+\d/.test(await metin(s, '.cf-fark')), '+N farkı yok');
   sc.dogrula('ogr-civi', (await adimAdi(s)) === 'Paslı çivi',
     `D1'den sonra çivi adımı değil: ${await adimAdi(s)}`);
-  await s.evaluate(() => {
+  await s.evaluate(async () => {
+    const { esyaKodu } = await import('./js/kural/ciftlik/esya.js');
     const c = window.__e2e.durumAl().ciftlik;
-    c.gomulu.push({ esya: 3, x: 0, y: 0, z: 0, alindi: true });
+    c.gomulu.push({ esya: esyaKodu('civi'), x: 0, y: 0, z: 0, alindi: true });
   });
   sc.dogrula('ogr-miknatis', await o.bekle(s, () => document.querySelector('.cf-ogretici h2')
     ?.firstChild.textContent === 'Oluk mıknatısı'), 'alınan çivi sonrası mıknatıs adımı gelmedi');
+  await ileriKadar(s, () => window.__e2e.durumAl().ciftlik.ekonomi.pano[0]?.damga === 'D2');
+  await teslim(s, 'saman', 40);
   sc.dogrula('d2-damga', await ileriKadar(s, () => document.querySelector('.cf-damga-kod')
     .textContent === 'D3'), `D2 basılmadı: ${await metin(s, '.cf-damga-kod')}`);
   await o.kareBekle(s, 20);
   sc.dogrula('ogr-kol-atlandi', (await adimAdi(s)) === 'Yaba kolu',
     `D2'den sonra kol adımı değil: ${await adimAdi(s)}`);
-  await olayYay(s, 'ciftlik-igne', { kaynak: 'parca', x: 10, y: 10 });
-  sc.dogrula('d3-damga', await o.bekle(s, () => document.querySelector('.cf-damga-kod')
+  await s.evaluate(async () => { // ilk iğne bulundu (elle alınmış gibi: G 'tam')
+    const { bulundu } = await import('./js/kural/ciftlik/isleme/bulundu.js');
+    const { esyaKodu } = await import('./js/kural/ciftlik/esya.js');
+    const { yay } = await import('./js/olaylar.js');
+    bulundu({ c: window.__e2e.durumAl().ciftlik, olay: yay }, esyaKodu('igne'), 'el', 'tam');
+  });
+  sc.dogrula('d3-damga', await ileriKadar(s, () => document.querySelector('.cf-damga-kod')
     .textContent === 'D4'), 'D3 (ilk iğne) basılmadı');
   sc.dogrula('ogr-bitti', await o.bekle(s, () => document.querySelector('.cf-ogretici').hidden)
     && await s.evaluate(() => JSON.parse(localStorage.getItem('haystack-hunt:ciftlik-ogretici'))
@@ -123,8 +136,9 @@ async function ekranlar(s, sc) {
   await o.bekle(s, () => !document.querySelector('.cf-istatistik').open);
 
   if (!(await gorunur(s, '.cf-pano'))) await s.click('.cf-pano-dugme');
-  sc.dogrula('pano-kartlar', await s.evaluate(() => document.querySelectorAll('.cf-kart').length
-    === 3), 'pano 3 kart değil');
+  // biten kartın yerine yenisi PANO.yenileTik sonra gelir
+  sc.dogrula('pano-kartlar', await ileriKadar(s, () => document.querySelectorAll('.cf-kart')
+    .length === 3), 'pano 3 kart değil');
   await s.click('.cf-kapi-ac');
   sc.dogrula('kapi', await s.evaluate(() => document.querySelector('.cf-kapi').open
     && document.querySelectorAll('.cf-kapi-satir').length === 2
@@ -159,14 +173,19 @@ async function menuVeYardim(s, sc) {
   sc.dogrula('menu-onay', await gorunur(s, '.menu-ciftlik-onay'), 'yeni çiftlik onayı yok');
   await s.click('.menu-ciftlik-onay .dugme-birincil');
   sc.dogrula('yeni-ciftlik', await o.bekle(s, (t) => window.__e2e.durumAl().mod === 'ciftlik'
-    && window.__e2e.durumAl().ciftlik.tohum !== t && window.__e2e.durumAl().ciftlik
-      .parcalar.size === 0, tohum), 'yeni çiftlik kurulmadı');
+    && window.__e2e.durumAl().ciftlik.tohum !== t && [...window.__e2e.durumAl().ciftlik
+      .parcalar.values()].every((p) => p.tanim.sokulmez), tohum), 'yeni çiftlik kurulmadı');
   sc.dogrula('yedek', await s.evaluate((t) => JSON.parse(localStorage
     .getItem('haystack-hunt:ciftlik-yedek')).tohum === t, tohum),
   'eski çiftlik Yedek yuvasına geçmedi');
-  sc.dogrula('yeni-kurus', (await metin(s, '.cf-serit .cf-kurus strong')) === '300'
+  // Yeni çiftlik kuruşu: 300 + 100 × basılmış damga (ekonomi.md §5; damgalar kalıcı)
+  await o.bekle(s, () => document.querySelector('.cf-serit .cf-kurus strong').textContent
+    === String(300 + 100 * window.__e2e.durumAl().ciftlik.ilerleme.damgalar.length));
+  const beklenen = await s.evaluate(() => String(300 + 100 * window.__e2e.durumAl().ciftlik
+    .ilerleme.damgalar.length));
+  sc.dogrula('yeni-kurus', (await metin(s, '.cf-serit .cf-kurus strong')) === beklenen
     && (await s.evaluate(() => document.getElementById('menu').open) === false),
-  'yeni çiftlikte kuruş 300 değil ya da menü açık kaldı');
+  `yeni çiftlikte kuruş ${beklenen} değil ya da menü açık kaldı`);
   await s.keyboard.press('Escape');
   await o.bekle(s, () => document.getElementById('menu').open);
   await s.click('.menu-baglantilar button:text-is("Nasıl oynanır")');

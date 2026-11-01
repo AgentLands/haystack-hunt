@@ -51,9 +51,9 @@ export function degisti() {
 
 export const ciftlikte = () => durumAl()?.mod === 'ciftlik';
 
-/** İnşa kipine tek bağ: palet kapanır, seçili parça bırakılır. */
+/** İnşa kipine tek bağ: palet kapanır, seçili parça bırakılır (I1'in 'sec' kipinden değil). */
 function insaBirak() {
-  if (insa.acik) paletAc(false);
+  if (insa.acik && insa.kip !== 'sec') paletAc(false);
 }
 
 /** Görünür alanın ortası (karo). */

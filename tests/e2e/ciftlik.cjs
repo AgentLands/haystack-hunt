@@ -40,14 +40,15 @@ async function masaustu(tarayici, kok, sc) {
   await s.mouse.up();
   await s.click('.ciftlik-parca[data-parca="sandik"]');
   await tikla(s, yer.kx + 6, yer.ky);
-  const kuruldu = await o.bekle(s, () => window.__e2e.durumAl().ciftlik.parcalar.size === 6);
+  const kuruldu = await o.bekle(s, () => [...window.__e2e.durumAl().ciftlik.parcalar.values()]
+    .filter((p) => !p.tanim.sokulmez).length === 6); // Komşu kapısı dünyanındır
   sc.dogrula('kuruldu', kuruldu, `parçalar: ${JSON.stringify((await ciftlikOzet(s)).parca)}`);
   const doldu = await o.bekle(s, () => [...window.__e2e.durumAl().ciftlik.parcalar.values()]
     .some((p) => p.tanim.anahtar === 'sandik' && p.ozel.toplam >= 1), null, 20000);
   sc.dogrula('sandikta-saman', doldu, `sandık boş: ${JSON.stringify(await ciftlikOzet(s))}`);
   const kayitli = await o.bekle(s, () => {
     const m = localStorage.getItem('haystack-hunt:ciftlik');
-    return Boolean(m) && JSON.parse(m).parcalar.length === 6;
+    return Boolean(m) && JSON.parse(m).parcalar.filter((p) => p[1] !== 31).length === 6;
   }, null, 8000);
   sc.dogrula('kaydedildi', kayitli, 'inşadan sonra kayıt yazılmadı');
   const once = await ciftlikOzet(s);
@@ -76,6 +77,9 @@ async function telefon(tarayici, kok, sc) {
     viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true,
   });
   await s.addInitScript(REHBER_GORULDU);
+  await s.addInitScript(() => { // öğretici kartı telefonda tuvalin ortasını örtmesin
+    localStorage.setItem('haystack-hunt:ciftlik-ogretici', '{"bitti":true,"sira":0,"ipucu":[]}');
+  });
   await o.git(s, `${kok}?mod=ciftlik`);
   const y = await o.yerlesim(s);
   sc.dogrula('tel-tasma-yok', !y.tasma, `scrollWidth ${y.scrollWidth} > ${y.innerWidth}`);
@@ -83,24 +87,34 @@ async function telefon(tarayici, kok, sc) {
   await odakla(s, yer.kx + 3, yer.ky, 6); // kur kipi en yakına (z 6) yaklaşır: baştan orada
   const dokun = await o.dokunmaKur(s);
   const tap = async (p) => { await dokun.bas(1, p.x, p.y); await dokun.birak(1); };
+  /** Palet kartı: yatay şeritte görünür alana kaydırılıp dokunulur. */
+  const kart = async (ad) => {
+    await s.evaluate((a) => document.querySelector(`.ciftlik-parca[data-parca="${a}"]`)
+      .scrollIntoView({ block: 'nearest', inline: 'center' }), ad);
+    await o.kareBekle(s, 2);
+    await tap(await o.kutu(s, `.ciftlik-parca[data-parca="${ad}"]`));
+  };
+  /** Oyuncunun parça sayısı (dünyanın Komşu kapısı hariç). */
+  const sayi = () => [...window.__e2e.durumAl().ciftlik.parcalar.values()]
+    .filter((p) => !p.tanim.sokulmez).length;
   await tap(await o.kutu(s, '.ciftlik-insa-ac'));
   sc.dogrula('tel-palet', await s.isVisible('.ciftlik-palet'), 'İnşa düğmesi paleti açmadı');
   const y2 = await o.yerlesim(s);
   sc.dogrula('tel-palet-tasma-yok', !y2.tasma, `palette taşma ${y2.scrollWidth}`);
-  await tap(await o.kutu(s, '.ciftlik-parca[data-parca="sandik"]'));
+  await kart('sandik');
   await tap(await ekran(s, yer.kx + 6, yer.ky)); // tek dokunuş: hayalet + ✓ baloncuğu
   await o.bekle(s, () => !document.querySelector('.ciftlik-baloncuk').hidden);
   await tap(await o.kutu(s, '.ciftlik-onay'));
-  sc.dogrula('tel-dokun-kur', await o.bekle(s, () => window.__e2e.durumAl().ciftlik.parcalar
-    .size === 1), 'dokununca sandık kurulmadı');
-  await tap(await o.kutu(s, '.ciftlik-parca[data-parca="bant"]'));
+  sc.dogrula('tel-dokun-kur', await o.bekle(s, `(${sayi})() === 1`),
+    'dokununca sandık kurulmadı');
+  await kart('bant');
   const a = await ekran(s, yer.kx + 2, yer.ky);
   const b = await ekran(s, yer.kx + 5, yer.ky);
   await dokun.bas(1, a.x, a.y);
   for (let i = 1; i <= 8; i++) await dokun.tasi(1, a.x + ((b.x - a.x) * i) / 8, a.y);
   await dokun.birak(1);
-  sc.dogrula('tel-surukle-bant', await o.bekle(s, () => window.__e2e.durumAl().ciftlik.parcalar
-    .size === 5), `bant çekilmedi: ${JSON.stringify((await ciftlikOzet(s)).parca)}`);
+  sc.dogrula('tel-surukle-bant', await o.bekle(s, `(${sayi})() === 5`),
+    `bant çekilmedi: ${JSON.stringify((await ciftlikOzet(s)).parca)}`);
   const c = await ekran(s, yer.kx + 2, yer.ky + 4);
   await dokun.bas(1, c.x, c.y);
   // İkinci parmak yukarıda: aşağısı paletin düğmelerine düşebilir (tuval görmez).

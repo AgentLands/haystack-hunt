@@ -41,7 +41,8 @@ async function yonDene(tarayici, kok, sc, ad, viewport) {
       return { parca: b.dataset.parca, en: r.width, boy: r.height };
     });
     const sinirlar = document.querySelector('.ciftlik-palet').getBoundingClientRect();
-    return { kayitli: pk.parcaTurleri().map((t) => t.anahtar), dugmeler,
+    return { kayitli: pk.parcaTurleri().filter((t) => !t.paletDisi).map((t) => t.anahtar),
+      dugmeler,
       palet: { sol: sinirlar.left, sag: sinirlar.right }, en: innerWidth };
   });
   const eksik = palet.kayitli.filter((a) => !palet.dugmeler.some((d) => d.parca === a));

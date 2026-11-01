@@ -4,8 +4,8 @@
  * menzili ENERJI.KRANK_BASLAT_KARO) en yakın el krankına `{ tur: 'krank', x, y, ciftci }`
  * komutu verir; 600 tiklik dönüşü ve uzaklaşınca durmayı kural (ag/enerji.js) yapar. Krank
  * KRANK_MENZIL içinde ama başlatma menzili dışındaysa oyuncuya "yanına git" denir. Krank
- * yoksa hiçbir şey olmaz (Kullan aracın işini sürdürür). Kullan düğmesi kendi olayını durdurduğundan yakalama
- * evresinde dinlenir.
+ * yoksa hiçbir şey olmaz (Kullan aracın işini sürdürür). Kullan düğmesi kendi olayını
+ * durdurduğundan yakalama evresinde dinlenir.
  */
 import { durumAl } from '../../oyun.js';
 import { bildir } from '../../arayuz.js';
