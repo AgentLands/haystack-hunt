@@ -1,7 +1,8 @@
 /**
  * Çiftlik üst şeridi (#tarla-kap içinde, yalnız çiftlik modunda): kuruş (artınca "+N"),
  * hava (şimdi + sonraki 3 dilim: gök, rüzgâr oku ve şiddet noktaları), sıradaki damga (defteri
- * açar), sorun sayısı (listeyi açar) ve Pano düğmesi. Normal moddaki süre ve saman etiketi
+ * açar), sorun sayısı (listeyi açar), Akış katmanı düğmesi (gorsel/akis.js) ve Pano
+ * düğmesi. Normal moddaki süre ve saman etiketi
  * çiftlikte gizlidir (hud.css). Bu modül çiftlik durumunu saniyede dört kez yoklar ve
  * 'ciftlik-hud' olayıyla yayar; pano, sorun listesi ve defter o olayı dinler (birbirini
  * içe aktarmaz). Düğmeler 'ciftlik-ekran-ac' yayar. Veri: eko-veri.js (G) ve dunya/hava.js (D).
@@ -13,6 +14,7 @@ import { sorunlariTopla } from './sorun-veri.js';
 import { simge, GOK_SIMGE } from './simge.js';
 import { yap, dugme, tuvalKap } from './yap.js';
 import { stilYukle } from '../pencere.js';
+import { akisDegistir, akisDinle } from './gorsel/akis.js';
 
 stilYukle('./ciftlik/hud.css');
 
@@ -66,7 +68,14 @@ const panoDugme = dugme('cf-dugme cf-pano-dugme', '', 'Pano: siparişler',
 panoDugme.setAttribute('data-ciftlik-pano-dugme', '');
 panoDugme.append(simge('pano', 22), yap('span', 'cf-dugme-yazi', 'Pano'));
 
-serit.append(kurusKutu, havaKutu, damgaDugme, sorunDugme, panoDugme);
+// Akış katmanı (H1; klavyede F): dokunmatikte tek yol bu düğme
+const akisDugme = dugme('cf-dugme cf-akis', '', 'Akış katmanı (F): bant yönü, güç, doluluk',
+  () => akisDegistir());
+akisDugme.setAttribute('aria-pressed', 'false');
+akisDugme.append(simge('grafik', 22));
+akisDinle((acik) => akisDugme.setAttribute('aria-pressed', String(acik)));
+
+serit.append(kurusKutu, havaKutu, damgaDugme, sorunDugme, akisDugme, panoDugme);
 tuvalKap().append(serit);
 
 // --- Güncelleme ---

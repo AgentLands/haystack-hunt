@@ -24,8 +24,8 @@ export const PARCA_MALIYET = dondur({
   huni: 40, bant: 2, sandik: 15,
   // D1
   catal: 20, 'birlestirme-olugu': 20, 'oluk-miknatisi': 30,
-  // D2 (menfez: çiftin toplamı; ağızlar ayrı parçaysa ağız başına yarısı)
-  'yaba-kolu': 30, 'defter-masasi': 40, menfez: 30,
+  // D2 (menfez: ağızlar ayrı parça, ağız başına çiftin 30'unun yarısı)
+  'yaba-kolu': 30, 'defter-masasi': 40, menfez: 15,
   // D3
   'el-kranki': 20, saft: 3, 'balya-presi': 150, 'yel-degirmeni': 120,
   // D4
