@@ -152,7 +152,8 @@ test('Boşalt: iğne ve buluntu envantere (olayla), çivi atılır; reddedilen h
   assert.equal(d.c.envanter[K('igne')], 1);
   assert.equal(d.c.envanter[toka], 1);
   assert.equal(d.c.envanter[K('civi')], 0, 'çivi atıldı');
-  assert.equal(d.p.ozel.tutucu.length, 0);
+  const tam = olaylar.filter((o) => o.ad === 'ciftlik-bulundu').map((o) => o.veri.kip);
+  assert.deepEqual(tam, ['tam', 'tam', 'tam', 'tam'], 'Boşalt "bulundu" tam öder (G)');
   assert.equal(parcaDurumu(d.p), 'calisiyor');
   assert.equal(olaylar.find((o) => o.ad === 'komut-reddedildi').veri.neden, 'bos');
   komutEkle(d.c, { tur: 'bosalt', x: 30 - 3, y: 30 });

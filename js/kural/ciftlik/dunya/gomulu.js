@@ -15,7 +15,6 @@ import { asamaTanimla } from '../benzetim.js';
 import { tarladaMi } from '../saman.js';
 import { ZEMIN, hucreZemini } from './zemin.js';
 import { karma } from './hava.js';
-import './esya-sap.js';
 
 /** Başlangıç sayıları (ilk iğne ve 8 öğretici çivisi ayrıca: ogretici.js). */
 export const GOMULU_SAYI = Object.freeze({

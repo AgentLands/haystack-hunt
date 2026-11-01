@@ -16,10 +16,10 @@ import { asamaTanimla } from '../benzetim.js';
 import { komutTanimla } from '../komut.js';
 import { kayitAlaniTanimla, ozelKodla, ozelCoz } from '../sakla.js';
 import { havaAl, karma, GOK } from './hava.js';
-import { ZEMIN, bosArazi, dunyaHazirla, harmanStogu } from './zemin.js';
-import './esya-sap.js';
+import { ZEMIN, bosArazi, dunyaHazirla, harmanStogu, KAYNAK_SAYACLARI } from './zemin.js';
 import { KUYU } from '../ekonomi/denge.js';
 import { kuyuOde } from '../ekonomi/kurus.js';
+import { kapiAlaniDuzle } from './kapi.js';
 
 export {
   ZEMIN, zeminAl, hucreZemini, dunyaHazirla, harmanStogu, gubrele, gubreliMi,
@@ -121,13 +121,15 @@ function dokumAdaylari(tohum, cayir, kapi) {
 }
 
 /**
- * Yeni çiftliğin arazisi: kapı, çayır (hücreleri CAYIR.kat'a ayarlanır: yığın sıfırlanır),
+ * Yeni çiftliğin arazisi: kapı (karoları düzlenir; parçayı kapi.js kapiKur kurar), çayır
+ * (hücreleri CAYIR.kat'a ayarlanır: yığın sıfırlanır),
  * döküm adayları. tarla yerinde değişir (baslangicToplam yeniden). garaj: garajKur sonucu,
  * yasak: garaj park dairesi { x, y, r } (hücre).
  */
 export function araziKur(tarla, garaj, yasak, tohum) {
   const a = bosArazi();
   a.kapi = kapiSec(tarla, garaj);
+  kapiAlaniDuzle(tarla, a.kapi);
   a.cayir = cayirSec(tohum >>> 0, yasak, a.kapi);
   cayirIsaretle(a, a.cayir);
   for (let ky = a.cayir.y; ky < a.cayir.y + a.cayir.boy; ky++) {
@@ -219,7 +221,7 @@ komutTanimla('cayirGenislet', (c, tarla, k, olaylar) => {
   return undefined;
 });
 
-const SAYACLAR = ['cayirKat', 'arabaKat', 'cevrimdisiKat', 'tuketilenKat'];
+const SAYACLAR = KAYNAK_SAYACLARI; // eski kayıtta cikanKat yok: dunyaHazirla 0 kurar
 kayitAlaniTanimla('arazi', {
   kodla(c) {
     dunyaHazirla(c);
@@ -228,7 +230,7 @@ kayitAlaniTanimla('arazi', {
   coz(c, v) {
     if (v) {
       c.arazi = ozelCoz(v.arazi);
-      SAYACLAR.forEach((ad, k) => { c[ad] = v.sayac[k]; });
+      SAYACLAR.forEach((ad, k) => { c[ad] = v.sayac[k] ?? 0; });
     }
     dunyaHazirla(c);
   },

@@ -2,12 +2,11 @@
  * İşleme ailesinin ortak sabitleri ve sapları (parcalar/isleme.js ve isleme/kiyici-gubre.js):
  * denge sayıları (ISLEME; G denge.js'e taşıyabilir), eşya kodları, rozet yardımcıları.
  * Hava dunya/hava.js havaAl'dan okunur (testler havaSabitle ile sabitler).
- * SAP (D dünya): gübre → çayır `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo sayısı)`
- * (varsayılan -1: çayır katmanı yok, yalnız sayılır). D: dunya/arazi.js gubrele(c, kx, ky, r,
- * sure) ile tek satırda bağlanır.
+ * Gübre → çayır: dunya/zemin.js gubrele (parça merkezinin karosundan menzil karo).
  */
 import { esyaKodu } from '../esya.js';
 import { havaAl } from '../dunya/hava.js';
+import { gubrele as zeminGubrele } from '../dunya/zemin.js';
 import { ONARIM } from '../ekonomi/denge.js';
 import { ozellik } from './esya-ozellik.js';
 
@@ -32,9 +31,6 @@ export const redRozeti = (kod) => (ozellik(kod).nem ? 'nemli' : 'yabanci');
 
 /** Bu tikteki hava: { gok: 'gunes' | 'bulut' | 'yagmur', siddet: 0..3 } (dunya/hava.js). */
 export const havaOku = (ctx) => havaAl(ctx.c, ctx.tik);
-/** SAP (D arazi): gübrele(ctx, p, menzil, sure) → gübrelenen çayır karosu sayısı (-1: yok). */
-let gubreKaynagi = () => -1;
-export function gubreKaynagiKur(islev) {
-  gubreKaynagi = islev;
-}
-export const gubrele = (ctx, p, menzil, sure) => gubreKaynagi(ctx, p, menzil, sure);
+/** Parçanın çevresindeki çayırı gübreler; gübrelenen çayır karosu sayısı. */
+export const gubrele = (ctx, p, menzil, sure) => zeminGubrele(ctx.c, p.x + (p.en >> 1),
+  p.y + (p.boy >> 1), menzil, sure);

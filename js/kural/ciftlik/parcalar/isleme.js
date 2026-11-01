@@ -19,7 +19,7 @@ import {
 import '../isleme/kiyici-gubre.js';
 import '../isleme/komutlar.js';
 
-export { ISLEME, gubreKaynagiKur } from '../isleme/sabitler.js';
+export { ISLEME } from '../isleme/sabitler.js';
 
 /** Ot savurucu: yaş otu havayla kurutur (9 yuva); kuru ve diğer eşya bekletmeden geçer. */
 parcaTanimla('ot-savurucu', {

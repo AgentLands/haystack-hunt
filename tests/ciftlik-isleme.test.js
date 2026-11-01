@@ -10,7 +10,9 @@ import { ekonomiAl } from '../js/kural/ciftlik/ekonomi/kurus.js';
 import { tikAt, komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
-import { ISLEME, gubreKaynagiKur } from '../js/kural/ciftlik/parcalar/isleme.js';
+import { ISLEME } from '../js/kural/ciftlik/parcalar/isleme.js';
+import { dunyaHazirla, ZEMIN } from '../js/kural/ciftlik/dunya/zemin.js';
+import { karoIndeks } from '../js/kural/ciftlik/olcu.js';
 import { dunya, kur, bantCek, kos, havaSabitle } from './ciftlik-yardim.mjs';
 import { K, hatKur, ekle, bulunanlar, kosKadar } from './ciftlik-isleme-yardim.mjs';
 
@@ -217,13 +219,11 @@ test('kıyıcı: iğne çekici kırar ama kaybolmaz (çıkıştan atılır)', ()
 });
 
 test('gübre çukuru: toz 1, çürük ot 2, karışık balya 8 puan; 120 dolu; 2400 tikte −20', () => {
-  const cagri = [];
-  gubreKaynagiKur((ctx, p, menzil, sure) => {
-    cagri.push([menzil, sure]);
-    return 5;
-  });
   const { c, tarla } = dunya();
   const { m, k } = hatKur(c, tarla, 'gubre-cukuru', 20, 20, { alici: false });
+  const arazi = dunyaHazirla(c);
+  const cayir = [[m.x + 3, m.y], [m.x, m.y + 4], [m.x + 5, m.y + 5], [m.x + 9, m.y + 8]];
+  for (const [x, y] of cayir) arazi.zemin[karoIndeks(x, y)] = ZEMIN.CAYIR;
   ekle(k, 'toz', 2);
   ekle(k, 'curuk-ot');
   ekle(k, 'balya-karisik', 20);
@@ -234,14 +234,14 @@ test('gübre çukuru: toz 1, çürük ot 2, karışık balya 8 puan; 120 dolu; 2
   assert.equal(c.cikanKat, 3 * 12 + 14 * 96, 'gübrelenen saman korunum sayacına');
   assert.equal(olaylar.filter((o) => o.ad === 'gubre-serpildi').length, 0);
   const sonra = kos(c, tarla, ISLEME.gubre.aralik);
-  assert.deepEqual(cagri, [[ISLEME.gubre.menzil, ISLEME.gubre.sure]]);
-  assert.equal(sonra.find((o) => o.ad === 'gubre-serpildi').veri.karo, 5);
+  assert.equal(sonra.find((o) => o.ad === 'gubre-serpildi').veri.karo, 3, 'menzildeki çayır');
+  assert.ok(arazi.gubre[karoIndeks(m.x + 3, m.y)] > c.tik, 'çayır gübreli (dunya/zemin.js)');
+  assert.equal(arazi.gubre[karoIndeks(m.x + 9, m.y + 8)], 0, 'menzil dışı');
   assert.equal(m.ozel.puan, ISLEME.gubre.kap, '−20 sonra 3 balya daha girdi');
   assert.equal(k.ozel.kuyruk.length, 4);
-  gubreKaynagiKur(() => 0);
+  arazi.zemin.fill(ZEMIN.HARMAN);
   kos(c, tarla, ISLEME.gubre.aralik);
   assert.match(m.tanim.incele(m)[0][1], /Yalnız çöp/);
-  gubreKaynagiKur(() => -1);
 });
 
 test('gübre çukuru: iğne ve buluntu oyuncuya iade (defter, kuruş yok)', () => {

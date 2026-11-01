@@ -19,10 +19,18 @@ export function bosArazi() {
   };
 }
 
+/**
+ * Saman kaynak/çıkış sayaçları (c üstünde, kayda girer: arazi alanı). Korunum:
+ * ciftlikSamani + kaldirilan − cayirKat − arabaKat − cevrimdisiKat + cikanKat sabit
+ * (cikanKat: kapıda satılan/atılan, gübrelenen, yakılan saman; isleme/bulundu.js samanCikti).
+ */
+export const KAYNAK_SAYACLARI = Object.freeze(['cayirKat', 'arabaKat', 'cevrimdisiKat',
+  'tuketilenKat', 'cikanKat']);
+
 /** c'de arazi ve saman kaynak sayaçları yoksa kurar (sentetik test dünyası; eski kayıt). */
 export function dunyaHazirla(c) {
   c.arazi ??= bosArazi();
-  for (const ad of ['cayirKat', 'arabaKat', 'cevrimdisiKat', 'tuketilenKat']) c[ad] ??= 0;
+  for (const ad of KAYNAK_SAYACLARI) c[ad] ??= 0;
   return c.arazi;
 }
 
@@ -45,16 +53,22 @@ export function harmanStogu(a, tarla) {
   return s;
 }
 
-/** (kx, ky) çevresinde r karo içindeki çayır karoları `sure` tik gübreli (F · gübre çukuru). */
+/**
+ * (kx, ky) çevresinde r karo içindeki çayır karoları `sure` tik gübreli (F · gübre çukuru).
+ * Gübrelenen çayır karosu sayısını döndürür (0: yakında çayır yok).
+ */
 export function gubrele(c, kx, ky, r, sure) {
   const a = dunyaHazirla(c);
+  let n = 0;
   for (let y = Math.max(0, ky - r); y <= Math.min(KARO_BOY - 1, ky + r); y++) {
     for (let x = Math.max(0, kx - r); x <= Math.min(KARO_EN - 1, kx + r); x++) {
       const i = karoIndeks(x, y);
       if ((x - kx) ** 2 + (y - ky) ** 2 > r * r || a.zemin[i] !== ZEMIN.CAYIR) continue;
       a.gubre[i] = Math.max(a.gubre[i], c.tik + sure);
+      n += 1;
     }
   }
+  return n;
 }
 
 export const gubreliMi = (c, kx, ky) => (c.arazi?.gubre[karoIndeks(kx, ky)] ?? 0) > c.tik;

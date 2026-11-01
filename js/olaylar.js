@@ -111,8 +111,8 @@
  *   tutucu-doldu     { parca }                     oluk mıknatısının tutucusu 6/6 oldu
  *                                                  (doymuş: bundan sonra manyetikler geçer)
  *   tutucu-bosaldi   { parca, bulunan, atilan }    Boşalt komutu: bulunan = iğne/buluntu eşya
- *                                                  kodları (oyuncunun envanterine döner;
- *                                                  defter + kuruş dinleyicinin işi), atilan =
+ *                                                  kodları (envantere döner; her biri ayrıca
+ *                                                  ciftlik-bulundu 'tam'), atilan =
  *                                                  atılan çöp/çivi sayısı
  *   kalbur-sivandi   { parca }                     kalbur sıva eşiğine (4) vardı: delikler
  *                                                  kapandı, her şey öne gider
@@ -122,7 +122,7 @@
  *                                                  iğne/buluntu "bulundu" (defter + kutlama
  *                                                  dinleyicinin işi): kaynak 'masa' | 'sandik' |
  *                                                  'ambar' | 'kapi' | 'gubre' | 'temizle' |
- *                                                  'sokum'; kip 'tam' | 'yari' | 'kurussuz'
+ *                                                  'sokum' | 'bosalt'; kip 'tam' | 'yari' | 'kurussuz'
  *                                                  (kurus: ödenen); buluntu: tür adı ya da null
  *   parca-temizlendi { parca, komut }              sıkışmış pres açıldı (eşya envantere)
  *   parca-onarildi   { parca, komut }              kıyıcı onarımı başladı (50 kuruş, 200 tik)

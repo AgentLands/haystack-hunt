@@ -37,7 +37,7 @@ js/kural/ciftlik/             saf kural (DOM yok, Node'da test edilir, Math.rand
   parcalar/temel.js   dikey dilim: bant (kod 1), huni (2), sandik (3)
   parcalar/temel.js   dikey dilim: bant (kod 1), sandik (3)
   parcalar/toplama.js huni (2; temel.js'ten taşındı), tırmık kolu (4), taş toplayıcı (5)
-  dunya/              arazi, zemin, hava, gomulu, araba, ogretici, esya-sap (GEÇİCİ): §18
+  dunya/              arazi, zemin, hava, gomulu, araba, ogretici, kapi: §18
   parcalar/tasima.js  çatal (40), birleştirme oluğu (41), menfez (42)
   parcalar/hepsi.js   aile dosyalarını yükler (yeni aile = bir satır)
 js/oyun-ciftlik.js            modTanimla('ciftlik'): durum kurulumu, tik, iğneler, olay yayma

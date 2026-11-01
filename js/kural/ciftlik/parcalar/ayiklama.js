@@ -17,6 +17,7 @@ import { komutTanimla } from '../komut.js';
 import { parcaAt } from '../izgara.js';
 import { esyaTanimi } from '../esya.js';
 import { hedefKabul } from '../tasima/hat-adim.js';
+import { bulundu } from '../isleme/bulundu.js';
 import {
   TUTUCU_YUVA, TAMBUR_TIK, KALBUR_TIK, TINAZ_TIK, YEL_TIK, TAMBUR_GUC, YEL_GUC, SIVA_ESIK,
   SIVA_TAVAN, SIVA_COZ_TIK, manyetikMi, yasOtMu, yuvaDolu, ruzgarOku, tinazHali, tinazYolu,
@@ -98,7 +99,7 @@ parcaTanimla('oluk-miknatisi', {
   },
   /** Kantar için doluluk. */
   doluluk: (p) => ({ n: p.ozel.tutucu.length, kap: TUTUCU_YUVA }),
-  /** Boşalt: iğne ve buluntu oyuncuya (envanter; defter/kuruş G'nin işi), geri kalan atılır. */
+  /** Boşalt: iğne ve buluntu oyuncuya (envanter; komut "bulundu" tam sayar), kalan atılır. */
   bosalt(c, p) {
     const bulunan = [];
     let atilan = 0;
@@ -135,6 +136,9 @@ komutTanimla('bosalt', (c, tarla, k, olaylar) => {
     return;
   }
   const { bulunan, atilan } = p.tanim.bosalt(c, p);
+  // Elle boşaltmak "bulmak"tır: tam ödeme + defter (G), olay ciftlik-bulundu (kaynak 'bosalt')
+  const ortam = { c, olay: (ad, veri) => olaylar.push({ ad, veri }) };
+  for (const kod of bulunan) bulundu(ortam, kod, 'bosalt', 'tam', p);
   olaylar.push({ ad: 'tutucu-bosaldi', veri: { parca: p, bulunan, atilan } });
 });
 
