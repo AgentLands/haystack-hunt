@@ -266,3 +266,31 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   iğne envantere girer.
 - Dönemeçte bant çıtası düz çizilir; bölge önbelleği gövdeleri parça başına tarar (300 parçada
   sorun değil; binlerce parçada bölge dizini eklenmeli).
+
+## 17. Enerji (B işi: `kural/ciftlik/ag/enerji.js`, `parcalar/enerji.js`)
+- Aşama `enerji` (sıra 20, `asamaTanimla`): her tik bileşen başına `arz`/`talep` → `oran`; makinenin
+  `p.oran`'ı yazılır (parça `ctx.oran(p)` ile okur). Sıra: üreticiler (`uret`) → volan (`depo`)
+  → lokomobil (`destek`, volandan sonra kalan açık) → `oran = talep ? min(1024, arz*1024/talep) : 1024`.
+- **Şebeke** (`yenidenKur`'da, topoloji değişince): şaft + `aile: 'enerji'` parçalar iletkendir;
+  makine = `guc > 0` ya da `gucsuzOran` tanımlı parça. Kenar komşuluğu birleştirir; iki makine
+  birbirine iletmez (en az biri iletken olmalı); iletken parçasız makine şebekesizdir
+  (`oran = gucsuzOran ?? 0`). `aksYonler: [yon...]` (yon 0 çerçevesi) aks kenarlarını kısıtlar
+  (lokomobil: yalnız iki yan). `c.enerji = { aglar, yalniz }` (kayda girmez, kurulur);
+  `agiBul(c, p)` panel için `{ arz, talep, oran, uyeler }`; `gucRozeti(p)` 'guc-yok' | 'guc-az'.
+- **Makine parça sözleşmesi** (E, F, D): `guc` (bg), isteğe bağlı `gucsuzOran` (0..1024) ve talep:
+  `talep(p, ctx)` → bg (darbeli yük: pres basarken 30, dolarken 4) ya da yoksa `durum(p)`
+  `'calisiyor' | 'guc-yok' | 'guc-az'` iken `guc`, başka durumda 0 (boş makine talep etmez).
+  Durum, oran 0 olduğu için "girdi-yok"a düşmemeli (girdiyi oran'dan bağımsız ölç). Etkin oran
+  `max(gucsuzOran, oran)`; `guc: 0` ve `gucsuzOran` yoksa parça şebekeye girmez, `p.oran` 1024 kalır.
+- Parça kodları: 22 el-kranki, 23 yel-degirmeni, 24 lokomobil, 25 saft, 26 volan (parça numarası).
+- **Hava sapı**: `havaKaynagiAyarla((c, tik) => ({ yon, siddet, gok }))`; varsayılan sabit rüzgâr 2
+  (16 bg, yön 0). D gelince `hava(c.tohum, floor(tik / 1200))` bağlanır (tek satır).
+- **Krank**: komut `{ tur: 'krank', x, y, ciftci: { x, y } }` (hücre); yalnız çiftçi parçanın 1 karo
+  yakınındayken; `p.ozel.kalan = 600` (yeniler, eklemez). Sürerken çiftçi 3 karoyu aşarsa durur:
+  oyun kare döngüsü her tikten önce `c.ciftci = { x, y }` (karakter hücresi) yazmalı; yoksa
+  mesafe denetlenmez (testler, çevrimdışı). Olaylar `krank-basladi`, `krank-durdu {neden}`.
+- **Lokomobil**: tampon 4 yakıt (`kabulEder`: eşya `yakit` alanı ya da tablo; balya 1200 / kıyım 150
+  tik tam yükte = 40 bg × tik), yük oranında yakar; yanan eşya `icerik`'te kalır (saman korunumu),
+  bitince `ctx.sayac('yakilan', kod)` ve saman sistemden çıkar. Yakıt bitip açık varsa `yakit-bitti`.
+- Ölü döngü: yakıt + yel yoksa krank (bedava) hattı yürütür, sandıktaki balya yaba koluyla
+  lokomobile verilir (lokomobil girişi güç istemez). Test: `tests/ciftlik-enerji.test.js`.

@@ -81,7 +81,13 @@
  *
  *   [A taşıma] (bu ailenin/işin olayları buraya)
  *
- *   [B enerji] (bu ailenin/işin olayları buraya)
+ *   [B enerji] (şebeke: kural/ciftlik/ag/enerji.js, parcalar/enerji.js)
+ *   krank-basladi    { parca }                     Kullan komutu kabul edildi (600 tik)
+ *   krank-durdu      { parca, neden }              'sure' (600 tik doldu) | 'uzak' (çiftçi > 3
+ *                                                  karo)
+ *   yakit-bitti      { parca }                     lokomobil açıkta yakıtsız kaldı (geçişte bir
+ *                                                  kez; ipucu notu: krank ya da yaba kolu)
+ *   ('ciftlik-ozet' sayacı 'yakilan': lokomobilde yanan yakıt eşyaları)
  *
  *   [C mantık] (bu ailenin/işin olayları buraya)
  *
