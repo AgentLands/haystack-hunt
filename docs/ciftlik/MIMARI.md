@@ -34,12 +34,17 @@ js/ozellik/ciftlik/           tarayıcı tarafı
   insa.js         inşa kipi durumu ve girdisi (işaretçi önleyici, klavye, Esc)
   palet.js        geçici palet (DOM)
   ciftlik.css     palet ve mod sınıfı
-  gorsel/kayit.js     parcaCizimiTanimla, esyaCizimiTanimla, KARO_PX
-  gorsel/temel.js     bant, huni, sandık ve eşya çizimleri
-  gorsel/bolge.js     bölge önbelleği (gövdeler)
-  gorsel/esya-cizim.js  bant eşyalarının toplu çizimi (atlas, ayıklama)
-  gorsel/onizleme.js  inşa hayaleti
-  gorsel/katman.js    çiftlik katmanları ('alt' ve 'ust'), ciftlikOlcum
+  gorsel/kayit.js     parcaCizimiTanimla, esyaCizimiTanimla, esyaTopluTanimla, KARO_PX
+  gorsel/temel.js     huni ve sandık çizimleri
+  gorsel/bant.js      bant dokusu (dönemeçte çeyrek halka), dönemeç geometrisi
+  gorsel/bolge.js     bölge dizini + önbelleği (gövdeler; kendini ölçen önbellek/doğrudan)
+  gorsel/esya-atlas.js  eşya çizimleri (14 tasarım türü + 20 buluntu) ve atlas
+  gorsel/esya-cizim.js  bant eşyalarının toplu çizimi (yığın türleri yolla, seyrekler atlasla)
+  gorsel/hava.js      bulut gölgesi, yağmur, zerre (havaKaynagiAyarla; D bağlar)
+  gorsel/rozet.js     durum rozetleri (şekille ayırt)
+  gorsel/akis.js      akış katmanı (F; akisDegistir, akisKatmaniEkle)
+  gorsel/onizleme.js  inşa hayaleti (✓ ! ✕, portlar, etki, komşu parlaması; hayaletCiz)
+  gorsel/katman.js    çiftlik katmanları ('alt' ve 'ust'), ciftlikOlcum, F kısayolu
 js/ozellik/menu-kanca.js      menuAnaEkle, escOnleyiciEkle, menuModSatiriEkle
 araclar/ciftlik-olc.mjs       benzetim ölçümü (10.000 tik)
 tests/ciftlik-*.test.js, tests/ciftlik-yardim.mjs, tests/e2e/ciftlik.cjs
@@ -126,14 +131,21 @@ yalnız **hat başına** (öncülü olmayan bant karosu, porta geri bakmayan) ya
 **o kenara bakan giriş portuna** bağlanır; aksi `null` (eşya tamponda bekler).
 
 ## 6. Çizim kaydı (`ozellik/ciftlik/gorsel/kayit.js`)
-`parcaCizimiTanimla(anahtar, { govde(ctx, p, eb), hareketli(ctx, p, an, eb) })`.
+`parcaCizimiTanimla(anahtar, { govde(ctx, p, eb, c), hareketli(ctx, p, an, eb), akis? })`
+(H1'de geriye uyumlu genişledi: `govde`'ye 4. bağımsız değişken `c`, hayalette null; `an`'a
+`c`, `dolgu(renk)`, `cizgi(renk, kalin)`; isteğe bağlı `akis(ctx, p, eb, c)`).
 `govde` durağan gövdedir, **bölge önbelleğine** girer (16×16 karo, ekran ölçeğinde ara tuval;
-parça kur/sök/dön olayı bölge sürümünü artırır, ölçek %2 değişince yenilenir). `hareketli`
-her kare görünür parçalar için: `an = { zaman, tik, alfa, faz }` (`faz`: bant çıtasının dünya
-pikseli kayması; sade harekette 0). Dünya pikseli: karo `(kx, ky)` = `(kx*8, ky*8)`, `eb` =
-1 CSS pikselinin dünya boyu (dış hat `1.2 * eb`). Tanımsız parça yedek kutuyla çizilir.
-`esyaCizimiTanimla(anahtar, ciz(ctx, r, eb))`: eşya atlasa bir kez çizilir; uzak görünümde
-(eşya < 4 px) tür rengiyle toplu `fill`. Ölçüm: `ciftlikOlcum.ms/esya/parca`.
+parça kur/sök/dön olayı 1 karo payla bölge sürümünü artırır, ölçek %2 değişince bütçeyle
+yenilenir). Bölge dizini kare başı gezintiyi görünür bölgelerle sınırlar (`gorunurParcalar`).
+`hareketli` her kare görünür parçalar için: `an = { zaman, tik, alfa, faz, c, dolgu, cizgi }`
+(`faz`: bant çıtasının dünya pikseli kayması; sade harekette 0; `dolgu/cizgi` toplu Path2D:
+bütün parçalardan sonra renk başına tek fill/stroke). Dünya pikseli: karo `(kx, ky)` =
+`(kx*8, ky*8)`, `eb` = 1 CSS pikselinin dünya boyu (dış hat `1.2 * eb`). Tanımsız parça yedek
+kutuyla çizilir. Eşya: `esyaCizimiTanimla(anahtar, ciz(ctx, r, eb))` (sprite; atlasa bir kez,
+seyrek türler) ya da `esyaTopluTanimla(anahtar, { renk, govde(yol, x, y, r, d), ekler })`
+(yığın türleri: tür başına toplu yol, dış hat çift dolgu; stroke/ellipse/closePath yok).
+Uzak görünümde (eşya < 9 CSS px) mürekkep altlı renk kareleri. Ölçüm:
+`ciftlikOlcum.ms/alt/ust/esya/parca/rozet`, `bolgeOlcum`.
 
 ## 7. Benzetim (`benzetim.js`)
 - **Tik sırası** (`tikAt(c, tarla)`): komutlar (`komut.js`) → topoloji değiştiyse `yenidenKur`
@@ -264,5 +276,5 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   bağı korunur ama makinenin boşaltma kuralı çiftlikte özel değil.
 - Elle alınan çivi/buluntu envantere girmez (normal moddaki gibi yalnız alınır); elle alınan
   iğne envantere girer.
-- Dönemeçte bant çıtası düz çizilir; bölge önbelleği gövdeleri parça başına tarar (300 parçada
-  sorun değil; binlerce parçada bölge dizini eklenmeli).
+- Hava görseli sabit sapla çalışır (`havaKaynagiAyarla`, D bağlar); şaft şebekesi ve renk
+  kanalı akış çizimleri B/C'nin `akisKatmaniEkle` / `akis` kancalarıyla gelir.
