@@ -1,19 +1,16 @@
 /**
  * Çiftlik dünya çizimleri (D · dunya): çayır yeşili, huni ağzı işareti, Komşu kapısının yeri
- * (kesik çerçeve), açıktaki taş/iğne ailesi parıltısı ve basit hava (bulut gölgesi, yağmur
- * çizgisi; sade harekette durağan). Parça çizimleri aile dosyalarında (toplama.js vb.).
+ * (kesik çerçeve) ve açıktaki taş/iğne ailesi parıltısı. Hava (bulut, yağmur, zerre) H1'in
+ * gorsel/hava.js'indedir. Parça çizimleri aile dosyalarında (toplama.js vb.).
  */
 import { katmanEkle } from '../../../cizim.js';
 import { gorunum } from '../../../gorunum.js';
 import { gorunurAlan } from '../../../kural/gorunum.js';
 import { OLCEK, ekranBirim } from '../../../cizim/tuval-olcek.js';
-import { GENISLIK, YUKSEKLIK } from '../../../kural/boyut.js';
-import { DX, DY } from '../../../kural/ciftlik/olcu.js';
+import { GENISLIK } from '../../../kural/boyut.js';
 import { esyaTanimi, esyaKodu } from '../../../kural/ciftlik/esya.js';
 import { tarladaMi } from '../../../kural/ciftlik/saman.js';
-import { havaAl, karma, GOK } from '../../../kural/ciftlik/dunya/hava.js';
 import { agizKarolari } from '../../../kural/ciftlik/dunya/ogretici.js';
-import { sadeHareket } from '../../sade-hareket.js';
 import { parcaCizimiTanimla, KARO_PX, MUREKKEP } from './kayit.js';
 const K = KARO_PX;
 const CIVI = esyaKodu('civi');
@@ -77,49 +74,6 @@ function acikNesneler(ctx, durum, alan, eb) {
   }
 }
 
-/** Bulut gölgeleri (bulut/yağmur) ve yağmur çizgileri; rüzgâr yönünde sürüklenir. */
-function havaCiz(ctx, c, alan, zaman) {
-  const h = havaAl(c);
-  if (h.gok === GOK.GUNES) return;
-  const W = GENISLIK * OLCEK;
-  const H = YUKSEKLIK * OLCEK;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, 0, W, H);
-  ctx.clip();
-  const kay = sadeHareket() ? 0 : (zaman / 1000) * (2 + h.siddet * 3);
-  ctx.fillStyle = h.gok === GOK.YAGMUR ? 'rgba(30, 40, 60, 0.16)' : 'rgba(30, 40, 60, 0.09)';
-  for (let k = 0; k < 5; k++) {
-    const r = 60 + (karma(c.tohum, 30 + k, h.dilim) % 60);
-    const x = ((karma(c.tohum, 40 + k, h.dilim) % W) + DX[h.yon] * kay) % (W + 2 * r);
-    const y = ((karma(c.tohum, 50 + k, h.dilim) % H) + DY[h.yon] * kay) % (H + 2 * r);
-    ctx.beginPath();
-    ctx.ellipse(((x + W + 2 * r) % (W + 2 * r)) - r, ((y + H + 2 * r) % (H + 2 * r)) - r,
-      r, r * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  if (h.gok === GOK.YAGMUR) yagmurCiz(ctx, h, alan, zaman);
-  ctx.restore();
-}
-
-function yagmurCiz(ctx, h, alan, zaman) {
-  ctx.strokeStyle = 'rgba(200, 215, 235, 0.45)';
-  ctx.lineWidth = 0.6;
-  ctx.beginPath();
-  const x0 = alan.x * OLCEK;
-  const y0 = alan.y * OLCEK;
-  const en = alan.en * OLCEK;
-  const boy = alan.boy * OLCEK;
-  const dus = sadeHareket() ? 0 : (zaman / 4) % 40;
-  for (let k = 0; k < 90; k++) {
-    const x = x0 + ((k * 97.3) % en);
-    const y = y0 + ((k * 53.7 + dus * 7) % boy);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - 2 + DX[h.yon] * h.siddet, y + 6 + DY[h.yon] * h.siddet);
-  }
-  ctx.stroke();
-}
-
 katmanEkle((ctx, durum) => {
   if (durum.mod !== 'ciftlik') return;
   const eb = ekranBirim(ctx);
@@ -127,7 +81,3 @@ katmanEkle((ctx, durum) => {
   agizCiz(ctx, durum.ciftlik, eb);
   acikNesneler(ctx, durum, gorunurAlan(gorunum), eb);
 }, 'alt');
-
-katmanEkle((ctx, durum, zaman) => {
-  if (durum.mod === 'ciftlik') havaCiz(ctx, durum.ciftlik, gorunurAlan(gorunum), zaman);
-}, 'ust');
