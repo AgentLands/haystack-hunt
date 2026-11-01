@@ -181,9 +181,8 @@ function bulunduSay(say, olaylar) {
   for (const o of olaylar) if (o.ad === BULUNDU) say[o.veri.kod] = (say[o.veri.kod] ?? 0) + 1;
 }
 
-/** Gerçek parçalarla geçtiği doğrulanan sink'ler (c-dogrulama, main birleşimi): bayraksız koşar. */
-const DOGRULANAN = new Set(['sandik', 'oluk-miknatisi', 'miknatisli-tambur', 'kalbur',
-  'seytan-yeli']);
+/** Hepsi gerçek parçalarla (main + c-isleme birleşimi) geçti: ön koşullar varsa bayraksız koşar. */
+const DOGRULANAN = new Set(SINKLER.map(([sink]) => sink));
 
 for (const [sink, is, parca] of SINKLER) {
   bekleyen(`iğne/buluntu korunumu: ${sink} (girer, makine çalışır, sökülür; hiçbiri yok olmaz)`,
@@ -239,7 +238,7 @@ bekleyen('(a) her şey sökülünce kuruş = başlangıç + kazanç − harcama 
 });
 
 bekleyen('(b1) yakıt ve yel yokken sandık → yaba kolu → lokomobil hattı yeniden başlatır', {
-  is: 'B F', parca: ['lokomobil', 'yaba-kolu', 'sandik'], esya: ['balya-saman'],
+  is: 'B F', parca: ['lokomobil', 'yaba-kolu', 'sandik'], esya: ['balya-saman'], dogrulandi: true,
 }, async () => {
   const { c, tarla } = dunya(8, duzTarla(0));
   const lok = girisineKur(c, tarla, 'lokomobil', { kx: 40, ky: 30 }, 0, 0);
@@ -258,6 +257,7 @@ bekleyen('(b1) yakıt ve yel yokken sandık → yaba kolu → lokomobil hattı y
 
 bekleyen('(b2) yel yokken el krankı balya presini döndürür (hat durmaz, kilitlenmez)', {
   is: 'B F', parca: ['el-kranki', 'saft', 'balya-presi', 'sandik'], esya: ['balya-saman'],
+  dogrulandi: true,
 }, async () => {
   const { c, tarla } = dunya(8, duzTarla(0));
   c.havaSabit = { yon: 0, siddet: 0, gok: 'gunesli' }; // VARSAYIM: D test kancası

@@ -77,6 +77,7 @@ const HATLAR = [
   }],
   ['C (kıyım, 120/dk, 240 kuruş/dk)', hatC, {
     is: 'A B D E F G', esya: ['kiyim'],
+    dogrulandi: true, // kıyıcı 120/dk tavanı: gerçek parçalarla (main + F) geçti
     parca: [HUNI_AD, 'birlestirme-olugu', 'oluk-miknatisi', 'seytan-yeli', 'cekicli-kiyici',
       'sandik'],
   }],
