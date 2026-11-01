@@ -123,9 +123,27 @@
  *   (parca-tikandi'nin nedenleri: 'sikisti' pres, 'kirik' kıyıcı; veri.kod sert eşya.
  *    ciftlik-ozet sayaçları: uretilen, depolanan, satilan, bosa, gubre.)
  *
- *   [G ekonomi] (bu ailenin/işin olayları buraya)
+ *   [G ekonomi] (kural/ciftlik/ekonomi/; pano yuva 0 = damga kartı, 1-2 dönen kartlar)
+ *   siparis-geldi    { yuva, kart }                yuvaya yeni kart (başlangıç panosu olaysız)
+ *   siparis-tamam    { yuva, kart, odul }          kart teslim edildi, ödül kuruşa eklendi
+ *   siparis-sifirlandi { yuva, neden }             D2 Çivisiz: kapıya çivi geldi ('civi')
+ *   siparis-cevrildi { yuva }                      "Geri çevir" (yenisi 1200 tik sonra)
+ *   damga-basildi    { damga, ad, odul, acilanlar } damga basıldı; acilanlar: parça anahtarları
+ *   ciftlik-bulundu  { kod, kip, kurus }           iğne/buluntu bulundu sayıldı; kip: 'tam' |
+ *                                                  'yari' (sandık/ambar) | 'kurussuz' (iade)
+ *   kuyu-kullanildi  { tur, bedel }                kuruş kuyusu: 'araba' | 'cayir'
+ *   ciftlik-cevrimdisi { dk, esya, kurus, doldu }  (oyun yayar) çevrimdışı kazanç uygulandı
+ *   (komut-reddedildi nedenleri: 'kilitli', 'kurus', 'taban', 'bekle', 'tavan', 'damga';
+ *    parca-sokuldu iade'sinde ek alan kurus: iade edilen parça bedeli)
  *
  *   [I inşa] (bu ailenin/işin olayları buraya)
+ *   [I2 seçim-şablon]
+ *   yapistirildi     { parcalar }                  'yapistir' komutu kümeyi tek işlemde kurdu
+ *                                                  (ayrıca parça başına 'parca-kuruldu')
+ *   alan-sokuldu     { parcalar }                  'sokAlan' komutu alandakileri söktü
+ *                                                  (ayrıca parça başına 'parca-sokuldu')
+ *   ayar-tasindi     { parca }                     'ayarTasi' (pipet ortak ayarı) yazıldı
+ *   komut-reddedildi neden: 'yapistir-engelli' (+ engelliKaro, eksik) | 'bos' | 'bilinmeyen'
  *
  *   [J hud] (bu ailenin/işin olayları buraya)
  */

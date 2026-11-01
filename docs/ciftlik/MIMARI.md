@@ -26,6 +26,14 @@ js/kural/ciftlik/             saf kural (DOM yok, Node'da test edilir, Math.rand
                       hatBasiBos, hedefKabul, hedefeVer, cikisaVer
   tasima/dugum.js     düğüm altyapısı: dagit, oncelikle, sirayla, tampon*, yuva*, bekleIsle
   tasima/menfez.js    menfez eşleme kuralı: menfezEsi, MENFEZ_ARA_EN_AZ/EN_COK
+  ekonomi/denge.js    TEK KAYNAK denge sayıları: fiyatlar, eşya değerleri, sipariş, damgalar,
+                      kuyular, çevrimdışı; PARCA_SABIT (aile ajanlarının sabitleri taşınır)
+  ekonomi/acilis.js   kilit kaynağı (ACILIS, kipler damga/arastirma/acik, acikMi), URETIM
+                      (ürün → gereken parçalar; erişilebilirlik ve sipariş üretimi)
+  ekonomi/damga.js    kalıcı ilerleme (ilerlemeKur/Bagla/Al/Kodla/Coz), damga kartı ve basma
+  ekonomi/kurus.js    c.ekonomi, kurulum bedeli/söküm iadesi, esyaDegeri, bulundu, kuyular
+  ekonomi/siparis.js  siparisUret, ödül, pano (ekonomiAdim), teslimEt (kapı), ekonomi komutları
+  ekonomi/cevrimdisi.js  5 dk ölçüm penceresi, cevrimdisiHesapla/Uygula/Ilerle
   parcalar/temel.js   dikey dilim: bant (kod 1), huni (2), sandik (3)
   parcalar/tasima.js  çatal (40), birleştirme oluğu (41), menfez (42)
   parcalar/hepsi.js   aile dosyalarını yükler (yeni aile = bir satır)
@@ -155,13 +163,19 @@ pikseli kayması; sade harekette 0). Dünya pikseli: karo `(kx, ky)` = `(kx*8, k
   (hatlar + aşamaların `yenidenKur`'u; düşen hat eşyaları envantere) → aşamalar `sira < 40`
   (Faz 1: enerji 20, sinyal 30) → parçaların `adim`'ı (id artan) → aşamalar `40..49` →
   hatlar (aşağı akış önce) → aşamalar `50..59` → saman: en çok `KAYMA_TIK = 6` `cokertKaro`
-  (saniyede 120, normal modla aynı) → aşamalar `≥ 60` → `c.tik++` → her 20 tikte
-  `ciftlik-ozet`.
+  (saniyede 120, normal modla aynı) → aşamalar `≥ 60` → `c.tik++` → `ekonomiAdim` (biten
+  kartlar ödenir/damga basılır, boş pano yuvaları dolar; saniyede bir çevrimdışı penceresi) →
+  her 20 tikte `ciftlik-ozet`.
 - `asamaTanimla(ad, sira, { adim(ctx), yenidenKur(c, tarla) })` Faz 1 ağları içindir.
 - **Komutlar** (`komutEkle(c, komut)`; sonraki tikte uygulanır, `tik` alanı eklenir):
   `{ tur: 'kur', parca, x, y, yon }` (x, y döndürülmüş kutunun sol üstü), `{ tur: 'sok', x, y }`,
   `{ tur: 'dondur', x, y, yon? }`. `komutTanimla(tur, uygula(c, tarla, komut, olaylar))` ile
   yeni tür (Faz 1: ayar, temizle, sandıktan al). Arayüz benzetimi **yalnız komutla** değiştirir.
+  `kur` kilidi ve kuruşu denetler (red `'kilitli'`, `'kurus'`) ve bedeli öder; `sok` bedeli
+  %100 iade eder (`iade.kurus`); `parcaKur`/`parcaSok` doğrudan çağrılınca kuruş işlemez.
+  Ekonomi komutları: `{ tur: 'siparisCevir', yuva }`, `{ tur: 'kapiSat', acik }`,
+  `{ tur: 'arabaCagir' }` (→ `c.ekonomi.arabaIstek++`), `{ tur: 'cayirGenislet' }`
+  (→ `c.ekonomi.cayirEk` 0..3); dünya tarafı (D) bu istekleri okur.
 - **Determinizm**: gerçek zaman okunmaz; zar `c.zar = { a }` (kayda girer); Map sırası = id
   sırası; trigonometri yok. Aynı tohum + aynı tik numaralı komutlar = aynı `dunyaOzeti`.
 - Kare tarafı: `oyun-ciftlik.js` `tikSayisi(birikim, dt*1000)` ile karede 0-4 tik atar; geride
@@ -232,11 +246,15 @@ dolu karoların `{ x, y, r: 1 }` daireleri (karakterde yürünür parçalar hari
 
 ## 11. Kayıt (`sakla.js`, `ozellik/ciftlik/depo.js`)
 ```
-{ surum: 1, tohum, tik, zar, kaymaAdim, sonrakiId, yasak: [{x,y,r}], kaldirilan,
+{ surum: 2, tohum, tik, zar, kaymaAdim, sonrakiId, yasak: [{x,y,r}], kaldirilan,
   h: 'base64', kirli: [150], tarlaKirli, gomulu: [[esya, x, y, z, aci, alindi, ek]],
   parcalar: [[id, kod, x, y, yon, etkin, tikali, ozel]], hatEsya: [[karo, ic, kod]],
-  envanter: [[kod, n]], kuyruk: [komut...], ek: { etiket } }
+  envanter: [[kod, n]], kuyruk: [komut...], ekonomi: { kurus, pano, ..., cevrimdisiKat },
+  ek: { etiket } }
 ```
+- Göç 1 → 2: `ekonomi` eklenir; eski kurulu parçalar ödenmiş sayılır (kuruş = 300 − Σ fiyat).
+  Kalıcı ilerleme dünyada değil: `ilerlemeKodla/Coz` (ayrı anahtar), `dunyaCoz(veri, tarla,
+  { ilerleme })` bağlar; bağlanmamış dünya ilk okumada varsayılanı (damga kipi) alır.
 - `h`: eğim tahmini (sol + üst − sol üst) farkı → zigzag → sıfır koşusu → varint → base64
   (gerçek tarla ~28 KB; tüm kayıt ~30 KB).
 - Göç: `GOCLER[surum](veri) → sonraki sürüm`; `gocUygula` sırayla uygular. Bilinmeyen sürüm,
@@ -291,8 +309,8 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
 - Kayıt: ~30 KB JSON, kodlama ~5 ms.
 
 ## 16. Bilinen sınırlar / Faz 1'e kalanlar
-- Enerji, sinyal, maliyet/envanter harcama, siparişler, çevrimdışı hesap yok
-  (kancalar hazır). Söküm maliyet iadesi yok (yalnız içerik).
+- Ekonomi (kuruş, sipariş, damga, çevrimdışı) kuralda var; oyun bağı (ilerleme kaydı, elle iğne
+  ödemesi, fiş) J/ana işte.
 - Kepçe/balya makinesi çiftlikte normal kodla çalışır; gömülü nesneyi kepçeye alırsa `c.gomulu`
   bağı korunur ama makinenin boşaltma kuralı çiftlikte özel değil.
 - Elle alınan çivi/buluntu envantere girmez (normal moddaki gibi yalnız alınır); elle alınan

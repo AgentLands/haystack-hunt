@@ -17,6 +17,7 @@ import { kayitlariOku, kayitYaz } from './depo.js';
 import { paletGoster } from './palet.js';
 import { paletAc } from './insa.js';
 import './gorsel/katman.js';
+import './secim-arayuz.js';
 
 const OTO_KAYIT_MS = 30000;
 const INSA_SONRASI_MS = 2000;
