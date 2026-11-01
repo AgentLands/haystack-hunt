@@ -1,7 +1,8 @@
 /**
- * İşleme/depo testlerinin yardımcıları: yalnız testte tanımlı iki parça (kaynak: her tik
- * kuyruğundaki ilk eşyayı doğuya verir; alıcı: batıdan her şeyi alır, `acik` 0 iken almaz),
- * makine önüne/arkasına yerleştirme ve iğne korunumu sayımı.
+ * İşleme/depo testlerinin yardımcıları: yalnız testte tanımlı üç parça (kaynak: her tik
+ * kuyruğundaki ilk eşyayı doğuya verir; alıcı: batıdan her şeyi alır, `acik` 0 iken almaz;
+ * güç: sınırsız bg üreten enerji parçası, makinenin üstüne konur), makine önüne/arkasına
+ * yerleştirme ve olay süzme.
  */
 import { parcaTanimla } from '../js/kural/ciftlik/parca-kayit.js';
 import { esyaKodu } from '../js/kural/ciftlik/esya.js';
@@ -43,16 +44,25 @@ parcaTanimla('test-alici', {
   },
 });
 
+parcaTanimla('test-guc', {
+  kod: 60003, ad: 'Test gücü', aile: 'enerji', boyut: [1, 1], yonlu: false,
+  uret: () => 100000,
+});
+
 export const K = (ad) => esyaKodu(ad);
 
 /**
  * (x, y)'ye yon 0 ile `ad` makinesini kurar; giriş portunun arkasına kaynak, çıkış portunun
- * önüne alıcı (varsa). Sıra: makine önce kurulur (id küçük: önce adım atar).
+ * önüne alıcı (varsa), güç isteyen makinenin üstüne test gücü (guc: false ise şebekesiz:
+ * gucsuzOran). Sıra: makine önce kurulur (id küçük: önce adım atar).
  */
-export function hatKur(c, tarla, ad, x, y, { kaynak = true, alici = true } = {}) {
+export function hatKur(c, tarla, ad, x, y, { kaynak = true, alici = true, guc = true } = {}) {
   const m = kur(c, tarla, ad, x, y, 0);
+  if (guc && (m.tanim.guc > 0 || m.tanim.gucsuzOran !== undefined)) {
+    kur(c, tarla, 'test-guc', x, y - 1, 0);
+  }
   const g = m.giris[0];
-  const k = kaynak && g ? kur(c, tarla, 'test-kaynak', g.hx, g.hy, 0) : null;
+  const k = kaynak && g ? kur(c, tarla, 'test-kaynak', g.hx, g.hy, (g.yon + 2) & 3) : null;
   const ck = m.cikis[0];
   const a = alici && ck ? kur(c, tarla, 'test-alici', ck.hx, ck.hy, 0) : null;
   return { m, k, a };

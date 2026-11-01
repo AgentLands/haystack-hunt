@@ -3,14 +3,15 @@
  * küçük yardımcıları. Kural: **iğne ve buluntu hiçbir yolla yok olmaz**: bir sink'te
  * "bulundu" olur (olay `ciftlik-bulundu`; defter + kutlama + kuruş) ya da oyuncuya döner
  * (envanter + `ciftlik-bulundu`, kuruşsuz ya da tam).
- *   bulundu(ortam, kod, kaynak, odeme, p)   olay + kuruş; odeme 'tam' | 'yari' | 'yok'
+ *   bulundu(ortam, kod, kaynak, kip, p)   olay + kuruş; kip 'tam' | 'yari' | 'kurussuz'
  *   oyuncuyaVer(ortam, kod, kaynak, odeme, p)   envantere koyar; değerliyse bulundu da
  * `ortam` bir tik ctx'i ya da komut ortamı `{ c, olay(ad, veri) }`.
  * Söküm kancası (komut.js): sökülen parçanın içindeki ve sökülen bant karosundaki iğne/
  * buluntu oyuncuya döner (envantere çekirdek koyar; burada "bulundu", tam ödeme).
- * SAP (G ekonomi): kuruş `c.kurus` (kurusEkle/kurusHarca), dünyadan çıkan saman
- * `c.cikanKat` (satılan, gübrelenen; korunum: ciftlikSamani + kaldirilan + cikanKat sabit).
- * İkisi de kayda G/D göçüyle girmeli.
+ * SAP (G ekonomi, ekonomi/kurus.js gelince): kurusEkle/kurusHarca/bulundu'nun kuruş ve
+ * toplam kısmı G'nin aynı adlı işlevlerine devredilir (G: bulundu(c, kod, kip, olay)).
+ * Şimdilik kuruş `c.kurus`. Dünyadan çıkan saman `c.cikanKat` (satılan, gübrelenen; korunum:
+ * ciftlikSamani + kaldirilan + cikanKat sabit); kayda G/D göçüyle girmeli.
  */
 import { esyaTanimi, esyaSamani } from '../esya.js';
 import { karoIndeks, karoIcinde } from '../olcu.js';
@@ -36,23 +37,25 @@ export function samanCikti(c, kod, n = 1) {
   if (s) c.cikanKat = (c.cikanKat ?? 0) + s;
 }
 
-/** Değerli eşya bulundu: kuruş (odeme oranında) + olay. Kuruş miktarını döndürür. */
-export function bulundu(ortam, kod, kaynak, odeme, p = null) {
+/** Değerli eşya bulundu: kuruş (kip oranında) + olay. Ödenen kuruşu döndürür. */
+export function bulundu(ortam, kod, kaynak, kip, p = null) {
   const oz = ozellik(kod);
-  const kurus = odeme === 'tam' ? oz.deger : odeme === 'yari' ? oz.deger >> 1 : 0;
+  if (!degerliMi(kod)) throw new Error(`bulundu: ${kod} iğne ya da buluntu değil`);
+  if (!['tam', 'yari', 'kurussuz'].includes(kip)) throw new Error(`bulundu: kip ${kip}?`);
+  const kurus = kip === 'tam' ? oz.deger : kip === 'yari' ? oz.deger >> 1 : 0;
   kurusEkle(ortam.c, kurus);
   const t = esyaTanimi(kod);
   ortam.olay('ciftlik-bulundu', {
     kod, anahtar: t?.anahtar ?? null, buluntu: t?.buluntu ?? null, sinif: oz.sinif, kaynak,
-    odeme, kurus, parca: p, x: p ? p.x : null, y: p ? p.y : null,
+    kip, kurus, parca: p, x: p ? p.x : null, y: p ? p.y : null,
   });
   return kurus;
 }
 
 /** Eşyayı oyuncuya (envantere) verir; iğne/buluntuysa "bulundu" da yazılır. */
-export function oyuncuyaVer(ortam, kod, kaynak, odeme, p = null) {
+export function oyuncuyaVer(ortam, kod, kaynak, kip, p = null) {
   ortam.c.envanter[kod] += 1;
-  if (degerliMi(kod)) bulundu(ortam, kod, kaynak, odeme, p);
+  if (degerliMi(kod)) bulundu(ortam, kod, kaynak, kip, p);
 }
 
 /** (kx, ky) karosundaki hat ve sırası: { h, sira } ya da null. */

@@ -19,7 +19,8 @@
  *   icerik(p) → { esya: [[kod, adet]...], saman: kat }   söküm iadesi ve saman korunumu
  *   durum(p) → 'calisiyor' | 'bos' | 'girdi-yok' | 'cikis-dolu' | 'guc-yok' | 'tikali'
  *   incele(p) → [[etiket, değer]...]   inceleme paneli satırları (saf)
- *   ayarla / temizle / onar(p, komut, ortam) → null | neden   parça komutları (komut.js)
+ *   ayarla(p, ad, deger) → bool   'ayar' komutu (yoksa `ayarlar` şeması, ag/ayar.js)
+ *   temizle / onar(p, komut, ortam) → null | neden   parça komutları (isleme/komutlar.js)
  *   cek(p, uygun(kod), ctx) → kod | 0   depodan bir eşya çeker (yaba kolu; sandık, ambar)
  *   sokulmez   true: sökülmez, döndürülmez (Komşu kapısı); paletDisi: palette gösterilmez
  */

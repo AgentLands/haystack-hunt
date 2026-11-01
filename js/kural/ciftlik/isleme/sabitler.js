@@ -1,11 +1,13 @@
 /**
  * İşleme ailesinin ortak sabitleri ve sapları (parcalar/isleme.js ve isleme/kiyici-gubre.js):
  * denge sayıları (ISLEME; G denge.js'e taşıyabilir), eşya kodları, rozet yardımcıları.
- * SAP (D dünya): hava `havaKaynagiKur(islev(ctx) → { gok, siddet })` (varsayılan sabit güneş,
- * rüzgâr 2), gübre → çayır `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo sayısı)`
- * (varsayılan -1: çayır katmanı yok, yalnız sayılır).
+ * Hava enerji ağının kaynağından okunur (ag/enerji.js havaAl; D bağlayınca gerçek hava).
+ * SAP (D dünya): gübre → çayır `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo sayısı)`
+ * (varsayılan -1: çayır katmanı yok, yalnız sayılır). D: dunya/arazi.js gubrele(c, kx, ky, r,
+ * sure) ile tek satırda bağlanır.
  */
-import { esyaKodu, esyaTanimi } from '../esya.js';
+import { esyaKodu } from '../esya.js';
+import { havaAl } from '../ag/enerji.js';
 import { ozellik } from './esya-ozellik.js';
 
 /** Denge sayıları (parcalar.md; tik ve bg). */
@@ -24,16 +26,11 @@ export const PRES_KABUL = new Set([SAMAN, KURU, esyaKodu('toz'), KIYIM]);
 export const GUBRE_PUAN = new Map([['toz', 1], ['curuk-ot', 2], ['balya-karisik', 8]]
   .map(([ad, n]) => [esyaKodu(ad), n]));
 export const sert = (kod) => ozellik(kod).sert;
-export const ad = (kod) => esyaTanimi(kod)?.ad ?? `#${kod}`;
 /** Girişte bekleyen kabul edilmemiş eşyanın rozeti: nemli ya da yabancı. */
 export const redRozeti = (kod) => (ozellik(kod).nem ? 'nemli' : 'yabanci');
 
-/** SAP (D hava): { gok: 'gunes' | 'bulut' | 'yagmur', siddet: 0..3 }; sabit güneş, rüzgâr 2. */
-let havaKaynagi = () => ({ gok: 'gunes', siddet: 2 });
-export function havaKaynagiKur(islev) {
-  havaKaynagi = islev;
-}
-export const havaOku = (ctx) => havaKaynagi(ctx);
+/** Bu tikteki hava: { gok: 'gunes' | 'bulut' | 'yagmur', siddet: 0..3 } (dunya/hava.js). */
+export const havaOku = (ctx) => havaAl(ctx.c, ctx.tik);
 /** SAP (D arazi): gübrele(ctx, p, menzil, sure) → gübrelenen çayır karosu sayısı (-1: yok). */
 let gubreKaynagi = () => -1;
 export function gubreKaynagiKur(islev) {

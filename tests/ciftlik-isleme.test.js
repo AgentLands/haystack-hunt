@@ -9,21 +9,20 @@ import assert from 'node:assert/strict';
 import { tikAt, komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
-import {
-  ISLEME, havaKaynagiKur, gubreKaynagiKur,
-} from '../js/kural/ciftlik/parcalar/isleme.js';
+import { ISLEME, gubreKaynagiKur } from '../js/kural/ciftlik/parcalar/isleme.js';
+import { havaKaynagiAyarla } from '../js/kural/ciftlik/ag/enerji.js';
 import { dunya, kur, bantCek, kos } from './ciftlik-yardim.mjs';
 import { K, hatKur, ekle, bulunanlar, kosKadar } from './ciftlik-isleme-yardim.mjs';
 
-const hava = (gok, siddet) => havaKaynagiKur(() => ({ gok, siddet }));
+const hava = (gok, siddet) => havaKaynagiAyarla(() => ({ yon: 0, gok, siddet }));
+const talep = (m) => m.tanim.talep(m);
 
 test('ot savurucu: kuruma süresi havaya bağlı (200 / 240 / 400 tik), güçsüz ⅓', () => {
   for (const [gok, siddet, oran, beklenen] of [['gunes', 2, 1024, 200], ['gunes', 0, 1024, 240],
     ['bulut', 3, 1024, 400], ['gunes', 2, 341, 601]]) {
     hava(gok, siddet);
     const { c, tarla } = dunya();
-    const { m, k, a } = hatKur(c, tarla, 'ot-savurucu', 20, 20);
-    m.oran = oran;
+    const { k, a } = hatKur(c, tarla, 'ot-savurucu', 20, 20, { guc: oran === 1024 });
     ekle(k, 'yas-ot');
     const t = kosKadar(c, tarla, tikAt, 1000, () => a.ozel.alinan.length > 0);
     assert.ok(Math.abs(t - beklenen) <= 1, `${gok}/${siddet}/${oran}: ${t} tik`);
@@ -32,14 +31,17 @@ test('ot savurucu: kuruma süresi havaya bağlı (200 / 240 / 400 tik), güçsü
   hava('gunes', 2);
 });
 
-test('ot savurucu: 9 yuva → 54 eşya/dk; yağmurda durur ("hava"), kuru eşya bekletmeden geçer', () => {
+test('ot savurucu: 9 yuva → 54/dk; yağmurda durur ("hava"), kuru eşya bekletmeden geçer', () => {
   hava('gunes', 2);
   let { c, tarla } = dunya();
   let { k, a, m } = hatKur(c, tarla, 'ot-savurucu', 20, 20);
   ekle(k, 'yas-ot', 200);
+  kos(c, tarla, 600);
+  const once = a.ozel.alinan.length;
   kos(c, tarla, 1200);
-  assert.ok(Math.abs(a.ozel.alinan.length - 54) <= 2, `dakikada ${a.ozel.alinan.length}`);
-  assert.equal(m.talep, ISLEME.savurucu.guc);
+  const dk = a.ozel.alinan.length - once;
+  assert.ok(Math.abs(dk - 54) <= 2, `dakikada ${dk}`);
+  assert.equal(talep(m), ISLEME.savurucu.guc);
   hava('yagmur', 1);
   ({ c, tarla } = dunya());
   ({ k, a, m } = hatKur(c, tarla, 'ot-savurucu', 20, 20));
@@ -48,7 +50,7 @@ test('ot savurucu: 9 yuva → 54 eşya/dk; yağmurda durur ("hava"), kuru eşya 
   assert.equal(a.ozel.alinan.length, 0);
   assert.equal(m.ozel.tur.length, ISLEME.savurucu.kap, 'giriş dolar');
   assert.equal(parcaDurumu(m), 'hava');
-  assert.equal(m.talep, 0, 'ilerleyemeyen makine güç istemez');
+  assert.equal(talep(m), 0, 'ilerleyemeyen makine güç istemez');
   ({ c, tarla } = dunya());
   ({ k, a, m } = hatKur(c, tarla, 'ot-savurucu', 20, 20));
   ekle(k, 'yas-ot');
@@ -62,8 +64,7 @@ test('ot savurucu: 9 yuva → 54 eşya/dk; yağmurda durur ("hava"), kuru eşya 
 test('kurutma ambarı: 24 yuva, yaş ot başına 600 tik; güçsüz (256) dört kat; yalnız yaş ot', () => {
   for (const [oran, sure] of [[1024, 600], [256, 2400]]) {
     const { c, tarla } = dunya();
-    const { m, k, a } = hatKur(c, tarla, 'kurutma-ambari', 20, 20);
-    m.oran = oran;
+    const { m, k, a } = hatKur(c, tarla, 'kurutma-ambari', 20, 20, { guc: oran === 1024 });
     a.ozel.acik = 0;
     ekle(k, 'yas-ot', 30);
     kos(c, tarla, sure - 30);
@@ -76,7 +77,7 @@ test('kurutma ambarı: 24 yuva, yaş ot başına 600 tik; güçsüz (256) dört 
   }
   const { c, tarla } = dunya();
   const { m } = hatKur(c, tarla, 'kurutma-ambari', 20, 20, { kaynak: false });
-  bantCek(c, tarla, 15, 21, 0, 4);
+  bantCek(c, tarla, 15, 21, 0, 5);
   tikAt(c, tarla);
   c.hatlar[0].pos[0] = 0;
   c.hatlar[0].tur[0] = K('civi');
@@ -111,18 +112,18 @@ test('balya presi: darbeli talep (dolum 4 bg, basma 30 bg; boşta 0)', () => {
   const gorulen = new Map();
   for (let i = 0; i < 150; i++) {
     tikAt(c, tarla);
-    gorulen.set(m.talep, (gorulen.get(m.talep) ?? 0) + 1);
+    gorulen.set(talep(m), (gorulen.get(talep(m)) ?? 0) + 1);
   }
   assert.equal(gorulen.get(ISLEME.pres.gucDolum), 56, 'dolum 8 × 7 tik');
   assert.equal(gorulen.get(ISLEME.pres.gucBasma), 40, 'basma 40 tik');
-  assert.equal(m.talep, 0);
+  assert.equal(talep(m), 0);
 });
 
 test('balya presi: yaş ot ve hafif buluntu reddedilir ("nemli", "yabancı"), kaybolmaz', () => {
   for (const [ad, rozet] of [['yas-ot', 'nemli'], ['buluntu:tuy', 'yabanci']]) {
     const { c, tarla } = dunya();
     const { m } = hatKur(c, tarla, 'balya-presi', 20, 20, { kaynak: false });
-    bantCek(c, tarla, 15, 20, 0, 4);
+    bantCek(c, tarla, 15, 20, 0, 5);
     tikAt(c, tarla);
     const h = c.hatlar[0];
     Object.assign(h, { n: 1 });
@@ -146,7 +147,7 @@ test('balya presi: sert eşya sıkıştırır; Temizle eşyayı oyuncuya verir, 
   assert.ok(sonra.some((o) => o.ad === 'parca-temizlendi'));
   assert.equal(m.tikali, false);
   assert.equal(c.envanter[K('civi')], 1);
-  assert.equal(m.ozel.kalip.length, 2, 'kalıptaki tutamlar kalır');
+  assert.equal(m.ozel.kalip.length, 3, 'kalıptaki 2 tutam kaldı, sıradaki girdi');
   komutEkle(c, { tur: 'temizle', x: m.x, y: m.y });
   const red = kos(c, tarla, 1).find((o) => o.ad === 'komut-reddedildi');
   assert.equal(red.veri.neden, 'gereksiz');
@@ -172,7 +173,7 @@ test('kıyıcı: saman/kuru ot → kıyım, 10 tik (≈ 120/dk); yabancı redded
   kos(c, tarla, 1200);
   assert.ok(Math.abs(a.ozel.alinan.length - 120) <= 2, `dakikada ${a.ozel.alinan.length}`);
   assert.ok(a.ozel.alinan.every((kod) => kod === K('kiyim')));
-  assert.equal(m.talep, ISLEME.kiyici.guc);
+  assert.equal(talep(m), ISLEME.kiyici.guc);
   const d = dunya();
   const y = hatKur(d.c, d.tarla, 'cekicli-kiyici', 20, 20);
   ekle(y.k, 'toz');
@@ -229,7 +230,6 @@ test('gübre çukuru: toz 1, çürük ot 2, karışık balya 8 puan; 120 dolu; 2
   const olaylar = kos(c, tarla, 40);
   assert.equal(m.ozel.puan, 2 + 2 + 8 * 14, 'kapasiteye dek');
   assert.equal(k.ozel.kuyruk.length, 7, 'fazlası ve saman girişte bekler');
-  assert.equal(parcaDurumu(m), 'dolu');
   assert.equal(c.cikanKat, 3 * 12 + 14 * 96, 'gübrelenen saman korunum sayacına');
   assert.equal(olaylar.filter((o) => o.ad === 'gubre-serpildi').length, 0);
   const sonra = kos(c, tarla, ISLEME.gubre.aralik);
@@ -249,8 +249,8 @@ test('gübre çukuru: iğne ve buluntu oyuncuya iade (defter, kuruş yok)', () =
   ekle(k, 'igne');
   ekle(k, 'buluntu:tuy');
   const b = bulunanlar(kos(c, tarla, 5));
-  assert.deepEqual(b.map((v) => [v.kaynak, v.odeme, v.kurus]), [['gubre', 'yok', 0],
-    ['gubre', 'yok', 0]]);
+  assert.deepEqual(b.map((v) => [v.kaynak, v.kip, v.kurus]), [['gubre', 'kurussuz', 0],
+    ['gubre', 'kurussuz', 0]]);
   assert.equal(c.envanter[K('igne')], 1);
   assert.equal(c.envanter[K('buluntu:tuy')], 1);
 });

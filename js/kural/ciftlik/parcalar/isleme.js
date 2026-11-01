@@ -1,26 +1,29 @@
 /**
  * Çiftlik parçaları: İşleme ailesi (docs/ciftlik/parcalar.md 13-17): ot savurucu, kurutma
  * ambarı, balya presi, çekiçli kıyıcı, gübre çukuru. Güç oranı (ctx.oran, 0..1024) iş
- * ilerlemesini çarpar; her makine her tik `p.talep`'i (bg) yazar: ilerleyemediği tikte 0
- * (enerji ağı, B, bunu okur). İğne/buluntu hiçbir makinede yok olmaz: kurutma ve gübre dışı
- * makinelerde ya geçer ya girişte bekler; sert olan presi sıkıştırır (Temizle oyuncuya verir),
- * kıyıcının çekicini kırar (çıkıştan olduğu gibi atılır); gübre çukuru oyuncuya iade eder.
- * Kıyıcı ve gübre çukuru isleme/kiyici-gubre.js'te (dosya boyu); sabitler ve saplar (hava,
- * gübre → çayır: D) isleme/sabitler.js'te.
+ * ilerlemesini çarpar; `talep(p)` enerji ağına (ag/enerji.js) bu tikin bg talebini verir:
+ * ilerleyemeyen makine 0 ister (pres darbelidir: dolarken 4, basarken 30). İğne/buluntu
+ * hiçbir makinede yok olmaz: ya geçer (ot savurucu) ya girişte bekler (kurutma); sert olan
+ * presi sıkıştırır (Temizle oyuncuya verir), kıyıcının çekicini kırar (çıkıştan olduğu gibi
+ * atılır); gübre çukuru oyuncuya iade eder. Kıyıcı ve gübre çukuru isleme/kiyici-gubre.js'te
+ * (dosya boyu); sabitler ve gübre sapı (D) isleme/sabitler.js'te.
  */
 import { parcaTanimla } from '../parca-kayit.js';
 import { esyaKodu } from '../esya.js';
+import { gucRozeti } from '../ag/enerji.js';
+import { esyaAdi as ad } from '../isleme/esya-ozellik.js';
 import { oyuncuyaVer, girisBekleyen, ilerle } from '../isleme/bulundu.js';
 import {
-  ISLEME, YAS, KURU, SAMAN, PRES_KABUL, sert, ad, redRozeti, havaOku,
+  ISLEME, YAS, KURU, SAMAN, PRES_KABUL, sert, redRozeti, havaOku,
 } from '../isleme/sabitler.js';
 import '../isleme/kiyici-gubre.js';
+import '../isleme/komutlar.js';
 
-export { ISLEME, havaKaynagiKur, gubreKaynagiKur } from '../isleme/sabitler.js';
+export { ISLEME, gubreKaynagiKur } from '../isleme/sabitler.js';
 
 /** Ot savurucu: yaş otu havayla kurutur (9 yuva); kuru ve diğer eşya bekletmeden geçer. */
 parcaTanimla('ot-savurucu', {
-  kod: 113, ad: 'Ot savurucu', aile: 'isleme', boyut: [3, 1],
+  kod: 13, ad: 'Ot savurucu', aile: 'isleme', boyut: [3, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 2, y: 0, yon: 0 }],
   guc: ISLEME.savurucu.guc, gucsuzOran: 341, maliyet: { kurus: 90 }, kilit: 'D6',
   kur(p) {
@@ -40,17 +43,14 @@ parcaTanimla('ot-savurucu', {
     const artis = h.gok === 'yagmur' ? 0 : h.gok === 'bulut' ? S.bulut
       : h.siddet >= 1 ? S.gunesRuzgar : S.gunes;
     o.yagmur = artis ? 0 : 1;
-    let islek = false;
     for (let i = 0; artis && i < o.tur.length; i++) {
       if (o.tur[i] !== YAS) continue;
-      islek = true;
       o.puan[i] += artis * ctx.oran(p);
       if (o.puan[i] < S.puan * 1024) continue;
       o.tur[i] = KURU;
       o.puan[i] = 0;
       ctx.sayac('uretilen', KURU);
     }
-    p.talep = islek ? S.guc : 0;
     const i = o.tur.findIndex((kod) => kod !== YAS);
     o.dolu = 0;
     if (i < 0) return;
@@ -66,7 +66,11 @@ parcaTanimla('ot-savurucu', {
     const o = p.ozel;
     if (o.dolu) return 'cikis-dolu';
     if (!o.tur.length) return 'ac';
-    return o.yagmur ? 'hava' : 'calisiyor';
+    return o.yagmur ? 'hava' : gucRozeti(p) ?? 'calisiyor';
+  },
+  talep(p) {
+    const o = p.ozel;
+    return !o.yagmur && o.tur.includes(YAS) ? ISLEME.savurucu.guc : 0;
   },
   incele(p) {
     const o = p.ozel;
@@ -78,7 +82,7 @@ parcaTanimla('ot-savurucu', {
 
 /** Kurutma ambarı: yalnız yaş ot; 24 yuva, ot başına 600 tik (güçsüz ¼ hız). */
 parcaTanimla('kurutma-ambari', {
-  kod: 114, ad: 'Kurutma ambarı', aile: 'isleme', boyut: [3, 3],
+  kod: 14, ad: 'Kurutma ambarı', aile: 'isleme', boyut: [3, 3],
   girisler: [{ x: 0, y: 1, yon: 2 }], cikislar: [{ x: 2, y: 1, yon: 0 }],
   guc: ISLEME.kurutma.guc, gucsuzOran: 256, maliyet: { kurus: 200 }, kilit: 'D7',
   kur(p) {
@@ -101,7 +105,6 @@ parcaTanimla('kurutma-ambari', {
       o.hazir += 1;
       ctx.sayac('uretilen', KURU);
     }
-    p.talep = o.yuva.length ? K.guc : 0;
     o.dolu = o.hazir && !ctx.ver(p, 0, KURU) ? 1 : 0;
     if (o.hazir && !o.dolu) o.hazir -= 1;
     o.bekleyen = girisBekleyen(ctx.c, p);
@@ -114,7 +117,10 @@ parcaTanimla('kurutma-ambari', {
     if (o.dolu) return 'cikis-dolu';
     if (o.bekleyen && o.bekleyen !== YAS) return redRozeti(o.bekleyen);
     if (o.yuva.length + o.hazir >= ISLEME.kurutma.yuva) return 'dolu';
-    return o.yuva.length ? 'calisiyor' : 'ac';
+    return o.yuva.length ? gucRozeti(p) ?? 'calisiyor' : 'ac';
+  },
+  talep(p) {
+    return p.ozel.yuva.length ? ISLEME.kurutma.guc : 0;
   },
   incele(p) {
     const o = p.ozel;
@@ -132,7 +138,7 @@ function balyaTuru(kalip) {
   return esyaKodu('balya-karisik');
 }
 parcaTanimla('balya-presi', {
-  kod: 115, ad: 'Balya presi', aile: 'isleme', boyut: [3, 2],
+  kod: 15, ad: 'Balya presi', aile: 'isleme', boyut: [3, 2],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 2, y: 0, yon: 0 }],
   guc: 15, maliyet: { kurus: 150 }, kilit: 'D3',
   kur(p) {
@@ -158,23 +164,26 @@ parcaTanimla('balya-presi', {
   adim(ctx, p) {
     const o = p.ozel;
     const P = ISLEME.pres;
-    p.talep = 0;
     o.dolu = o.cikis && !ctx.ver(p, 0, o.cikis) ? 1 : 0;
     if (!o.dolu) o.cikis = 0;
     o.bekleyen = girisBekleyen(ctx.c, p);
     if (p.tikali) return;
     if (o.doluyor) {
-      p.talep = P.gucDolum;
       if (ilerle(o, 'il', ctx.oran(p), P.dolum)) o.doluyor = 0;
       if (!o.doluyor && o.kalip.length >= P.kalip) o.basiyor = 1;
     } else if (o.basiyor && !o.cikis) {
-      p.talep = P.gucBasma;
       if (!ilerle(o, 'il', ctx.oran(p), P.basma)) return;
       o.cikis = balyaTuru(o.kalip);
       o.kalip = [];
       o.basiyor = 0;
       ctx.sayac('uretilen', o.cikis);
     }
+  },
+  talep(p) {
+    const o = p.ozel;
+    if (p.tikali) return 0;
+    if (o.doluyor) return ISLEME.pres.gucDolum;
+    return o.basiyor && !o.cikis ? ISLEME.pres.gucBasma : 0;
   },
   temizle(p, k, ortam) {
     if (!p.tikali) return 'gereksiz';
@@ -193,7 +202,7 @@ parcaTanimla('balya-presi', {
   durum(p) {
     const o = p.ozel;
     if (o.dolu) return 'cikis-dolu';
-    if (o.basiyor || o.doluyor) return 'calisiyor';
+    if (o.basiyor || o.doluyor) return gucRozeti(p) ?? 'calisiyor';
     return o.bekleyen ? redRozeti(o.bekleyen) : 'ac';
   },
   incele(p) {

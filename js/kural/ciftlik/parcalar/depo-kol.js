@@ -5,15 +5,15 @@
  * öndeki parçaya ya da hat karosuna bırakır; 16 tik salınım) ve Komşu kapısı (kurulu gelir,
  * sökülmez; kabul tarafı: sipariş → fazlasını sat → at; iğne/buluntu oyuncuya iade).
  * Sandık ve ambar iğne/buluntuyu "bulundu" sayar (yarı kuruş), depoda tutmaz.
- * SAP (G ekonomi): kapının sipariş eşlemesi `kapiSiparisKur(islev(ctx, kod) → bool)`;
- * varsayılan hiçbir siparişe uymaz (hepsini sat).
+ * SAP (G ekonomi): kapı teslimi `kapiTeslimKur(islev(ctx, kod, p) → { sonuc, kurus? })`;
+ * varsayılan hiçbir siparişe uymaz ("fazlasını sat" açıksa değeri olanı satar).
  */
 import { parcaTanimla } from '../parca-kayit.js';
 import { esyaKodu, esyaTanimi } from '../esya.js';
 import { DX, DY } from '../olcu.js';
-import { ozellik, degerliMi } from '../isleme/esya-ozellik.js';
+import { ozellik, degerliMi, esyaAdi as ad } from '../isleme/esya-ozellik.js';
 import {
-  bulundu, oyuncuyaVer, kurusEkle, samanCikti, girisBekleyen,
+  bulundu, kurusEkle, samanCikti, girisBekleyen,
 } from '../isleme/bulundu.js';
 import { karodanCek, karoyaBirak } from '../isleme/hat-el.js';
 import { depodanCek } from './temel.js';
@@ -25,21 +25,14 @@ export const DEPO_KOL = {
 };
 const YAS = esyaKodu('yas-ot');
 const CURUK = esyaKodu('curuk-ot');
-const ad = (kod) => esyaTanimi(kod)?.ad ?? `#${kod}`;
 /** Yaba kolu filtre sınıfları (esyalar.md §1 `sinif`). */
 export const SINIFLAR = ['saman', 'urun', 'igne', 'metal', 'cop', 'buluntu'];
-
-/** SAP (G): kapıya gelen eşya etkin bir siparişe sayıldıysa true. */
-let kapiSiparisi = () => false;
-export function kapiSiparisKur(islev) {
-  kapiSiparisi = islev;
-}
 
 const satirlar = (say) => Object.entries(say).map(([kod, n]) => [ad(Number(kod)), n]);
 
 /** Ambar: dört kenarın orta karosundan alır; yaş ot zamanla çürür. */
 parcaTanimla('ambar', {
-  kod: 119, ad: 'Ambar', aile: 'depo', boyut: [3, 3], yonlu: false,
+  kod: 19, ad: 'Ambar', aile: 'depo', boyut: [3, 3], yonlu: false,
   girisler: [{ x: 1, y: 0, yon: 3 }, { x: 2, y: 1, yon: 0 }, { x: 1, y: 2, yon: 1 },
     { x: 0, y: 1, yon: 2 }],
   maliyet: { kurus: 180 }, kilit: 'D7',
@@ -90,7 +83,7 @@ parcaTanimla('ambar', {
 
 /** Defter masası: iğne ve buluntu alır (tam kuruş + defter); başka eşya girişte bekler. */
 parcaTanimla('defter-masasi', {
-  kod: 120, ad: 'Defter masası', aile: 'depo', boyut: [2, 1],
+  kod: 20, ad: 'Defter masası', aile: 'depo', boyut: [2, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }, { x: 0, y: 0, yon: 3 }, { x: 0, y: 0, yon: 1 }],
   maliyet: { kurus: 40 }, kilit: 'D2',
   kur(p) {
@@ -121,33 +114,31 @@ parcaTanimla('defter-masasi', {
 });
 
 /**
- * Filtre dizgesi → uygunluk işlevi: 'hepsi' | 'manyetik' | 'tur:<kod>' | 'sinif:<ad>'.
- * Seçimi boş ('tur:', 'sinif:') → null (kol "ayar" rozetiyle bekler).
+ * Kol filtresi (ag/ayar.js biçimi + manyetik): { tur: 'hepsi' } | { tur: 'esya', kod } |
+ * { tur: 'sinif', sinif } | { tur: 'manyetik' } → uygunluk işlevi. Seçimi eksik ({ tur:
+ * 'esya' } kodsuz, { tur: 'sinif' } sınıfsız) → null: kol "ayar" rozetiyle bekler.
  */
-export function filtreIslevi(filtre) {
-  if (filtre === 'hepsi') return () => true;
-  if (filtre === 'manyetik') return (kod) => ozellik(kod).manyetik;
-  const [tip, deger] = filtre.split(':');
-  if (!deger) return null;
-  if (tip === 'tur') return (kod) => kod === Number(deger);
-  if (tip === 'sinif') return (kod) => ozellik(kod).sinif === deger;
+export function filtreIslevi(f) {
+  if (f?.tur === 'hepsi') return () => true;
+  if (f?.tur === 'manyetik') return (kod) => ozellik(kod).manyetik;
+  if (f?.tur === 'esya' && f.kod) return (kod) => kod === f.kod;
+  if (f?.tur === 'sinif' && f.sinif) return (kod) => ozellik(kod).sinif === f.sinif;
   return null;
 }
 
-/** Filtre geçerli mi (komut doğrulaması)? */
+/** Filtre geçerli mi (komut doğrulaması; seçimsiz 'esya'/'sinif' de geçerli)? */
 function filtreGecerli(f) {
-  if (typeof f !== 'string') return false;
-  if (f === 'hepsi' || f === 'manyetik' || f === 'tur:' || f === 'sinif:') return true;
-  const [tip, deger] = f.split(':');
-  if (tip === 'tur') return Boolean(esyaTanimi(Number(deger)));
-  return tip === 'sinif' && SINIFLAR.includes(deger);
+  if (!f || typeof f !== 'object') return false;
+  if (f.tur === 'hepsi' || f.tur === 'manyetik') return true;
+  if (f.tur === 'esya') return f.kod === undefined || Boolean(esyaTanimi(f.kod));
+  return f.tur === 'sinif' && (f.sinif === undefined || SINIFLAR.includes(f.sinif));
 }
 
 /** Yaba kolu: arkadan alır, 16 tik salınır, öne bırakır; bırakamazsa havada bekler. */
 parcaTanimla('yaba-kolu', {
-  kod: 121, ad: 'Yaba kolu', aile: 'depo', boyut: [1, 1], maliyet: { kurus: 30 }, kilit: 'D2',
+  kod: 21, ad: 'Yaba kolu', aile: 'depo', boyut: [1, 1], maliyet: { kurus: 30 }, kilit: 'D2',
   kur(p) {
-    Object.assign(p.ozel, { el: 0, il: 0, filtre: 'hepsi', hal: 'ac' });
+    Object.assign(p.ozel, { el: 0, il: 0, filtre: { tur: 'hepsi' }, hal: 'ac' });
   },
   adim(ctx, p) {
     const o = p.ozel;
@@ -171,10 +162,12 @@ parcaTanimla('yaba-kolu', {
       o.hal = 'calisiyor';
     } else o.hal = 'cikis-dolu';
   },
-  ayarla(p, k) {
-    if (k.ad !== 'filtre' || !filtreGecerli(k.deger)) return 'gecersiz';
-    p.ozel.filtre = k.deger;
-    return null;
+  ayarlar: { filtre: { ad: 'Filtre', tur: 'filtre', manyetik: true } },
+  ayarla(p, ad, deger) {
+    if (ad !== 'filtre' || !filtreGecerli(deger)) return false;
+    const { tur, kod, sinif } = deger;
+    p.ozel.filtre = { tur, ...(kod !== undefined && { kod }), ...(sinif && { sinif }) };
+    return true;
   },
   icerik(p) {
     return { esya: p.ozel.el ? [[p.ozel.el, 1]] : [], saman: 0 };
@@ -186,55 +179,59 @@ parcaTanimla('yaba-kolu', {
     const o = p.ozel;
     const neden = { ac: 'Arkada uygun eşya yok', ayar: 'Filtre seçilmemiş',
       'cikis-dolu': 'Bırakamıyor: önündeki almıyor', calisiyor: 'Taşıyor' }[o.hal];
-    return [['Durum', neden], ['Filtre', o.filtre], ['Elinde', o.el ? ad(o.el) : '-']];
+    const f = o.filtre;
+    const filtre = { hepsi: 'Hepsi', manyetik: 'Manyetik', esya: f.kod ? ad(f.kod) : 'Tür?',
+      sinif: f.sinif ?? 'Sınıf?' }[f.tur];
+    return [['Durum', neden], ['Filtre', filtre], ['Elinde', o.el ? ad(o.el) : '-']];
   },
 });
 
+/**
+ * Kapı teslimi (G'nin ekonomi/siparis.js teslimEt(c, kod, olay) sözleşmesi): { sonuc:
+ * 'siparis' | 'iade' | 'satildi' | 'atildi', kurus? }. İğne/buluntu "bulundu" (kuruşsuz)
+ * sayılır; 'iade'de kapı eşyayı oyuncunun envanterine koyar. SAP: sipariş yok, fazlasını
+ * sat kapı ayarından (G gelince `kapiTeslimKur` ile teslimEt bağlanır, ayar ekonomiye geçer).
+ */
+let kapiTeslimi = (ctx, kod, p) => {
+  if (degerliMi(kod)) {
+    bulundu(ctx, kod, 'kapi', 'kurussuz', p);
+    return { sonuc: 'iade' };
+  }
+  const deger = ozellik(kod).deger;
+  if (!p.ozel.sat || deger <= 0) return { sonuc: 'atildi' };
+  kurusEkle(ctx.c, deger);
+  return { sonuc: 'satildi', kurus: deger };
+};
+export function kapiTeslimKur(islev) {
+  kapiTeslimi = islev;
+}
+
 /** Komşu kapısı: sınırsız alır, asla tıkanmaz; kurulu gelir, sökülmez, palette yok. */
 parcaTanimla('komsu-kapisi', {
-  kod: 131, ad: 'Komşu kapısı', aile: 'depo', boyut: [2, 2], sokulmez: true, paletDisi: true,
+  kod: 31, ad: 'Komşu kapısı', aile: 'depo', boyut: [2, 2], sokulmez: true, paletDisi: true,
   girisler: [{ x: 0, y: 0, yon: 2 }, { x: 0, y: 1, yon: 2 }],
+  ayarlar: { sat: { ad: 'Fazlasını sat', tur: 'iki', secenekler: [1, 0] } },
   kur(p) {
-    Object.assign(p.ozel, { sat: 1, siparis: 0, satilan: 0, bosa: 0, iade: 0, kurus: 0 });
+    Object.assign(p.ozel, { sat: 1, siparis: 0, satildi: 0, atildi: 0, iade: 0, kurus: 0 });
   },
   kabulEder() {
     return true;
   },
   al(p, port, kod, ctx) {
     const o = p.ozel;
-    const d = degerliMi(kod);
-    if (kapiSiparisi(ctx, kod)) {
-      o.siparis += 1;
-      if (d) bulundu(ctx, kod, 'kapi', 'yok', p);
-      else samanCikti(ctx.c, kod);
-      return;
-    }
-    if (d) {
-      o.iade += 1;
-      oyuncuyaVer(ctx, kod, 'kapi', 'yok', p);
-      return;
-    }
-    samanCikti(ctx.c, kod);
-    const deger = ozellik(kod).deger;
-    if (o.sat && deger > 0) {
-      kurusEkle(ctx.c, deger);
-      o.satilan += 1;
-      o.kurus += deger;
+    const s = kapiTeslimi(ctx, kod, p);
+    o[s.sonuc] += 1;
+    if (s.sonuc === 'iade') ctx.c.envanter[kod] += 1;
+    else samanCikti(ctx.c, kod);
+    if (s.sonuc === 'satildi') {
+      o.kurus += s.kurus ?? 0;
       ctx.sayac('satilan', kod);
-    } else {
-      o.bosa += 1;
-      ctx.sayac('bosa', kod);
-    }
-  },
-  ayarla(p, k) {
-    if (k.ad !== 'sat' || ![0, 1, true, false].includes(k.deger)) return 'gecersiz';
-    p.ozel.sat = k.deger ? 1 : 0;
-    return null;
+    } else if (s.sonuc === 'atildi') ctx.sayac('bosa', kod);
   },
   incele(p) {
     const o = p.ozel;
     return [['Durum', o.sat ? 'Fazlasını satıyor' : 'Siparişe uymayanı atıyor'],
-      ['Siparişe', o.siparis], ['Satılan', `${o.satilan} (${o.kurus} kuruş)`],
-      ['Boşa giden', o.bosa], ['Geri getirilen', o.iade]];
+      ['Siparişe', o.siparis], ['Satılan', `${o.satildi} (${o.kurus} kuruş)`],
+      ['Boşa giden', o.atildi], ['Geri getirilen', o.iade]];
   },
 });

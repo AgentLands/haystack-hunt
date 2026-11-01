@@ -10,10 +10,6 @@
  * Söküm iadesi: parçanın eşyaları envantere, ham saman katı parçanın yerine dökülür;
  * sonra söküm kancaları (sokumKancasiEkle) çalışır. `tanim.sokulmez` parça (Komşu kapısı)
  * sökülmez ve döndürülmez (neden 'sokulmez').
- * Parça komutları (Faz 1, genel): { tur: 'ayar' | 'temizle' | 'onar', x, y, ... } karodaki
- * parçanın tanim.ayarla / temizle / onar(p, komut, ortam) kancasını çağırır; kanca null ya da
- * red nedeni döndürür. ortam = { c, tarla, olay(ad, veri) }. Başarıda olay 'parca-ayarlandi' |
- * 'parca-temizlendi' | 'parca-onarildi' { parca, komut }; kancası olmayan parça 'desteklenmez'.
  */
 import { KARO } from './olcu.js';
 import { parcaTanimi, parcaOrnegi, parcaIcerigi, portlariYenile } from './parca-kayit.js';
@@ -124,20 +120,3 @@ komutTanimla('dondur', (c, tarla, k, olaylar) => {
   else olaylar.push({ ad: 'parca-dondu', veri: { parca: p } });
   return undefined;
 });
-
-/** Parça kancasını çağıran genel komut: tur → tanim[kanca]; başarıda olay `olayAdi`. */
-function parcaKomutu(tur, kanca, olayAdi) {
-  komutTanimla(tur, (c, tarla, k, olaylar) => {
-    const p = parcaAt(c, k.x, k.y);
-    if (!p) return red(olaylar, k, 'bos');
-    if (!p.tanim[kanca]) return red(olaylar, k, 'desteklenmez');
-    const ortam = { c, tarla, olay: (ad, veri) => olaylar.push({ ad, veri }) };
-    const neden = p.tanim[kanca](p, k, ortam);
-    if (neden) red(olaylar, k, neden);
-    else olaylar.push({ ad: olayAdi, veri: { parca: p, komut: k } });
-    return undefined;
-  });
-}
-parcaKomutu('ayar', 'ayarla', 'parca-ayarlandi');
-parcaKomutu('temizle', 'temizle', 'parca-temizlendi');
-parcaKomutu('onar', 'onar', 'parca-onarildi');

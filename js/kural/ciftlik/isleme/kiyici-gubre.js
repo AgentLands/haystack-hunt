@@ -5,17 +5,18 @@
  * içindeki çayırı gübreler; iğne/buluntuyu oyuncuya iade eder). docs/ciftlik/parcalar.md 16-17.
  */
 import { parcaTanimla } from '../parca-kayit.js';
-import { degerliMi } from './esya-ozellik.js';
+import { gucRozeti } from '../ag/enerji.js';
+import { degerliMi, esyaAdi as ad } from './esya-ozellik.js';
 import {
   oyuncuyaVer, kurusHarca, samanCikti, girisBekleyen, ilerle,
 } from './bulundu.js';
 import {
-  ISLEME, KURU, SAMAN, KIYIM, GUBRE_PUAN, sert, ad, redRozeti, gubrele,
+  ISLEME, KURU, SAMAN, KIYIM, GUBRE_PUAN, sert, redRozeti, gubrele,
 } from './sabitler.js';
 
 /** Çekiçli kıyıcı: saman/kuru ot → kıyım (10 tik); sert eşya çekici kırar (Onar 50 + 200 tik). */
 parcaTanimla('cekicli-kiyici', {
-  kod: 116, ad: 'Çekiçli kıyıcı', aile: 'isleme', boyut: [2, 2],
+  kod: 16, ad: 'Çekiçli kıyıcı', aile: 'isleme', boyut: [2, 2],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 1, y: 0, yon: 0 }],
   guc: ISLEME.kiyici.guc, maliyet: { kurus: 180 }, kilit: 'D7',
   kur(p) {
@@ -39,17 +40,19 @@ parcaTanimla('cekicli-kiyici', {
   },
   adim(ctx, p) {
     const o = p.ozel;
-    p.talep = 0;
-    o.dolu = o.cikis.length && !ctx.ver(p, 0, o.cikis[0]) ? 1 : 0;
-    if (o.cikis.length && !o.dolu) o.cikis.shift();
     o.bekleyen = girisBekleyen(ctx.c, p);
     if (o.onarim && --o.onarim === 0) o.kirik = 0;
-    if (!o.islenen || o.cikis.length) return;
-    p.talep = ISLEME.kiyici.guc;
-    if (!ilerle(o, 'il', ctx.oran(p), ISLEME.kiyici.sure)) return;
-    o.islenen = 0;
-    o.cikis.push(KIYIM);
-    ctx.sayac('uretilen', KIYIM);
+    if (o.islenen && !o.cikis.length && ilerle(o, 'il', ctx.oran(p), ISLEME.kiyici.sure)) {
+      o.islenen = 0;
+      o.cikis.push(KIYIM);
+      ctx.sayac('uretilen', KIYIM);
+    }
+    o.dolu = o.cikis.length && !ctx.ver(p, 0, o.cikis[0]) ? 1 : 0;
+    if (o.cikis.length && !o.dolu) o.cikis.shift();
+  },
+  talep(p) {
+    const o = p.ozel;
+    return o.islenen && !o.cikis.length ? ISLEME.kiyici.guc : 0;
   },
   onar(p, k, ortam) {
     const o = p.ozel;
@@ -69,7 +72,7 @@ parcaTanimla('cekicli-kiyici', {
     const o = p.ozel;
     if (o.kirik) return 'kirik';
     if (o.dolu) return 'cikis-dolu';
-    if (o.islenen) return 'calisiyor';
+    if (o.islenen) return gucRozeti(p) ?? 'calisiyor';
     return o.bekleyen ? redRozeti(o.bekleyen) : 'ac';
   },
   incele(p) {
@@ -87,7 +90,7 @@ const gubreGirisleri = [0, 1].flatMap((i) => [
   { x: i, y: 0, yon: 3 }, { x: 1, y: i, yon: 0 }, { x: i, y: 1, yon: 1 }, { x: 0, y: i, yon: 2 },
 ]);
 parcaTanimla('gubre-cukuru', {
-  kod: 117, ad: 'Gübre çukuru', aile: 'isleme', boyut: [2, 2], yonlu: false,
+  kod: 17, ad: 'Gübre çukuru', aile: 'isleme', boyut: [2, 2], yonlu: false,
   girisler: gubreGirisleri, maliyet: { kurus: 60 }, kilit: 'D6',
   kur(p) {
     Object.assign(p.ozel, { puan: 0, sayac: 0, son: -1, bekleyen: 0 });
@@ -98,7 +101,7 @@ parcaTanimla('gubre-cukuru', {
   },
   al(p, port, kod, ctx) {
     if (degerliMi(kod)) {
-      oyuncuyaVer(ctx, kod, 'gubre', 'yok', p);
+      oyuncuyaVer(ctx, kod, 'gubre', 'kurussuz', p);
       return;
     }
     p.ozel.puan += GUBRE_PUAN.get(kod);
