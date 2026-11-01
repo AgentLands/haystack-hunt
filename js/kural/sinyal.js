@@ -10,9 +10,9 @@
  */
 import { igneDerinligi, tarlada } from './igne.js';
 
-export const KULAK_MENZIL = 12;
+export const KULAK_MENZIL = 16;
 /** Saman katı → hücre: bu kadar kat saman bir hücre uzaklık sayılır. */
-export const KULAK_DERINLIK_BOLEN = 3;
+export const KULAK_DERINLIK_BOLEN = 6;
 
 /** Basamaklar en yakından uzağa: [basamak, en çok uzaklık (hücre)]. 0 = sessiz. */
 export const KULAK_BASAMAKLARI = [

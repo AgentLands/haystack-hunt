@@ -57,7 +57,8 @@ function bitisBilgisi(sonuc, rapor) {
     satirlar.push(not('Bu tarlada yeni rekor.', 'rekor'));
   }
   if (rapor.dondurma) {
-    satirlar.push(not(`Seri dondurma hakkı kullanıldı, serin sürüyor: ${rapor.seri} gün.`, 'seri'));
+    satirlar.push(not('Dün kaçırdın ama haftalık dondurma hakkın seriyi korudu. '
+      + `Seri: ${rapor.seri} gün.`, 'seri'));
   } else if (rapor.gunluk) {
     satirlar.push(not(`Günün tarlası çözüldü. Seri: ${rapor.seri} gün.`, 'seri'));
   } else if (rapor.seri > 0) {

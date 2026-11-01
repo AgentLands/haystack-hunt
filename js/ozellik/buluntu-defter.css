@@ -108,3 +108,23 @@
   #buluntu-pencere { padding: 36px 14px 14px; }
   .buluntu-izgara { grid-template-columns: minmax(0, 1fr); max-height: calc(100dvh - 190px); }
 }
+
+/* Defter kapalıyken alınan buluntu sayısı: düğmenin sağ üst köşesinde küçük altın rozet. */
+.buluntu-dugme { position: relative; }
+.buluntu-dugme[data-rozet]::after {
+  content: attr(data-rozet);
+  position: absolute;
+  top: -6px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: var(--saman);
+  border: 1.5px solid var(--murekkep);
+  color: var(--murekkep);
+  font: 700 11px/15px var(--yazi-sayi);
+  text-align: center;
+  pointer-events: none;
+}

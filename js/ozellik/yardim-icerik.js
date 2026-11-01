@@ -15,6 +15,8 @@ import { DONDURMA_ARALIK_GUN } from '../kural/istatistik.js';
 const { kolay, normal, zor } = ZORLUKLAR;
 const yuzde = (oran) => `%${Math.round(oran * 100)}`;
 const [yanar, sicak, ilik] = SEVIYELER;
+/** Zor'da telafi için "yön gösteren" en geniş bandın adı (ör. Sıcak). */
+const zorBandi = (SEVIYELER.find((b) => b.mesafe >= zor.telafiSiniri) || sicak).ad;
 
 /** Puan tablosu satırları: [açıklama, değer]; ardından zorluk çarpanları [ad, çarpan]. */
 export const PUAN_SATIRLARI = [
@@ -68,13 +70,15 @@ export const SEKMELER = [
       ['dedektor', `Okuduğun yerde bir halka kalır. Yanıyor!: iğne ${yanar.mesafe} adım içinde, `
         + `Sıcak: ${sicak.mesafe}, Ilık: ${ilik.mesafe}. İğne bir halkanın içinde, bir küçüğünün `
         + 'dışındadır; birkaç yerden oku, halkaların kesiştiği yeri kaz.'],
-      ['dedektor', `Hepsi Soğuk çıkıp hakların biterse tur başına ${TELAFI_HAKKI} hak daha `
-        + 'verilir; şanssız tarlada elin boş kalmaz.'],
+      ['dedektor', `Hepsi Soğuk çıkıp hakların biterse (Zor'da hiçbiri ${zorBandi} çıkmazsa) `
+        + `tur başına ${TELAFI_HAKKI} hak daha verilir; şanssız tarlada elin boş kalmaz.`],
       ['miknatis', {
-        t: `Mıknatıs (4): iğne ${MIKNATIS_MENZIL} adım içindeyse yüzeye çeker ve parlatır; `
-          + `değilse boşa gider. Kolay'da ${kolay.miknatis} hak, yoksa ${normal.miknatis}.`,
-        d: `Mıknatıs: iğne ${MIKNATIS_MENZIL} adım içindeyse yüzeye çeker ve parlatır; `
-          + `değilse boşa gider. Kolay'da ${kolay.miknatis} hak, yoksa ${normal.miknatis}.`,
+        t: `Mıknatıs (4): iğne ${MIKNATIS_MENZIL} adım içindeyse (seçiliyken çevrendeki kesik `
+          + 'daire) yüzeye çeker ve parlatır. Boşa giderse iğnenin biraz mı çok mu uzakta '
+          + `olduğunu söyler. Kolay'da ${kolay.miknatis} hak, yoksa ${normal.miknatis}.`,
+        d: `Mıknatıs: iğne ${MIKNATIS_MENZIL} adım içindeyse (seçiliyken çevrendeki kesik `
+          + 'daire) yüzeye çeker ve parlatır. Boşa giderse iğnenin biraz mı çok mu uzakta '
+          + `olduğunu söyler. Kolay'da ${kolay.miknatis} hak, yoksa ${normal.miknatis}.`,
       }],
     ],
   },
@@ -126,8 +130,9 @@ export const SEKMELER = [
         + `${CIVI_CEZA_MS / 1000} sn eklenir; dedektör ve mıknatıs çiviyi görmez.`],
       ['dedektor', 'Dedektörü yığının farklı yanlarında dene: Soğuk, Ilık, Sıcak, '
         + 'Yanıyor! Isındıkça iğneye yaklaşıyorsun.'],
-      ['ses-acik', `Kulak: ses açıksa kazarken iğneye ${KULAK_MENZIL} adımdan yaklaşınca metal `
-        + 'tınılar duyulur; yaklaştıkça sıklaşır ve incelir. Yön vermez, "buralarda" der.'],
+      ['ses-acik', `Kulak: kazarken iğneye ${KULAK_MENZIL} adımdan yaklaşınca metal tınılar `
+        + 'duyulur ve kazdığın yerde küçük halkalar atar; yaklaştıkça sıklaşır. Yön vermez, '
+        + '"buralarda" der.'],
       ['menu', 'Süre ilk hamlende başlar; menü açıkken ve sekme arkadayken işlemez.'],
     ],
   },

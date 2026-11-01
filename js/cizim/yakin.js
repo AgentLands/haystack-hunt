@@ -4,7 +4,9 @@
  * tembelce boyanır: yalnız görünür (ve süre kalırsa kenar payındaki) kirli karolar, kare
  * başına süre bütçesi içinde (görünürde hiç boyanmamış karo varken bütçe biraz büyür).
  * Uzak çizim altta kalır (atlas görünür alanı tam kaplayınca atlanır); YAKIN_BAS..YAKIN_TAM
- * arası geçiş karışımla yapılır, böylece sıçrama olmaz.
+ * arası geçiş karışımla yapılır, böylece sıçrama olmaz. Açılışta (ya da yeni tarlada) atlas
+ * görünür alanı ilk kez doldurana dek kaba taban yumuşatılmış çizilir (iri piksel görünmesin);
+ * atlas sonra BELIRME_MS içinde alfa geçişiyle belirir.
  */
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 import { KANAL } from './tarla-boya.js';
@@ -27,6 +29,8 @@ const DOLUM_MS = 3.5;
 const ILK_DOLUM_MS = 8;
 /** Bu kadar karedir kirli bekleyen karo, merkeze yakınlardan önce boyanır. */
 const YASLI = 4;
+/** Atlas görünür alanı ilk kez doldurunca kaba tabandan atlasa alfa geçişi (ms). */
+const BELIRME_MS = 280;
 
 /** Hücre kanalları (tarla-boya.js boya() doldurur). */
 export const kanal = new Float32Array(GENISLIK * YUKSEKLIK * KANAL);
@@ -43,6 +47,8 @@ let dokular = null;
  * dışa boyanır (boyanmamış karoların altında kaba çizim görünür).
  */
 let ilkDolum = true;
+/** Atlasın görünür alanı ilk kez tam doldurduğu an (performance.now); null: henüz değil. */
+let belirmeBas = null;
 
 /** Dokuların ölçüsü (T×T, hücre başına S alt piksel) ve tohumları. */
 export const DOKU = { T: DOKU_BOYU, S: ALT, saman: 1, toprak: 2 };
@@ -125,20 +131,27 @@ function araligiBoya(a, mx, my, bitis, enAzBir) {
 /** Yeni tarla: eski tarlanın atlası görünmesin; ilk yakın karede görünür alan tümden boyanır. */
 export function yakinSifirla() {
   ilkDolum = true;
+  belirmeBas = null;
   boyandi.fill(0);
   if (actx) actx.clearRect(0, 0, atlas.width, atlas.height);
 }
 
 /**
  * Yakın görünümü çizer (dünya dönüşümü kurulu ctx'e). gorunum {z, gx, gy}; olcek hücre
- * başına dünya pikseli. tabanCiz() kaba (uzak) tarlayı çizer: uzakken, geçiş karışımında
- * ya da görünürde hiç boyanmamış karo varken atlasın altına çağrılır; atlas görünür alanı
- * tam kaplıyorsa atlanır (çift doldurma yok). Bu karede boyanan karo sayısını döndürür.
+ * başına dünya pikseli. tabanCiz(yumusak) kaba (uzak) tarlayı çizer: uzakken, geçiş
+ * karışımında ya da görünürde hiç boyanmamış karo varken atlasın altına çağrılır; atlas
+ * görünür alanı tam kaplıyorsa atlanır (çift doldurma yok). yumusak: atlas henüz belirmediyse
+ * ya da tam yakındaysa true (büyütülmüş kaba doku iri pikselli görünmesin). Bu karede boyanan
+ * karo sayısını döndürür.
  */
 export function yakinCiz(ctx, gorunum, olcek, tabanCiz) {
   const { z } = gorunum;
-  if (z <= YAKIN_BAS || !hazirla()) {
-    tabanCiz();
+  if (z <= YAKIN_BAS) {
+    tabanCiz(false);
+    return 0;
+  }
+  if (!hazirla()) {
+    tabanCiz(true);
     return 0;
   }
   const alan = gorunurAlan(gorunum);
@@ -153,8 +166,13 @@ export function yakinCiz(ctx, gorunum, olcek, tabanCiz) {
   // Süre kalırsa iki karoluk kenar payını önceden boya (kamera kayınca hazır olsun).
   const pay = gorunurKarolar(alan, 2 * KARO, GENISLIK, YUKSEKLIK);
   n += araligiBoya(pay, mx, my, bitis, false);
-  const alfa = gecisAlfa(z, YAKIN_BAS, YAKIN_TAM);
-  if (alfa < 1 || boslukVar(gorunur)) tabanCiz();
+  const simdi = performance.now();
+  const doldu = !boslukVar(gorunur);
+  if (doldu && belirmeBas === null) belirmeBas = simdi;
+  const belirme = belirmeBas === null ? 0 : Math.min(1, (simdi - belirmeBas) / BELIRME_MS);
+  const alfa = gecisAlfa(z, YAKIN_BAS, YAKIN_TAM) * belirme;
+  if (alfa < 1 || !doldu) tabanCiz(belirme < 1 || z >= YAKIN_TAM);
+  if (alfa <= 0) return n;
   const { x0, y0, x1, y1 } = gorunur;
   ctx.save();
   ctx.globalAlpha = alfa;

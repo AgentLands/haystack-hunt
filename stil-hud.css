@@ -110,7 +110,7 @@
   white-space: nowrap;
 }
 .etiket:empty { display: none; }
-.etiket-on { flex: none; }
+.etiket-on { flex: none; white-space: pre; } /* sondaki boşluk esnek öğede silinmesin */
 .etiket-govde { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .dugme-sirasi { grid-area: dugme; display: flex; gap: 8px; margin-top: 2px; }
 .dugme-sirasi .dugme-ikon { font-size: 1.1rem; line-height: 1; }

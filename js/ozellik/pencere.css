@@ -81,6 +81,8 @@
 .fis .dugme-birincil, .fis .dugme-ikincil { font-size: 0.95rem; }
 
 /* Kantar fişi: delikli kenarlı kâğıt şerit, üstünde eğik damga. */
+/* Fiş açıkken arkadaki raf, mini harita ve HUD daha koyu kalır (fişin kenarından seçilmesin). */
+dialog.fis-pencere::backdrop { background: rgba(24, 16, 10, 0.78); }
 dialog.fis-pencere {
   width: min(350px, calc(100vw - 32px));
   max-width: none;
@@ -195,14 +197,15 @@ dialog.fis-pencere {
 /* Damga: yüzeye vurulur (büyükten oturur), mürekkep eşit basmaz. */
 .fis-damga {
   --leke: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 -.75'/%3E%3C/filter%3E%3Crect width='120' height='60' filter='url(%23f)'/%3E%3C/svg%3E");
+  /* Başlığın sağında, kapatma düğmesinin solunda: alttaki fiş no satırına binmez. */
   position: absolute;
-  top: 52px;
-  right: 18px;
+  top: 36px;
+  right: 44px;
   z-index: 1;
-  padding: 2px 10px 0;
+  padding: 2px 7px 0;
   font-family: var(--yazi-baslik);
-  font-size: 1.3rem;
-  letter-spacing: 0.08em;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--damga);
   border: 3px solid var(--damga);
@@ -210,7 +213,7 @@ dialog.fis-pencere {
   outline: 1.5px solid var(--damga);
   outline-offset: 2px;
   opacity: 0.92;
-  rotate: -13deg;
+  rotate: -9deg;
   mix-blend-mode: multiply;
   pointer-events: none;
   -webkit-mask: var(--leke) center / 120px 60px;

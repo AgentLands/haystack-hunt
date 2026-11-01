@@ -8,6 +8,10 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 
 const KOK = 'http://localhost/';
+/** Önbellek adı sw.js'teki SURUM'dan (her yayında artar; test elle güncellenmesin). */
+const SURUM = /const SURUM = '([^']+)'/.exec(
+  readFileSync(new URL('../sw.js', import.meta.url), 'utf8'))[1];
+const ONBELLEK = `haystack-hunt-${SURUM}`;
 
 /** sw.js'i sahte `self`, `caches` ve `fetch` ile yükler; kayıtlı olay dinleyicilerini verir. */
 function isciYukle(ag) {
@@ -71,7 +75,7 @@ async function getir(isci, url, mode) {
 test('önbellekteki sayfa ve modül aynı sürümden gelir (yeni HTML + eski JS olmaz)', async () => {
   const ag = { icerik: (u) => `${u}@yeni` };
   const isci = isciYukle(ag);
-  const onbellek = isci.depo('haystack-hunt-v3');
+  const onbellek = isci.depo(ONBELLEK);
   onbellek.set(KOK, isci.yanitla('html@eski'));
   onbellek.set(`${KOK}js/ana.js`, isci.yanitla('js@eski'));
   const sayfa = await getir(isci, `${KOK}?tohum=x`, 'navigate');
@@ -82,7 +86,7 @@ test('önbellekteki sayfa ve modül aynı sürümden gelir (yeni HTML + eski JS 
 
 test('arka plan tazelemesi no-cache ile yapılır ve kabuk girdisini günceller', async () => {
   const isci = isciYukle({ icerik: (u) => `${u}@yeni` });
-  const onbellek = isci.depo('haystack-hunt-v3');
+  const onbellek = isci.depo(ONBELLEK);
   onbellek.set(KOK, isci.yanitla('html@eski'));
   onbellek.set(`${KOK}js/ana.js`, isci.yanitla('js@eski'));
   await getir(isci, `${KOK}?tohum=x`, 'navigate');

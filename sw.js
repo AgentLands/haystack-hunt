@@ -10,7 +10,7 @@
  * önbellek silinir, yeni işçi hemen devralır; sayfa (ozellik/pwa.js) "Yeni sürüm hazır"
  * der, yenileyince yeni sürüm açılır. Her yayında SURUM'u artır.
  */
-const SURUM = 'v3';
+const SURUM = 'v4';
 const ONBELLEK = `haystack-hunt-${SURUM}`;
 const KABUK = [
   './', './belirtec.css', './stil.css', './stil-hud.css', './stil-telefon.css', './js/ana.js',

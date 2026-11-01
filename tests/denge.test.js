@@ -45,6 +45,11 @@ test('zorluk sayıları: dedektör 5/4/3, yakıt 1/0.9/0.7, parıltı derinliği
   assert.equal(makineTanimi('traktor').yakitTuketim, 1 / 260);
 });
 
+test('kulak: menzil 16, derinlik böleni 6 (kazarken fark edilsin)', () => {
+  assert.equal(KULAK_MENZIL, 16);
+  assert.equal(KULAK_DERINLIK_BOLEN, 6);
+});
+
 test('kulak: üç kaba basamak, menzil dışı ve geçersiz uzaklık sessiz', () => {
   assert.equal(basamakUzakliktan(0), 3);
   assert.equal(basamakUzakliktan(4), 3);
@@ -64,15 +69,19 @@ test('kulak: üç kaba basamak, menzil dışı ve geçersiz uzaklık sessiz', ()
 test('kulak: gömülü iğne zayıf duyulur; açıkta yakından en yüksek basamak', () => {
   const t = tarlaKur(metindenTohum('k2'));
   const { igne } = t;
-  const derin = igneDerinligi(t);
-  assert.ok(derin / KULAK_DERINLIK_BOLEN > KULAK_MENZIL, `derinlik ${derin}`);
-  // Derindeyken tam üstünde kazmak bile sessiz: kulak bir tarama aracı değil.
+  // Çok derindeyken tam üstünde kazmak bile sessiz: kulak bir tarama aracı değil.
+  for (const i of igneHucreleri(igne)) t.h[i] = igne.z + (KULAK_MENZIL + 1) * KULAK_DERINLIK_BOLEN;
+  assert.ok(igneDerinligi(t) / KULAK_DERINLIK_BOLEN > KULAK_MENZIL);
   assert.equal(kulakBasamagi(t, igne.x, igne.y), 0);
+  // Orta derinlikte (Normal'in tipik iğnesi ~40 kat) üstünde kazan uzak bir tını duyar.
+  for (const i of igneHucreleri(igne)) t.h[i] = igne.z + 40;
+  assert.equal(kulakBasamagi(t, igne.x, igne.y), 2);
   igneyiAc(t);
   assert.equal(kulakUzakligi(t, igne.x + 3, igne.y), 3);
   assert.equal(kulakBasamagi(t, igne.x + 3, igne.y), 3);
   assert.equal(kulakBasamagi(t, igne.x, igne.y + 7), 2);
   assert.equal(kulakBasamagi(t, igne.x + 10, igne.y), 1);
+  assert.equal(kulakBasamagi(t, igne.x + 15, igne.y), 1);
   assert.equal(kulakBasamagi(t, igne.x + 20, igne.y), 0);
   // Biraz gömülü: aynı yatay uzaklıkta basamak düşer.
   for (const i of igneHucreleri(igne)) t.h[i] = igne.z + 3 * KULAK_DERINLIK_BOLEN;
