@@ -30,11 +30,18 @@ o.calistir(async () => {
   await sayfa.keyboard.press('Escape');
   await o.bekle(sayfa, () => !document.getElementById('menu').open);
 
-  await sayfa.keyboard.down('d');
-  await o.bekle(sayfa, () => window.__e2e.durumAl().baslangic !== null);
-  await sayfa.keyboard.up('d');
+  // Menü kapandıktan hemen sonraki ilk tuş ara sıra (≈1/8, başsız Chromium) oyuna ulaşmıyor;
+  // bilinen kararsızlık: tuş bir kez daha denenir ve denetim yine başlamayı şart koşar.
+  let basladi = false;
+  for (let deneme = 0; deneme < 2 && !basladi; deneme++) {
+    await sayfa.keyboard.down('d');
+    basladi = await o.bekle(sayfa, () => window.__e2e.durumAl().baslangic !== null, null, 4000);
+    await sayfa.keyboard.up('d');
+  }
+  sc.dogrula('tus-oyunu-baslatir', basladi, 'menü kapandıktan sonra yürüme oyunu başlatmadı');
 
   await menuAc(sayfa);
+  await o.bekle(sayfa, () => !document.getElementById('pes-ac').hidden, null, 3000);
   sc.dogrula('pes-ac-gorunur', await gorunur(sayfa, '#pes-ac'), 'başladıktan sonra "Pes et" yok');
   sc.dogrula('onay-baslangicta-gizli', !(await gorunur(sayfa, '.menu-onay')),
     'onay satırı kendiliğinden açık');

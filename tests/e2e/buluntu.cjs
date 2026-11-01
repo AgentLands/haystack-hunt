@@ -8,7 +8,7 @@
 const o = require('./ortak.cjs');
 
 const ANAHTAR = 'haystack-hunt:buluntu-defter';
-const defterAc = (s) => s.click('button[aria-label="Buluntu defteri"]');
+const defterAc = (s) => s.click('button[aria-label^="Buluntu defteri"]');
 
 /** Defter penceresindeki kartlar: { dolu, ad, yeni, adet } listesi ve özet metni. */
 function defterKartlari(sayfa) {
