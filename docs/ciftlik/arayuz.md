@@ -111,7 +111,8 @@ Rozet yalnız **sorun varken** görünür (sessizlik = iyi). Kodlar `sistemler.m
 - **Üst şerit**: ≡ · kuruş · hava (şimdi + 3 dilim tahmini: ok, şiddet, gök) · ▮▮ 1× 2× 4×
   · ⚠ sorunlar · [Pano] · ses. Süre/puan HUD'u çiftlikte gizli (`body.ciftlik-mod`).
 - **Pano**: sağ üstte katlanır üç sipariş kartı (ilerleme çubuğu, ödül, süreli kartta
-  kum saati). Teslimde damga iner + ses. Damga defteri: D1-D14 izleri, usta rozetleri.
+  kum saati). Teslimde damga iner + ses. **Kapı paneli** (Komşu kapısına dokun): Fazlasını
+  sat, Araba çağır (300), Çayır genişlet (400/800/1200): kuruşun geç oyundaki kuyuları. Damga defteri: D1-D14 izleri, usta rozetleri.
 - **İstatistik** (I / defter düğmesi): eşya başına üretilen/teslim/boşa giden/dk; 10
   dakikalık çizgi (1 dk kova, son 10 dk dünya kaydında); enerji dengesi; en çok duran 3
   parça (dokun → kamera); sipariş geçmişi; "bugünkü rekor kuruş/dk"; toplam iğne.
@@ -172,7 +173,8 @@ sekme ve kart satırlarının içinde.
 | Yerleştir | sol tık | sürükle-bırak; ya da dokun + ✓ |
 | Hat çek | sol tık sürükle | bas-sürükle; yedek: iki dokunuş + ✓ |
 | Döndür | R / Shift+R / tekerlek | ⟳ |
-| Pipet | Q, orta tık | parçaya çift dokun |
+| Pipet | Q, orta tık | parçaya çift dokun (ilk dokunuş incele panelini açar, gecikme yok) |
+| Krank | Kullan | Kullan'a bir dokunuş: 30 sn döner, basılı tutma yok |
 | İncele | gezde sol tık | gezde dokun |
 | Sil | X kipi, sağ tık, Del (seçili) | ✂ kipi dokun/sürükle; panelde Sök |
 | Seç / kopyala / yapıştır | V sürükle, Ctrl+C, Ctrl+V | ▢ sürükle → Kopyala → Yapıştır → ✓ |

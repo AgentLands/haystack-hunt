@@ -42,7 +42,10 @@ seçildi; değiştirirken §3'teki "ayırma haritası"nı yeniden kontrol et.
 `*` İğne değeri yalnız **Defter masası**nda ödenir (Komşu kapısı iğne almaz, §5).
 Balya içindeki 8 tutam `saman: 96` ile korunur; karışık balyanın içeriği önemsenmez.
 
-**Buluntular** (kod 100 + `KATALOG` sırası; `buluntu:<tur>`, sınıf `buluntu`). Değer
+**Buluntular** (kod 100-119, `esya.js`'te **sabit açık tablo**: dugme 100, tuy, yuksek, bilye,
+anahtar, caki, kurus, nal, toka, mektup, yonca, can, oyuncak, kasik, cingirak, tarak, pusula,
+yuzuk, kupe, saat 119; normal `KATALOG` sırası değişse de kodlar kaymaz, yeni tür 120+ alır;
+test: `KATALOG` ⊆ tablo; sınıf `buluntu`). Değer
 nadirliğe göre, yalnız Defter masasında: yaygın 30, seyrek 60, nadir 120, çok nadir 300.
 | tur | haf. | boyut | mık. | sert | uzun. | yoğ. | not |
 |---|---|---|---|---|---|---|---|
@@ -77,8 +80,11 @@ oyuncuya iade eder (§5). Dalga 2'de uzunluk (iğne/kuruş) ve yoğunluk (taş/m
 ## 4 Tarladan çıkış
 **Arazi** (`js/kural/ciftlik/arazi.js`, tohumdan; normal `tarlaKur`'a dokunmaz):
 - *Harman alanı*: tarlanın çayır dışı kısmı. Yığınlar `tarlaKur` formülüyle, çiftlik ayarı
-  `yigin: { taban: 6, ek: 3, r: [14, 18], t: [50, 55] }` → toplam ≈ 450-550 bin kat
-  (≈ 40 bin tutam). Çayır karolarında yığın hücresi sıfırlanır.
+  `yigin: { taban: 6, ek: 3, r: [14, 18], t: [50, 55] }` (biçim `r[0] + zar·r[1]`: yarıçap
+  14-32 hücre, tepe 50-105 kat; yığın hacmi π/2·r²·t ≈ 68 bin kat) → toplam ≈ 450-550 bin
+  kat (≈ 40 bin tutam). Çayır karolarında yığın hücresi sıfırlanır. `tarlaKur` bu ayarı
+  alamıyorsa iç gövdesi `tarlaKurAyar(tohum, ayar)` olarak çıkarılır ve `tarlaKur` ona
+  devreder (normal mod 900 kare izi AYNI kalır; `yol-haritasi.md` §1).
 - *Çayır*: 24×12 karo (48×24 hücre), garajın ve kapının bulunmadığı köşelerden biri
   (tohumdan). `zemin[karo] = CAYIR`; başlangıçta her hücre 12 kat (düz, kaymaz).
 - *Komşu kapısı*: garajın karşı kenarının ortasında 2×2 karo, kurulu gelir, sökülmez.
@@ -94,6 +100,8 @@ oyuncuya iade eder (§5). Dalga 2'de uzunluk (iğne/kuruş) ve yoğunluk (taş/m
 3. Aynı tik `gomuluCikar`: ağız hücrelerinde `h ≤ z` olan gömülü nesne kendi türüyle eşya
    olur (olay `gomulu-cikti`). Bir tikte en çok bir eşya çıkar; fazlası sonraki tike kalır.
 4. Çıkış tamponu doluysa toplayıcı tarladan almayı keser (saman yerinde kalır).
+5. Harman alanından alınan her kat `c.tuketilenKat`a eklenir (çayırdan alınan eklenmez;
+   harman arabasının tetikleyicisi, `sistemler.md` §5).
 
 **Gömülü nesneler** (`ciftlik.gomulu`; `{x, y, z, tur, alindi}`):
 | | Başlangıç | Her harman arabası |
@@ -101,12 +109,20 @@ oyuncuya iade eder (§5). Dalga 2'de uzunluk (iğne/kuruş) ve yoğunluk (taş/m
 | iğne | 5 (biri "ilk iğne") | 1 (türü: %80 iğne, %15 çuvaldız, %5 altın iğne) |
 | çuvaldız | 1 | (yukarıda) |
 | altın iğne | tohum zarı < 0,3 ise 1 | (yukarıda) |
-| paslı çivi | 16 | 2 |
-| çakıl taşı | 30 | 4 |
-| buluntu | 8 (`KATALOG` ağırlıklarıyla) | 1 |
-Yer seçimi `civileriSakla` deseniyle: `h ≥ 25` hücreler, `z = h × (0,1 + 0,5·zar)`,
-birbirinden ≥ 6 hücre. **İlk iğne**: öğretici huni hayaletinin ağzından 2-4 karo içeride,
-`z ≥ h − 12` (sığ). Her tür kendi karıştırma sabitiyle tohumlanır (`civi.js` deseni).
+| paslı çivi | 120 (+ 8 öğretici) | 3 |
+| çakıl taşı | 90 | 2 |
+| buluntu | 40 (`KATALOG` ağırlıklarıyla) | 1 |
+**Yoğunluk gerekçesi** (üç tohumda sayılır): 474 bin kat içinde pasif huni (600 kat/dk) ≈ 6,6
+dk'da bir çivi, 8,8 dk'da bir taş, 20 dk'da bir buluntu görür (Hat A, 2 huni: yarısı); iğne
+ailesi ≈ 2 saatte bir (kasıtlı nadir, araba ile gelir). Seyrek çivi (saatte bir) ayıklama
+ailesini, çöp siparişlerini ve doyan tutucuyu anlamsız kılar; bu sayı hat tıkamaya yeter,
+boğmaz.
+Yer seçimi `civileriSakla` deseniyle: `h ≥ 25` hücreler, `z = h × (0,1 + 0,5·zar)`; iğne
+ailesi birbirinden ≥ 6, çivi/taş/buluntu ≥ 4 hücre; deneme tavanı 4000 değil 40000 (sayaç,
+deterministik). 3 tohumda ≈ 257 nesnenin hepsi yerleşmeli, yetmezse sayı oransal düşer ve
+test uyarır. **İlk iğne ve öğretici çivileri**: ilk kurulan huninin ağzından 2-4 karo içeride,
+`z ≥ h − 12` (sığ), `h ≥ 12` (öğreticide `h ≥ 25` koşulu aranmaz; eteğe yakın seçilir).
+Her tür kendi karıştırma sabitiyle tohumlanır (`civi.js` deseni).
 
 **Açıkta kalma ve yuvarlanma** (yalnız çiftlik): hücresinde `h ≤ z` olan nesne açıktadır,
 `z := h` olur (üstte yatar) ve parlar. Her 20 tikte bir, açıktaki her nesne 4 komşudan en
@@ -117,7 +133,9 @@ Açıktaki nesneyi oyuncu elle de alabilir (normal mod kuralı: iğne/buluntu de
 cebe, çivi/taş atılır, ceza yok).
 
 **Saman korunumu** (`mimari` §3 testine ek): `Σh + Σeşya.saman + depolar + satılan +
-kaldırılan = başlangıç + çayır büyümesi + arabaların döktüğü`. Kaynaklar sayaçla tutulur.
+kaldırılan = başlangıç + çayır büyümesi + arabaların döktüğü + çevrimdışı ürün`. Kaynaklar
+sayaçla tutulur (`c.cayirKat`, `c.arabaKat`, `c.cevrimdisiKat`: çevrimdışı kazanç tarlayı
+eksiltmez, `ekonomi.md` §7, bu yüzden ayrı kaynaktır).
 
 ## 5 Eşyanın sonu (nerede biter)
 | Yer | Ne alır | İğne / buluntu gelirse |
@@ -125,11 +143,14 @@ kaldırılan = başlangıç + çayır büyümesi + arabaların döktüğü`. Kay
 | Komşu kapısı | etkin siparişin türleri; "fazlasını sat" açıksa `deger > 0` olanlar; geri kalan **atılır** (istatistikte "boşa giden") | oyuncuya iade: deftere yazılır, **kuruş yok** |
 | Gübre çukuru | toz, karışık balya, çürük ot | oyuncuya iade, kuruş yok |
 | Defter masası | `igne` ve `buluntu` sınıfı | kayıt + kuruş (değer sütunu) |
-| Sandık, ambar | her şey (kapasiteye dek) | saklar |
+| Sandık, ambar | her şey (kapasiteye dek) | **bulundu sayar**: defter + kutlama + kuruşun **yarısı**; eşya depoda tutulmaz (tutucu→kol→sandık yolunda iğne ödülsüz kalmasın) |
 | İşleme makineleri | tarifindekiler | **sert** ise sıkışır, değilse girişte bekler (reddeder) |
-Kural: **iğne ve buluntu hiçbir yolla yok olmaz.** Sıkışan makine "Temizle" ile açılınca
-sıkıştıran eşya oyuncuya döner (iğneyse defter + kuruş tam ödenir: elle bulmuş sayılır).
-Sandık/ambar sökülürken içindeki iğne ve buluntular oyuncuya döner, gerisi atılır (onaylı).
+Kural: **iğne ve buluntu hiçbir yolla yok olmaz** (ya bir sink'te "bulundu" olur ya oyuncuya
+döner). Sıkışan makine "Temizle" ile açılınca sıkıştıran eşya oyuncuya döner (iğneyse defter +
+kuruş tam ödenir: elle bulmuş sayılır). **Her parça** sökülürken (hat, tampon, kalıp, tutucu,
+yuva, depo) içindeki iğne ve buluntu oyuncuya döner, gerisi atılır (depoda onaylı). Defter
+masası: tam kuruş + kutlama (ödül noktası); sandık/ambar: yarı kuruş (ayıklamayı atlamanın bedeli).
+Test: her sink ve makine için iğne/buluntu korunumu ve her parçanın sökümü.
 
 ## 6 Dalga 2 türleri (yer ayrıldı, kodlar sabit)
 | Kod | Kod adı | Ad | Kaynak | Özellik özeti |

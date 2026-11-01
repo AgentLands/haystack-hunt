@@ -67,8 +67,9 @@ tikte +1 kat, en çok 8; orak makinesinden başka toplayıcı burada `saman` ür
 **39. Değirmen taşı** · `degirmen-tasi` · işleme · 2×2 · yönlü · 180 · D12
 - P: G arka; Ç ön (un), sağ (kepek). E: 10 bg. O: 4 tane → 1 `un` + 1 `kepek`, 80 tik
   (15 un/dk).
-- A: **boş dönme aşınması**: güç bağlıyken boş geçen her 200 tik taşı %1 aşındırır (%0'da
-  durur, "Onar" 80 kuruş). Kural istisnası: bu parça boşken de güç çeker; boşta kasnak ve
+- A: **boş dönme aşınması**: güç bağlıyken boş geçen her 1200 tik taşı %1 aşındırır (%0'da
+  durur, "Onar" 80 kuruş). Düven 60 tane/dk verse de orak ≈ 12/dk beslediğinden değirmen ≈ %80
+  boş döner (≈ 3 un/dk): 200 tik ≈ 16 dk'da bir onarım angaryası olurdu, 1200 tik ≈ 2 saat. Kural istisnası: bu parça boşken de güç çeker; boşta kasnak ve
   kantarla kesilmeli. S: "Makine boşken gücü kim keser?" H: aşınmış taş.
 - G: iki yuvarlak taş, üstte buğday hunisi, kenardan dökülen un tozu.
 
@@ -138,3 +139,5 @@ tikte +1 kat, en çok 8; orak makinesinden başka toplayıcı burada `saman` ür
 | D13 | Silaj | yem karıştırıcı, balya sarıcı, kayış kasnağı |
 | D14 | Uzak yollar | zincirli bant, hava borusu, uzun yaba |
 Dalga 2 ile gelecek arayüz işleri: kayıt yuvaları (3), şablon kitaplığı paylaşım kodu.
+D9 ve D10 damgaları ilk sürümde de basılabilir (`ekonomi.md` §4); bu dalganın parçaları
+dalga 2 gelene dek palette görünmez.

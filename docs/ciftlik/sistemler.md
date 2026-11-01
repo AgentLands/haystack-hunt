@@ -23,8 +23,16 @@ Hepsi `js/kural/ciftlik/` altında saf ve deterministiktir: tam sayı, `Math.ran
   yapmaz). Ötekiler 0 (güçsüz durur). Bu, `mimari`deki "dişlisiz makine güçsüzdür" kuralının
   genelleştirilmesidir.
 - **Darbeli yük**: pres basarken 30 bg ister; volansız küçük şebekede bütün makineler o
-  40 tik yavaşlar. Volan bunu emer: bir basma açığı ≈ (30 − arz) × 40 ≤ 2400.
-- **Üreticiler**: krank 6 (komutla), yel değirmeni şiddete göre 0/8/16/24 (yön dönüşünde
+  40 tik yavaşlar. Volan bunu emer: bir basma açığı ≈ (30 − arz) × 40 ≤ 2400. Volan **dakikalık
+  rüzgâr sessizliğini kapatmaz** (20 bg talep 2400'ü 6 sn'de eritir).
+- **Rüzgâr durgunken** (dilimlerin %15'i) yel 0 bg verir; pres ve şeytan yelinin `gucsuzOran`ı
+  0 olduğundan hat durur: "bedava ama kararsız"ın bedeli budur. Hat A'da 2 yel ≈ %76, 4 yel
+  bile ≈ %85 verimdir (`ekonomi.md` §8); tam hız için lokomobil ya da krank şart. **Ölü
+  döngü korunması**: lokomobil yakıtını presten alır; yakıt bitip yel de yoksa hat durur, ama
+  krank (bedava, her zaman açık) bir balya bastırır, sandıktaki balya da yaba koluyla (güç
+  istemez) lokomobile verilebilir; yakıt bitince ipucu notu bunu söyler (hiçbir yol kilitlenmez).
+- **Üreticiler**: krank 6 (komutla: Kullan'a **bir kez dokunmak 600 tik** döndürür, basılı tutmak
+  gerekmez; çiftçi 3 karoyu aşarsa durur; telefonda başparmak joystick'te kalır), yel değirmeni şiddete göre 0/8/16/24 (yön dönüşünde
   100 tik 0), lokomobil ≤ 40 (yakıtı `talep payı` oranında harcar: balya 1200 tik, kıyım
   150 tik tam yükte), dalga 2: manej 12 (ot yer), kayış kasnağı 30 bg aktarım tavanı.
 
@@ -73,6 +81,10 @@ Hepsi `js/kural/ciftlik/` altında saf ve deterministiktir: tam sayı, `Math.ran
 | Çayır büyümesi (en çok 12 kat) | 240 tikte +1 kat | aynı | **120 tikte** +1 | |
 Gübreli karoda süre yarıya iner (yağmurla birlikte 60 tik). Yağmur kurutmayı durdurur ama
 çayırı hızlandırır: ikilem, ceza değil. Büyüme bütün çayır hücrelerine aynı tikte uygulanır.
+- **Tınaz çalışma payı**: eksene dik rüzgâr 4 yönün 2'si; durgun %15. Yani tınaz ≈ %42
+  zaman ayırır (toz-saman ayrımı ancak şiddet 1 dik, ≈ %17). Bu bilinçli bir "fırsat
+  ayırıcı"dır (hep çalışan ayırıcı kalbur/tambur/şeytan yelidir); paneli şimdiki hâlini yazar
+  ("şimdi: dik esinti, toz ayrılıyor" / "paralel: hepsi dipten").
 - **Nem** yalnız eşya türüdür (`yas-ot`). Nereye giderse: pres ve kıyıcı reddeder (girişte
   bekler, rozet "nemli"), kalbur sıvanır, tınaz ve şeytan yelinde ağır tarafa düşer, ambarda
   çürür (her 1200 tikte ⌈n/4⌉ → `curuk-ot`), kurutma ambarı ve ot savurucu kurutur, dalga 2
@@ -81,8 +93,9 @@ Gübreli karoda süre yarıya iner (yağmurla birlikte 60 tik). Yağmur kurutmay
   rüzgâr yönünde savrulan saman zerreleri; `sade-hareket` tercihinde yalnız HUD simgesi.
 
 ## 4 Paslı çivi, taş ve tıkanma
-- Kaynak: harman alanındaki gömülü çivi (16 + arabalar) ve taş (30 + arabalar); huniler ve
-  taş toplayıcı onları akışa sokar. Çayırda çivi yoktur (temiz ama nemli kaynak).
+- Kaynak: harman alanındaki gömülü çivi (120 + 8 öğretici; araba başına 3) ve taş (90; araba
+  başına 2); huniler ve taş toplayıcı onları akışa sokar. Sıklık: pasif huni ≈ 7 dk'da bir
+  çivi, ≈ 9 dk'da bir taş (`esyalar.md` §4). Çayırda çivi yoktur (temiz ama nemli kaynak).
 - **Ne yapar** (normal moddaki süre cezası çiftlikte yok; bedel hattın durmasıdır):
 | Nereye girerse | Sonuç | Çözüm |
 |---|---|---|
@@ -101,33 +114,41 @@ Gübreli karoda süre yarıya iner (yağmurla birlikte 60 tik). Yağmur kurutmay
 
 ## 5 İğneler ve harman arabası
 - **Türler**: iğne (ince, manyetik), çuvaldız (iri, manyetik), altın iğne (ince, manyetik
-  değil). Başta 5 iğne + 1 çuvaldız + (%30) 1 altın; "ilk iğne" sığ ve öğretici huninin
+  değil). Başta 5 iğne + 1 çuvaldız + (%30) 1 altın; "ilk iğne" sığ ve ilk huninin
   yanında (`esyalar.md` §4).
 - **Bulma yolları**: elle (açıkta, normal mod kuralı), oluk mıknatısı "Boşalt", sıkışmış
-  presi "Temizle", Defter masası → hepsi **tam ödül**: iğne 250, çuvaldız 400, altın 1500
+  presi "Temizle", Defter masası → hepsi **tam ödül** (sandık/ambar girişi: **yarı** kuruş,
+  defter ve kutlama tam): iğne 250, çuvaldız 400, altın 1500
   kuruş + defter + kutlama (olay `ciftlik-igne { kaynak: 'el'|'parca', tur, x, y }`, damga
   sesi, parıltı, "İğne no. 7" kâğıdı). Kapı ya da gübre çukuru iadesi: defter + kutlama,
   kuruş yok ("Komşu iğneni geri getirdi").
 - **Aranan iğne**: `tarla.igne` alınmamış ilk iğne türünü gösterir (parıltı, dedektör,
   kulak, kenar işareti aynen çalışır; `mimari` §1). Dedektör ve mıknatıs hakkı: başta 1'er,
   her harman arabası +1, en çok 3.
-- **Harman arabası** (`ciftlik/araba.js`): her 6000 tikte bir yoklanır; harman alanındaki
-  toplam kat başlangıcın **%85**'inin altındaysa araba gelir. 600 tik önce duyuru (kenar
+- **Harman arabası** (`ciftlik/araba.js`): her 6000 tikte bir yoklanır; son arabadan beri
+  harman alanından **15.000 kat** tüketildiyse (`c.tuketilenKat`) araba gelir (Hat A ≈ 12
+  dk, tek huni ≈ 25 dk; "toplam stok %85" gibi bir eşik ilk arabayı ≥ 1 saate iter ve iğne
+  akışını keser). Stok net 5 bin kat/araba azalır: ≈ 100 araba (Hat A ile ≈ 20 saat). Stok %10'un
+  altına inerse eşik 8.000'e düşer (tarla hiç bitmez). 600 tik önce duyuru (kenar
   işareti, araba sesi, HUD notu "Harman arabası 30 sn sonra kuzey köşeye"). Döküm yeri
   tohumdan 8 adaylık listeden sırayla ilk uygun olan (merkezinin 6 karo çevresinde parça
   tabanı yok); hiçbiri uygun değilse araba bekler ("döküm yeri yok" notu). Yığın: r 12
-  hücre, tepe 45 kat (≈ 10 bin kat ≈ 850 tutam) + 1 iğne türü, 2 çivi, 4 taş, 1 buluntu.
+  hücre, tepe 45 kat (≈ 10 bin kat ≈ 850 tutam) + 1 iğne türü, 3 çivi, 2 taş, 1 buluntu.
   Arabalar başka saman korunumu kaynağıdır (sayaç `c.arabaKat`).
 - Böylece iğne hep vardır ama **kazanılır**: yığını hızlı işleyen çiftlik daha sık iğne
   görür; yavaş çiftlik eski yığınlarındaki iğneleri arar.
 
 ## 6 Buluntu defteriyle bağ
-- Çiftlik **aynı** defteri doldurur (`haystack-hunt:buluntu-defter`, `kural/buluntu-defter.js`
-  API'si); kayıt `kaynak: 'ciftlik'` alanı taşır, normal mod kaydı değişmez. Defter
-  penceresine "Çiftlikte bulunanlar" süzgeci ve "iğne sayacı" satırı eklenir.
+- Çiftlik **aynı** defteri doldurur (`haystack-hunt:buluntu-defter`, `buluntuEkle` aynen);
+  defter şeması (`surum: 1`, tür → adet) **değişmez**: kayıtta `kaynak` alanı yoktur ve
+  `defterTemizle` bilinmeyen alanı atardı. "Çiftlikte bulunanlar" süzgeci çiftliğin kendi
+  sayacından (`ilerleme.defterCiftlik: {tur: adet}`) gelir. Ayar "Ortak deftere de yaz" (varsayılan
+  açık): otomasyonun normal modun koleksiyonunu doldurması sahibin isteğidir; kapatılırsa
+  çiftlik yalnız kendi sayacını doldurur. Defter penceresine iğne sayacı satırı eklenir.
 - Gömülü buluntular `KATALOG` nadirlik ağırlıklarıyla seçilir (başta 8, araba başına 1).
   Otomasyonla toplama eğlenceli bir koleksiyon motoru olur; nadir sipariş kartları
-  (`ekonomi.md` §3) yalnız defterde en az bir kez görülmüş türlerden üretilir.
+  (`ekonomi.md` §3) yalnız defterde en az bir kez görülmüş türlerden üretilir. (Çiftlikte
+  gömülü buluntular 40 + araba başına 1; D10'un 8 farklı türü ≈ 1-1,5 saatlik hat işidir.)
 - Ayıklama bulmacaları: **toka** iğneyle aynı kaba yolu izler (yalnız tür filtresi ayırır),
   **tüy/mektup/yonca** tozla savrulur, **kuruş/yüzük/saat** mıknatısa yakalanmaz. Kaçan
   buluntu kaybolmaz (iade); yalnız kuruşu kaçar.
