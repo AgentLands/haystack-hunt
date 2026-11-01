@@ -11,7 +11,8 @@ da sınırlıdır (10'luk patlama, saniyede 2); fazlası yanıtsız atılır.
 
 Uzak adres başına en çok 8 açık bağlantı (fazlası `429 Too Many Requests` ile reddedilir) ve en
 çok 3 kurulu oda vardır (`oda-siniri`). Sunucu bir ters vekil arkasındaysa `vekil` seçeneği
-`X-Forwarded-For`'un son değerini adres sayar. Kapanış çerçevesinden sonra gelen veri okunmaz.
+`X-Forwarded-For`'un son değerini adres sayar. Toplamda en çok 1000 bağlantı ve 500 oda
+vardır (aşılınca `503` ya da `sunucu-dolu`). Kapanış çerçevesinden sonra gelen veri okunmaz.
 Statik olarak yalnız oyun dosyaları sunulur: `index.html`, kökteki `*.css`, `manifest.webmanifest`,
 `sw.js`, `favicon.ico` ve `js/`, `font/`, `ikon/` klasörleri.
 
@@ -34,7 +35,7 @@ korundu) çiftçinin konumunu ve bindiği makineyi taşır. Alanlar:
 
 | Alan | Anlam | Doğrulama |
 | --- | --- | --- |
-| `x`, `y` | Merkez, **dünya** birimi (tarla 240×160; hücre i, [i, i+1)); makinedeyken makinenin konumu | Sayı, 0..1024, 2 ondalığa yuvarlanır. İkisi `null` ise oyuncunun çiftçisi gizlenir. |
+| `x`, `y` | Merkez, **dünya** birimi (1 birim = 1 hücre; tarla 240×160; hücre i, [i, i+1)); makinedeyken makinenin konumu | Sayı, 0..1024, 2 ondalığa yuvarlanır. İkisi `null` ise oyuncunun çiftçisi gizlenir. |
 | `yon` | Bakış yönü, radyan (0 = doğu, y aşağı pozitif) | Sayı; (-π, π]'ye sarılıp 2 ondalığa yuvarlanır. Yoksa 0. |
 | `hareketli` | Bu karede yürüdü/sürüldü mü | Bool; yoksa `false`. |
 | `kullan` | Aracı/iş aygıtını kullanıyor mu (Boşluk) | Bool; yoksa `false`. |
@@ -73,6 +74,12 @@ Oyuncu kaydı: `{ id, ad, renk (0-7), durum, sira, sureMs, cezaMs, saman, bagli 
 `bitti` olunca kesindir. Sonradan bulan, daha az ceza aldığı için öncekini geçebilir; bu yüzden
 `kazanan` yalnız ilk bulanı duyurur. Oynayan kalmayınca (ya da 20 dakika dolunca) yarış `bitti` olur. Odada en çok
 8 bağlı oyuncu olur; kurucu ayrılırsa ilk bağlı oyuncu kurucu olur; boşalan oda silinir.
+
+İstemciye özel özellikler protokole girmez: rahat mod, meydan okuma bağlantısı (`?rakip=`),
+buluntular, hayvanlar, kulak, akış ve kenar işareti yalnız yerel oyundur. Yarış oyunları rahat
+modda açılmaz; `bulundu.sureMs` her zaman paslı çivi cezası (25 sn, `js/kural/civi.js`) dahil
+süredir. Sunucu zorluğun anlamını bilmez, yalnız `kolay`/`normal`/`zor` adını taşır; dedektör
+hakkı, yakıt gibi sayılar istemci kurallarındadır.
 
 Güven: sunucu istemcinin `bulundu`, `sureMs` ve `saman` değerlerine güvenir (yalnız tür ve
 aralık denetler); hile önleme yoktur.

@@ -3,19 +3,25 @@
  * metin girdiye göre seçilir (t: klavye, d: dokunmatik; tek dizgeyse ikisinde aynı).
  * Sayılar (haklar, ceza, puan) kural modüllerinden okunur ki belge kuraldan sapmasın.
  */
-import { ZORLUKLAR, PUAN_TABAN, PUAN_TABAN_ALT } from '../kural/zorluk.js';
-import { MIKNATIS_MENZIL } from '../kural/araclar.js';
+import { ZORLUKLAR, PUAN_TABAN, PUAN_TABAN_ALT, HAK_BEDELI } from '../kural/zorluk.js';
+import { MIKNATIS_MENZIL, SEVIYELER } from '../kural/araclar.js';
 import { CIVI_CEZA_MS } from '../kural/civi.js';
+import { TELAFI_HAKKI } from '../kural/dedektor.js';
+import { KULAK_MENZIL } from '../kural/sinyal.js';
+import { IKMAL_HAKKI } from '../kural/makineler/garaj.js';
+import { KATALOG } from '../kural/buluntu.js';
+import { DONDURMA_ARALIK_GUN } from '../kural/istatistik.js';
 
 const { kolay, normal, zor } = ZORLUKLAR;
 const yuzde = (oran) => `%${Math.round(oran * 100)}`;
+const [yanar, sicak, ilik] = SEVIYELER;
 
 /** Puan tablosu satırları: [açıklama, değer]; ardından zorluk çarpanları [ad, çarpan]. */
 export const PUAN_SATIRLARI = [
   ['Başlangıç', String(PUAN_TABAN)],
   ['Her saniye', '−2'],
   ['Her 100 saman', '−1'],
-  ['Her dedektör ya da mıknatıs', '−50'],
+  ['Her dedektör ya da mıknatıs', `−${HAK_BEDELI}`],
   ['En az', String(PUAN_TABAN_ALT)],
 ];
 export const CARPANLAR = [kolay, normal, zor].map((z) => [z.ad, `×${z.carpan}`]);
@@ -59,6 +65,11 @@ export const SEKMELER = [
         d: `Dedektör: iğneye ne kadar yakın olduğunu söyler. Hak: Kolay ${kolay.dedektor}, `
           + `Normal ${normal.dedektor}, Zor ${zor.dedektor}.`,
       }],
+      ['dedektor', `Okuduğun yerde bir halka kalır. Yanıyor!: iğne ${yanar.mesafe} adım içinde, `
+        + `Sıcak: ${sicak.mesafe}, Ilık: ${ilik.mesafe}. İğne bir halkanın içinde, bir küçüğünün `
+        + 'dışındadır; birkaç yerden oku, halkaların kesiştiği yeri kaz.'],
+      ['dedektor', `Hepsi Soğuk çıkıp hakların biterse tur başına ${TELAFI_HAKKI} hak daha `
+        + 'verilir; şanssız tarlada elin boş kalmaz.'],
       ['miknatis', {
         t: `Mıknatıs (4): iğne ${MIKNATIS_MENZIL} adım içindeyse yüzeye çeker ve parlatır; `
           + `değilse boşa gider. Kolay'da ${kolay.miknatis} hak, yoksa ${normal.miknatis}.`,
@@ -94,18 +105,48 @@ export const SEKMELER = [
       }],
       ['damla', `Yakıt sınırlı: Kolay ${yuzde(kolay.yakit)}, Normal ${yuzde(normal.yakit)}, `
         + `Zor ${yuzde(zor.yakit)} depoyla başlar. Bitince in ve yürü.`],
+      ['damla', IKMAL_HAKKI === 1
+        ? 'Garaj ikmali: yakıt azalınca makineyi garajdaki park yerine geri getirip durdur; '
+          + 'depo dolar. Her makine için tur başına bir kez.'
+        : `Garaj ikmali: makineyi park yerine geri getirip durdur; depo dolar (tur başına `
+          + `${IKMAL_HAKKI} kez).`],
+      ['damla', {
+        t: 'Boşluğu boşuna basılı tutmak yakıtı çok yemez; asıl harcama saman alırken olur.',
+        d: 'Kullan\'ı boşuna basılı tutmak yakıtı çok yemez; asıl harcama saman alırken olur.',
+      }],
     ],
   },
   {
     ad: 'İpuçları',
     maddeler: [
-      ['gunes', 'İğne yüzeye yakınsa güneşte arada bir parlar; gözünü tarladan ayırma.'],
+      ['gunes', 'İğne yüzeye yakınsa güneşte arada bir parlar; gözünü tarladan ayırma. '
+        + 'Parıltı ekran dışındaysa kenarda yönü gösteren bir ışık oku belirir.'],
       ['igne', 'İğne açığa çıkınca yanına git ve elle al.'],
       ['civi', `Paslı çiviler turuncu-kızıl parlar. Elle çivi alırsan süreye `
         + `${CIVI_CEZA_MS / 1000} sn eklenir; dedektör ve mıknatıs çiviyi görmez.`],
       ['dedektor', 'Dedektörü yığının farklı yanlarında dene: Soğuk, Ilık, Sıcak, '
         + 'Yanıyor! Isındıkça iğneye yaklaşıyorsun.'],
+      ['ses-acik', `Kulak: ses açıksa kazarken iğneye ${KULAK_MENZIL} adımdan yaklaşınca metal `
+        + 'tınılar duyulur; yaklaştıkça sıklaşır ve incelir. Yön vermez, "buralarda" der.'],
       ['menu', 'Süre ilk hamlende başlar; menü açıkken ve sekme arkadayken işlemez.'],
+    ],
+  },
+  {
+    ad: 'Diğer',
+    maddeler: [
+      ['anahtar', `Samanın altında düğme, nal, yüzük gibi küçük eşyalar da saklı `
+        + `(${KATALOG.length} tür). Elle alırsan cezasızdır; Buluntular defterine yazılır, `
+        + 'nadir olanlar ayrı damgalı.'],
+      ['balya', 'Fare, serçe, kurbağa, kirpi, hatta bir kedi tarlada yaşar; yaklaşınca kaçarlar. '
+        + 'Yalnız süs, oyunu etkilemezler.'],
+      ['kurdele', 'Kesintisiz kazarsan tuvalin sol üstündeki ince akış çubuğu dolar. Yalnız keyif; '
+        + 'puanı ve süreyi etkilemez, paslı çivi alırsan yarıya düşer.'],
+      ['bayrak', 'Bitişte "Meydan oku" ile süreni bağlantıyla gönder; bağlantıyı açan aynı '
+        + 'tarlada, aynı zorlukta süreni geçmeye çalışır. İğnenin yeri bağlantıda yoktur.'],
+      ['tik', 'Rahat mod (menüdeki bağlantılar arasında): süre ve puan gizlenir, çivi '
+        + 'cezası yoktur. Yarışta kapalıdır.'],
+      ['gunes', `Günün tarlası serisi: tek bir günü kaçırırsan seri bozulmaz (seri dondurma, `
+        + `${DONDURMA_ARALIK_GUN} günde bir).`],
     ],
   },
   { ad: 'Puan', maddeler: [], tablo: true },

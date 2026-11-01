@@ -49,7 +49,7 @@ güncelle.
   hücreyi seçer.
 - Araçlar karakterin **önünde** (yon yönünde ~1.5 hücre) ya da fare/dokunmayla seçilen
   erişimdeki hücrede çalışır. Dedektör ve mıknatıs karakterin bulunduğu hücreyi okur
-  (Boşluğa her basışta bir kez). El Boşluk basılıyken saniyede 60 kat kazar (EL_HIZI; kare
+  (Boşluğa her basışta bir kez). El Boşluk basılıyken hücre başına saniyede 45 kat kazar (`EL_HIZI`; kare
   hızından bağımsız); tırmık Boşluk
   basılıyken 0.2 sn'de bir karakterin yönünde (yürürken hareket yönünde) iter.
 - `durum.imlec` geriye uyum için karakterin araç noktasını gösterir (yarış imleci vb.);
@@ -74,7 +74,7 @@ güncelle.
 - Garaj: `durum.garaj = { x, y, kenar, yon, en }` (park sırasının ortası, dünya birimi;
   kenar 0 üst, 1 sağ, 2 alt, 3 sol; yon tarlaya bakan açı; en sıranın boyu). Kendi
   üretecinden seçilir (tarla/iğne üretimi değişmez); başlangıç yakıtı `zorluk.js` `yakit`
-  alanından (Kolay 1, Normal 0.7, Zor 0.4).
+  alanından (Kolay 1, Normal 0.9, Zor 0.7).
 - Makineler garajda (tarla kenarında, tohumdan belirlenen yerde) başlar.
 - Makine tanımları `js/kural/makineler/<tur>.js` modüllerinde, ortak kayıt
   `js/kural/makineler/kayit.js` (`makineTanimla(tur, tanim)`); tanım saf işlevlerdir
@@ -88,13 +88,21 @@ güncelle.
   Saman hızı düşürür (`/ (1 + z / 40)`); ön (geri giderken arka) uç yeni hücreye girerken
   yükseklik farkı makinenin `tirmanma` eşiğini aşarsa durur ve takılır (geri çıkmak gerekir).
   Yakıt sürerken hızla orantılı, çalışırken `isYakit` kadar harcanır; bitince kımıldamaz.
+  İş aygıtı bu karede hiçbir şey almadıysa (dolu kepçe, boş zemin, beklerken Boşluk) iş yakıtının
+  yalnız %10'u harcanır (`BOSTA_IS_ORANI`).
+  Tam gazda tüketim: traktör 1/260 depo/sn, balya makinesi 1/160; üfleyicinin iş yakıtı 1/120.
+- **Garaj ikmali** (`garaj.js` `ikmalKontrol`): her makine tur başına **bir kez** (`IKMAL_HAKKI`)
+  deposunu %100'e doldurur. Makine park yerinden `IKMAL_UZAKLASMA` (10) hücre uzaklaşmış,
+  sonra park yerine `IKMAL_YARICAP` (3) hücreden yakın dönmüş ve durmuşsa (`IKMAL_HIZ` 0.3
+  hücre/sn altı) ve deposu dolu değilse olur; `yakit-ikmal` olayı yayılır. Yakıt %25'in
+  altına inince bildirim hakkın durup durmadığını söyler (`makine-bildirim.js`).
 - Çarpışma: karakter, makineler birbirine girmez (daire: makine `yaricap`, karakter 0.6).
 - **E**: gövde kenarına ≤ 2.5 hücre yakın makineye bin / makineden in (yanına iner;
   `binme.js`).
 
 ## Kepçeli traktör (`js/kural/makineler/traktor.js`)
 - Boşluk basılıyken önündeki kepçe dairesinden (merkezden 3 hücre önde, yarıçap 2.2) yüzey
-  samanını alır: hücre başına 360 kat/sn, kapasite 6000 (`yuk` = doluluk). Saman kepçedeyken
+  samanını alır: hücre başına 360 kat/sn, kapasite 10000 (`KEPCE_KAPASITE`; `yuk` = doluluk). Saman kepçedeyken
   tarlada değildir; `kaldirilan` boşaltınca artar. W ile itince yığına gömülerek kazar.
 - Dolu kepçe tarla kenarına (kepçe kenardan ≤ 3 hücre) götürülüp Boşlukla boşaltılır; sonra
   Boşluk bırakılana dek kepçe bekler (`kilitli`).
@@ -123,8 +131,8 @@ güncelle.
   menzil }` (~10 Hz; efekt ve ses için).
 ## Balya makinesi ve balyalar
 - Tanım `js/kural/makineler/balya.js`, balya kuralları `js/kural/balyalar.js`.
-- Traktörden hızlı (azami 20); tırmanma eşiği traktörünkü kadar (2): 1.5 düz tarladaki
-  serpintide (komşu farkı 2, geçişlerin ~%11'i) sürekli takılıyordu. "Yalnız alçak/orta
+- Traktörden hızlı (azami 20); tırmanma eşiği 2 (traktörün 3'ü yerleşmiş yamaç kadardır; balya
+  makinesinde 1.5 düz tarladaki serpintide — komşu farkı 2, geçişlerin ~%11'i — sürekli takılıyordu). "Yalnız alçak/orta
   samanda iyi çalışır" kısıtı toplayıcının erişimiyle gelir: gövdenin altındaki samanın en
   çok `TOPLAYICI_ERISIM` (20) kat üstündeki hücrelere uzanır, yüksek yığın duvarına girmez.
 - Boşluk basılıyken önündeki **toplayıcı şeridinden** (merkezden 3.1 önde, en 4.2, derinlik 2;
@@ -184,7 +192,8 @@ mahsur kalıp oyun bitirilemez olmaz.
 - `ufleme { x, y, yon, menzil }` (sırt üfleyicisi çalışırken ~10 Hz; x, y hücre birimi)
 - Eklenenler: `makine-yok { x, y }` (E ama yakında makine yok), `kepce-doldu { makine }`,
   `kepce-bosaltildi { makine, miktar, igne, civi, x, y }`, `igne-kepcede { makine, x, y }`,
-  `civi-kepcede { makine, x, y }`. Tam katalog: `js/olaylar.js`.
+  `civi-kepcede { makine, x, y }`, `yakit-ikmal { makine, onceki }`. Tam katalog:
+  `js/olaylar.js`.
 - Balya: `balya-birakildi { balya, makine }`, `igne-yutuldu { x, y }` (yalnız ses/efekt),
   `civi-yutuldu { x, y }`, `balya-acildi { balya, igne, civiSayisi }`.
 

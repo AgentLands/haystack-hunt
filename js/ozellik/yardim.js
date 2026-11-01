@@ -1,7 +1,7 @@
 /**
  * "Nasıl oynanır" defteri: menüden açılan sekmeli kâğıt pencere (Yürüme, Aletler, Makineler,
- * İpuçları, Puan). Maddeler ikon + tek cümle; dokunmatikte tuş adları yerine kol, Kullan,
- * Bin/İn yazılır (açılırken girdi türüne bakılır). İçerik yardim-icerik.js'te.
+ * İpuçları, Diğer, Puan). Maddeler ikon + tek cümle; dokunmatikte tuş adları yerine
+ * kol, Kullan, Bin/İn yazılır (açılırken girdi türüne bakılır). İçerik yardim-icerik.js'te.
  * Sekmeler ok tuşlarıyla gezilir (WAI-ARIA sekme deseni); Esc ve × kapatır.
  */
 import { ikon } from './ikon.js';
