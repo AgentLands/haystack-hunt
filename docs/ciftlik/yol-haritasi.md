@@ -22,15 +22,20 @@ Tasarımın mimariden ayrıldığı ya da onu genişlettiği yerler; şema donma
    saman korunumu kaynak sayaçları (`cayirKat`, `arabaKat`). `RUZGAR` tablosu yerine
    `hava(tohum, dilim)`.
 7. Komut türleri: `kur, sok, dondur, ayar, temizle, bosalt, onar, krank, kapiSat,
-   siparisCevir, siparisSifirla` (tik numaralı, kuyrukta).
+   siparisCevir, siparisSifirla, arabaCagir, cayirGenislet` (tik numaralı, kuyrukta).
 8. `parcalar/` altındaki aile dosyaları (`toplama, tasima, ayiklama, isleme, depo-kol,
    enerji, mantik`) Faz 0'da **boş saplar** olarak açılır ve `hepsi.js` hepsini içe aktarır:
    Faz 1 ajanları `hepsi.js`'e dokunmaz, çakışma olmaz.
-9. Kural klasörü 8 modül sınırı için alt klasörler: `kural/ciftlik/dunya/` (arazi, hava,
+9. **Normal moda dokunmadan** üç hazırlık: (a) `tarlaKur` iç gövdesi `tarlaKurAyar(tohum,
+   ayar)` olur, `tarlaKur` ona devreder (900 kare izi AYNI; `esyalar.md` §4); (b) buluntu
+   türlerinin eşya kodları `esya.js`'te sabit açık tablo (`KATALOG` sırasına bağlı değil; test
+   `KATALOG` ⊆ tablo); (c) ortak defter şeması değişmez, çiftlik kendi sayacını tutar
+   (`sistemler.md` §6). `civileriSakla` deseni çiftlik kopyasında yazılır, normal `civi.js` değişmez.
+10. Kural klasörü 8 modül sınırı için alt klasörler: `kural/ciftlik/dunya/` (arazi, hava,
    gomulu, araba), `kural/ciftlik/ekonomi/` (kurus, siparis, damga, acilis, cevrimdisi,
    denge). `mimari`deki `ilerleme.js` buraya taşınır.
 
-## 2 Faz 1 iş parçaları (12)
+## 2 Faz 1 iş parçaları (13)
 Ortak: olay adları `olaylar.js` kataloğunda her ajanın kendi alt bloğu; `sw.js SURUM`
 birleştiren ajanda; sayılar yalnız `ekonomi/denge.js` sabitlerinden (tek kaynak).
 
@@ -46,7 +51,9 @@ birleştiren ajanda; sayılar yalnız `ekonomi/denge.js` sabitlerinden (tek kayn
   12/deşarj 30/2400, lokomobil yük oranında yakar, yön dönüşünde 100 tik 0, şebeke sökmede
   bölünür; krank komutu yalnız çiftçi 1 karo içindeyken.
 
-**C · ciftlik-mantik**: renk kanalları + rüzgâr gülü, savak, kantar, kile sayacı
+**C · ciftlik-mantik** (**en son birleşir, kesilebilir**: isteğe bağlı, hiçbir damga ona
+bağlı değil; kesilirse ilk sürüm 26 parçadır): renk kanalları + rüzgâr gülü, savak, kantar,
+kile sayacı
 - Dosyalar: `kural/ciftlik/ag/sinyal.js`, `parcalar/mantik.js`, `tests/ciftlik-mantik.test.js`.
 - Bağımlı: Faz 0 (hat `etkin`), B (kantar volanı okur; sap kabul). Kabul: bir tik gecikme,
   toplam > 0 = açık, ters ayarı, kile iki kipi ve sıfırlama, kantar 6 depo türü, savak geri
@@ -58,7 +65,9 @@ birleştiren ajanda; sayılar yalnız `ekonomi/denge.js` sabitlerinden (tek kayn
   toplayıcı), `tests/ciftlik-dunya.test.js`, `tests/ciftlik-hava.test.js`.
 - Bağımlı: Faz 0. Kabul: hava durumsuz ve dağılımı 10 bin dilimde ±%2; yağmur payı ≈ %8;
   çayır büyümesi (240/120/60 tik, tavan 12); ilk iğne öğretici huniyle 4-8 dk'da çıkar
-  (sabit tohumla 3 tohumda); yuvarlanma kuralı; araba %85 eşiği, döküm yeri, duyuru;
+  (sabit tohumla 3 tohumda); öğretici çivileri ≈ 30 sn arayla; yoğunluk (çivi/taş/buluntu
+  sayıları 3 tohumda yerleşir); yuvarlanma kuralı; araba tüketim eşiği (15.000 kat), döküm
+  yeri, duyuru, stok %10 altı eşiği; `arabaCagir`, `cayirGenislet` komutları;
   saman korunumu (kaynaklarla) 5000 tikte birebir; normal mod `tarlaKur` izi AYNI.
 
 **E · ciftlik-ayiklama**: oluk mıknatısı, mıknatıslı tambur, kalbur, tınaz, şeytan yeli
@@ -76,7 +85,8 @@ ambar, defter masası, yaba kolu, Komşu kapısı (kabul tarafı)
   sat). Kabul: pres saflık → 3 balya türü, sıkışma/Temizle, nem reddi, darbeli talep;
   kıyıcı kırılma/Onar 50; kurutma 600 tik/24 yuva, güçsüz ¼; ambar çürümesi ⌈n/4⌉;
   yaba kolu filtreleri ve hat üstünden alma; **iğne ve buluntu hiçbir yolda yok olmaz**
-  (her sink/makine için test).
+  (her sink/makine için test; sandık/ambar yarı kuruşla "bulundu" sayar; her parçanın
+  sökümü içindeki iğne/buluntuyu oyuncuya verir); tınaz, rüzgâr durgunken hepsini dipten çıkarır.
 
 **G · ciftlik-ekonomi**: kuruş, siparişler, damgalar, kilit kaynağı, çevrimdışı, kayıt göçü
 - Dosyalar: `kural/ciftlik/ekonomi/{kurus,siparis,damga,acilis,cevrimdisi,denge}.js`,
@@ -101,20 +111,27 @@ satırları), aile başına bir dosya
   19 px ve 56 px karoda tanınır (1280×800 ve 390×844 görüntü), boyalı oyuncak dili, dönen
   parça hızı güç oranıyla orantılı.
 
-**I · ciftlik-insa-arayuz**: kipler, palet, yerleştirme, hat çekme, sil, geri al,
-seç/kopyala/yapıştır, şablon, inceleme paneli
-- Dosyalar: `ozellik/ciftlik/{yerlestir,hat-cek,palet,panel,secim,sablon}.js`,
-  `ciftlik.css`, `ana.js` (1 satır), `tests/ciftlik-hat-cek.test.js` (saf yol hesabı).
-- Bağımlı: Faz 0 komutları; H1 önizleme. Kabul: `arayuz.md` §10 tablosunun her satırı
-  masaüstü ve dokunmatikte; histerezis ve geri izleme testi; 100 adım geri al; yapıştırma
-  hepsi-ya-hiç; 390 px taşma yok; kısayollar normal modu etkilemez.
+**I1 · ciftlik-insa-arayuz**: kipler, palet, yerleştirme, hat çekme, sil, geri al, pipet,
+inceleme paneli (en büyük iş olduğundan seç/kopyala/şablon ayrı ajan: I2)
+- Dosyalar: `ozellik/ciftlik/{yerlestir,hat-cek,palet,panel}.js`, `ciftlik.css`, `ana.js`
+  (1 satır), `tests/ciftlik-hat-cek.test.js` (saf yol hesabı).
+- Bağımlı: Faz 0 komutları; H1 önizleme. Kabul: `arayuz.md` §10 tablosunun I1 satırları
+  masaüstü ve dokunmatikte; histerezis ve geri izleme testi; 100 adım geri al; krank tek
+  dokunuş 30 sn; 390 px taşma yok; kısayollar normal modu etkilemez.
+
+**I2 · ciftlik-secim-sablon**: seç, kopyala, döndür/aynala, yapıştır (hepsi-ya-hiç), şablon
+(10 yuva, "Önerilen ilk hat"), pipetle ortak ayar taşıma
+- Dosyalar: `ozellik/ciftlik/{secim,sablon}.js` (+ saf `kural/ciftlik/izgara/kume.js`),
+  `tests/ciftlik-kume.test.js`. Bağımlı: Faz 0; I1 kipleri (sap: Ctrl+C/V). Kabul: ayna
+  sol/sağ portları değiştirir; kilitli parçalı şablon kırmızı; sayaç "N karo engelli · M kuruş".
 
 **J · ciftlik-hud-ekranlar**: üst şerit, pano, damga defteri, istatistik, öğretici,
 çevrimdışı fişi, menü satırları, ses ve efekt bağları, "Nasıl oynanır" çiftlik sekmesi
 - Dosyalar: `ozellik/ciftlik/{hud,pano,istatistik,ogretici,fis,menu-bag,ses-bag}.js`,
   `menu.js` (`menuModEkle`, küçük), `yardim-icerik.js` (çiftlik sekmesi).
 - Bağımlı: G (pano verisi; sap), D (hava tahmini). Kabul: `README.md` ilk 10 dakika
-  tablosu adım adım e2e'de; tahmin 3 dilim; sorun listesi kamerayı götürür; metinlerdeki
+  tablosu adım adım e2e'de (öğretici çivileri ve ilk iğne dahil; sandık yolundan D3);
+  kapı paneli (sat / araba çağır / çayır genişlet); tahmin 3 dilim; sorun listesi kamerayı götürür; metinlerdeki
   sayılar kural modüllerinden okunur.
 
 **K · ciftlik-dogrulama**: e2e, performans, mod ayrımı, denge ve senaryo testi
@@ -134,11 +151,11 @@ Faz 0 ──► A ─┬─► E ─┐
          D ─────────┤
          G ─────────┼─► J
          H1 ─► H2 ──┤
-         I ─────────┘
+         I1, I2 ────┘
 ```
 Hepsi Faz 0 biter bitmez **paralel** başlar; ok yönündeki bağımlılıklar saplarla
 karşılanır (port protokolü, `oran = 1024`, sabit hava, "hepsini sat" kapısı). Birleştirme
-sırası: A, B, C, D, G → E, F → H1, H2, I, J → K. Çakışma riski olan ortak dosyalar
+sırası: A, B, D, G → E, F → H1, H2, I1, I2, J → C (en son) → K. Çakışma riski olan ortak dosyalar
 yalnız: `olaylar.js` (blok başına), `ana.js` (I), `menu.js` (J), koruma satırları (K).
 
 ## 4 Faz 2 (dalga 2) iş parçaları (kararla başlar)
@@ -156,7 +173,10 @@ Her biri Faz 1'in sözleşmesine yalnız parça/eşya ekler; mevcut kodları ve 
 bozmaz (yeni alanlar göçle). Dalga 2 kilitleri D9-D14 (`parcalar-dalga2.md`).
 
 ## 5 Bitti tanımı (Faz 1)
-- 30 parça panelden kurulabilir, D1-D8 bir oyuncu tarafından oynanabilir.
+- 30 parça panelden kurulabilir (C kesildiyse 26), D1-D8 bir oyuncu tarafından oynanabilir.
+- Soft-lock testleri: (a) her şey sökülünce kuruş = 300 + kazanılan; (b) yakıt ve yel yokken
+  krank + sandık→kol→lokomobil ile hat yeniden başlar; (c) iğne/buluntu her sink, makine ve
+  söküm yolunda korunur; (d) çiviler öğretici çizelgesiyle D2'ye 10 dk içinde varılır.
 - Her parçanın en az bir hata modu rozetle görünür; sessiz tıkanma yok.
 - Normal mod, günün tarlası, yarış izleri değişmedi; `npm test`, `npm run duman`,
   `npm run e2e`, `npm run denetim` temiz; 390 px'te yatay taşma yok.

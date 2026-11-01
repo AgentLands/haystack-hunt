@@ -22,7 +22,8 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 - P: eşya portu yok; etki halkası 1-3 karo yarıçap; yığma noktası = önündeki karo.
   E: 8 bg (güçsüz durur). O: halkadan 2 kat/tik alıp yığma noktasına döker; açıktaki
   nesneleri her 20 tikte 1 hücre yığma noktasına sürükler.
-- A: eşya üretmez, **tarlayı şekillendirir**: kaymanın olmadığı düz çayırda huniyi besler.
+- A: eşya üretmez, **tarlayı şekillendirir**: kaymanın olmadığı düz çayırda ve harmanın
+  artık (h ≤ 8) yaygınlarında huniyi besler.
   Çayırda halka ≈ 100 hücre × 5 kat/dk → sürekli ≈ 42 tutam/dk. S: "Düz yerde saman
   huniye nasıl gelir?"
 - H: halka boşsa "aç" (çayır büyümesini bekler); yığma noktası 40 katı aşınca durur
@@ -33,8 +34,9 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 - P: Ç ön; menzil 4 karo yarıçap. E: 6 bg. O: 60 tikte bir açıktaki en yakın nesneyi
   alır (eşitlikte küçük hücre indeksi) ≤ 20/dk; tampon 4.
 - A: samana dokunmaz; yalnız **açıkta parlayan** nesneleri (iğne, çivi, taş, buluntu)
-  toplar; huniler ve kayma onları açığa çıkardıkça işe yarar. S: "Saman taşımadan iğneyi
-  nasıl yakalarım?"
+  toplar; nesneleri huni çukuru ya da **tırmık kolu halkası** açığa çıkarır (ikisi
+  "iğne avcısı" ikilisi: tırmık kazar, toplayıcı alır). S: "Saman taşımadan iğneyi nasıl
+  yakalarım?"
 - H: menzilde açık nesne yoksa "aç"; çıkış dolu. G: dönen tabla üstünde uzun sepetli
   ahşap kepçe kolu, sepette taşlar.
 
@@ -88,13 +90,13 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 - H: "sıvalı" rozeti (sessiz yanlış ayırma yok, görünür). G: yuvarlak çerçeveli delikli
   kalbur, sallantı titreşimi, altına düşen kırıntı.
 
-**11. Tınaz** · `tinaz` · ayıklama · 3×3 · yönlü · 60 · D4
+**11. Tınaz** · `tinaz` · ayıklama · 3×3 · yönlü · 60 · D6
 - P: G arka orta; Ç ön orta (dip), sol orta ve sağ orta (savrulma). E: 0. O: 4 tik/eşya
   = 300/dk.
 - A: rüzgâr parçanın eksenine **dik** eserse savrulan eşya rüzgârın gittiği yandan çıkar:
   şiddet 1 → yalnız çok hafif; şiddet ≥ 2 → hafif ve çok hafif. Eksen boyunca ya da
-  durgunsa hepsi dipten çıkar. Yön dilim başında (dakikada bir) değişebilir. Bedava, hızlı,
-  kararsız. S: "Rüzgâr dönünce savrulan saman hangi yandan çıkacak?"
+  durgunsa hepsi dipten çıkar. Yön 3 dakikada bir, şiddet her dakika değişir (`sistemler.md`
+  §3); ≈ %42 zaman ayırır, panel şimdiki hâlini yazar. Bedava, hızlı, kararsız. S: "Rüzgâr dönünce savrulan saman hangi yandan çıkacak?"
 - H: savrulma yanı bağlı değil ya da dolu → "rüzgâr yanı kapalı", akış durur. G: toprak
   harman dairesi, ortada tınaz yığını, rüzgâr yönüne savrulan zerreler, rüzgâr oku.
 
@@ -111,11 +113,11 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
   ⅓). O: yaş otun kuruma puanı 1200; tik başına güneş +5 (şiddet ≥ 1 ise +6), bulutlu +3,
   yağmur 0 → 200 / 240 / 400 tik; 54 / 45 / 27 / 0 eşya/dk. Kuru eşya bekletmeden geçer.
 - A: kurutmayı **havaya** bağlar; bedava sayılır ama yağmurda hattı durdurur. S: "Yağmur
-  gelince yaş ot nereye gidecek?" (cevap: çatal taşma → kurutma ambarı)
+  gelince yaş ot nereye gidecek?" (cevap: bekle ya da çatal taşma → ambar, D7)
 - H: "hava bekliyor" (yağmur) rozeti, giriş tarafı tıkanır. G: üç dönen yıldız tırmık
   diski, havada serpilen ot; yağmurda koyu ıslak ton.
 
-**14. Kurutma ambarı** · `kurutma-ambari` · işleme · 3×3 · yönlü · 200 · D6
+**14. Kurutma ambarı** · `kurutma-ambari` · işleme · 3×3 · yönlü · 200 · D7
 - P: G arka orta; Ç ön orta. E: 8 bg; güçsüz ¼ hız. O: 24 yuva, yaş ot başına 600 tik
   → 48/dk (güçsüz 12/dk). Yalnız yaş ot alır.
 - A: havadan bağımsız, büyük **zaman tamponu** (eşya başına hız değil, süre). S: "Yağmurda
@@ -149,7 +151,8 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 
 ## Depo ve kol
 **18. Sandık** · `sandik` · depo · 1×1 · yönsüz · 15 · T0
-- P: G dört kenar; Ç yok (yaba kolu alır). E: 0. O: 48 eşya, karışık.
+- P: G dört kenar; Ç yok (yaba kolu alır). E: 0. O: 48 eşya, karışık; iğne/buluntu
+  girerse "bulundu" olur (yarı kuruş, `esyalar.md` §5), depoda tutulmaz.
 - A: küçük, her şeyi alır. S: "Fazlasını nerede bekletirim?" H: dolu → girdi bekler.
 - G: demir köşeli sandık, kapakta en çok bulunan türün simgesi.
 
@@ -161,7 +164,7 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 
 **20. Defter masası** · `defter-masasi` · depo · 2×1 · yönlü · 40 · D2
 - P: G arka, sol, sağ. E: 0. O: anında. Kabul: `igne` ve `buluntu` sınıfı.
-- A: asıl ödül noktası: kuruş (`esyalar.md` §2) + Buluntu defteri kaydı + kutlama.
+- A: asıl ödül noktası: tam kuruş (`esyalar.md` §2; sandık yarısını öder) + defter + kutlama.
   S: "İğneyi buraya kadar nasıl ayıklarım?" H: yabancı eşya girişte bekler ("yabancı: çivi").
 - G: büyüteçli küçük masa, açık defter; eşya gelince damga iner, parıltı.
 
@@ -176,10 +179,11 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 
 ## Enerji
 **22. El krankı** · `el-kranki` · enerji · 1×1 · yönsüz · 20 · D3
-- P: aks dört yan. E: +6 bg, çiftçi 1 karo içinde **Kullan**'ı basılı tutarken (komut
-  `krank`, tik numaralı). A: oyuncu emeği = enerji; rüzgâr yokken ya da yel değirmeninden
+- P: aks dört yan. E: +6 bg; **Kullan**'a bir dokunuş/tuş 600 tik (30 sn) döndürür, çiftçi
+  3 karo içinde kaldıkça (komut `krank`, tik numaralı; basılı tutmak gerekmez, telefonda
+  başparmak joystick'te). A: oyuncu emeği = enerji; rüzgâr yokken ya da yel değirmeninden
   önce bir balyayı elle bitirmek için (krankla pres ≈ 4,7 balya/dk). S: "Şebekem ne
-  kadar istiyor?" H: bırakınca 0. G: dişli kutusu ve kollu çark, çiftçi kola tutunur.
+  kadar istiyor?" H: süre bitince 0. G: dişli kutusu ve kollu çark, çiftçi kola tutunur.
 
 **23. Yel değirmeni** · `yel-degirmeni` · enerji · 2×2 (kanat 4×4 yürünür gölge) · 120 · D3
 - P: aks dört yan. E: +0 / 8 / 16 / 24 bg (durgun / esinti / rüzgâr / sert). Yön değişince
@@ -190,7 +194,8 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 - P: G arka (yakıt), tampon 4; aks iki yan. E: en çok +40 bg. O: balya (her tür) tam
   yükte 1200 tik, kıyım 150 tik; yük oranında yakar (talep / 40).
 - A: enerjiyi **üretim zincirine** bağlar: kendi balyanı yakarsın. S: "Ürünümün ne kadarı
-  yakıta gider?" H: "yakıt yok". G: tekerlekli kara kazan, kırmızı tekerlek, yükle
+  yakıta gider?" H: "yakıt yok" (ölü döngüde krank ya da sandıktan yaba kolu kurtarır,
+  `sistemler.md` §1). G: tekerlekli kara kazan, kırmızı tekerlek, yükle
   koyulaşan baca dumanı, yanda kasnak.
 
 **25. Şaft** · `saft` · enerji · 1×1 · yönsüz · 3 · D3
@@ -200,18 +205,19 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 
 **26. Volan** · `volan` · enerji · 2×2 · yönsüz · 80 · D4
 - P: aks dört yan. E: 2400 bg·tik depolar; artan arzı ≤ 12 bg ile yükler, açığı ≤ 30 bg
-  ile kapatır. A: pres darbesini ve rüzgâr dalgasını yumuşatır. S: "Basma anında şebeke
+  ile kapatır. A: pres darbesini ve saniyelik dalgalanmayı yumuşatır (rüzgâr sessizliğini
+  değil). S: "Basma anında şebeke
   neden yavaşlıyor?" H: boşalınca etkisiz (kantarla okunur).
 - G: dökme demir çark, dönüş hızı doluluğu gösterir.
 
 ## Mantık (renk kanalları: `sistemler.md` §2)
-**27. Rüzgâr gülü** · `ruzgar-gulu` · mantık · 1×1 · yönlü · 40 · D4
+**27. Rüzgâr gülü** · `ruzgar-gulu` · mantık · 1×1 · yönlü · 40 · D8
 - Yazar: rengi koşul doğruyken 1. Ayar (2): **dik esiyor** (parçanın eksenine sol/sağdan,
   şiddet ≥ 2) / **şiddet ≥ eşik** (1-3). Panelde sonraki 3 dilimin tahmini.
 - A: havayı sinyale çevirir. S: "Rüzgâr dönünce akışı nereye yollarım?"
 - G: direkte horoz biçimli gül, dibinde renk lambası.
 
-**28. Savak kapağı** · `savak-kapagi` · mantık · 1×1 · yönlü · 25 · D5
+**28. Savak kapağı** · `savak-kapagi` · mantık · 1×1 · yönlü · 25 · D8
 - Hat karosu (G arka, Ç ön). Okur: rengi. Ayar (2): **sinyalde kapan** / **sinyalde açıl**.
   Kapalıyken geri basınç. A: çatalın "taşma"sıyla koşullu yönlendirme. S: "Ne zaman?"
 - G: değirmen savağı gibi sürgülü kapak; kapalıyken iner.
@@ -236,9 +242,9 @@ makine, ilerleyemediği tikte (girdi yok / çıkış dolu / sıkışık) güç *
 | D1 | çatal, birleştirme oluğu, oluk mıknatısı |
 | D2 | yaba kolu, defter masası, menfez |
 | D3 | el krankı, şaft, balya presi, yel değirmeni |
-| D4 | volan, kalbur, tınaz, rüzgâr gülü |
-| D5 | şeytan yeli, mıknatıslı tambur, savak kapağı, taş toplayıcı |
-| D6 | tırmık kolu, ot savurucu, kurutma ambarı, gübre çukuru |
-| D7 | lokomobil, ambar, çekiçli kıyıcı |
-| D8 | kantar, kile sayacı |
+| D4 | kalbur, volan |
+| D5 | şeytan yeli, mıknatıslı tambur, taş toplayıcı |
+| D6 | tırmık kolu, ot savurucu, gübre çukuru, tınaz |
+| D7 | lokomobil, ambar, çekiçli kıyıcı, kurutma ambarı |
+| D8 | kantar, kile sayacı, rüzgâr gülü, savak kapağı (mantık ailesi bir arada) |
 Ayrıca kurulu gelen, sökülmeyen **Komşu kapısı** (2×2, G iki kenar; `ekonomi.md` §2).

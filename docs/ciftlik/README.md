@@ -44,7 +44,7 @@ el ve tırmığı aynen); otomasyon bunu hızlandırır, zorunlu kılmaz.
   mevcut hatla 5 dakikada bitebilecek boydadır (`ekonomi.md` §3).
 - Çevrimdışı fişi (açıksa): "Sen yokken: 312 saman tutamı, 14 balya ambara girdi."
 - Her oturumda üç küçük hedeften en az biri görünür: bir sipariş teslimi, bir tıkanmayı
-  çözmek (sorun listesi), bir parça kurmak/açmak. Harman arabası 5 dakikada bir gelebilir:
+  çözmek (sorun listesi), bir parça kurmak/açmak. Harman arabası her ≈ 15 bin kat tüketimde (Hat A ile ≈ 12 dk) gelir:
   oturuma doğal bir "yeni yığın, yeni iğne" anı katar.
 - Kapanış: sayfa gizlenince kayıt; tekrar açınca hat aynen sürer. Çalışan hat hiç
   sökülmek zorunda değildir: yeni parça eskisini geçersiz kılmaz, yanına eklenir.
@@ -80,16 +80,23 @@ damgaya kadar yalnız üç parça gösterir (seçim seli olmasın). Saatler yakl
 | 5:00 | doyma | tutucu 6'da dolar, çivi geçer | "doymuş" rozeti; panelde **Boşalt** |
 | 6:00 | teslim | 40 temiz tutam | **D2 Çivisiz**, yaba kolu açılır |
 | 6:30 | kol | kolla tutucuyu sandığa boşaltır | tutucu hep boş, hat kendi döner |
-| 7-10 | iğne | "ilk iğne" huninin ağzına yakındır; mıknatısta parlar | **D3 İlk iğne**: kutlama, defter; pres, el krankı, yel değirmeni açılır |
+| 7-10 | iğne | "ilk iğne" huninin ağzına yakındır; tutucuda parlar; kol sandığa taşır ya da Boşalt | **D3 İlk iğne**: sandık da "bulundu" sayar (kuruşun yarısı); kutlama, defter; pres, krank, yel açılır |
 Öğretici huni hayaleti Komşu kapısına en yakın yığının eteğine konur (ilk bant ≤ 30
-karo, ≤ 60 kuruş). "İlk iğne"nin yeri tohumdan, hayaletin ağzına 2-4 karo uzaklıkta ve
-sığ (≤ 12 kat) seçilir; böylece 4-8. dakikada çıkar (`esyalar.md` §4). Öğreticiyi atlayan
-oyuncuya paletten "Önerilen ilk hat" şablonu sunulur (huni + 12 bant + sandık).
+karo, ≤ 60 kuruş; kapının kenarı bunu sağlayacak biçimde seçilir, `esyalar.md` §4).
+**Öğretici nesneleri** (sabit çizelge, normal gömülü dağılımdan ayrı): 8 paslı çivi hayaletin
+ağzı çevresinde `z ≥ h − 12` (h ≥ 12) ile ≈ 30 sn arayla açığa çıkar (ilki ≈ 2:30; rastgele
+çivi yoğunluğu 7 dk'da bir olduğundan bu çizelge olmadan "çivi geldi" adımı çıkmaz);
+"ilk iğne" ağzın 2-4 karo içinde ve sığ seçilir; böylece 4-8. dakikada çıkar. Öğreticiyi atlayan
+oyuncuya paletten "Önerilen ilk hat" şablonu sunulur (huni + 12 bant + sandık); ilk iğne
+ve öğretici çivileri **ilk kurulan huninin** ağzına göre yerleşir (hayalet nerede olursa).
+Sonraki ipucu (D3 sonrası, bir kez): ilk pres "Güç yok" derse krank notu: "Kullan'a bir kez
+dokun, 30 sn döner" (`parcalar.md` 22).
 Sonraki ipuçları olayla bir kez gelir: ilk "güç yok" rozeti, ilk rüzgâr dönüşü, ilk sıkışma.
 
 ## Tasarım ilkeleri (bu klasörün özeti)
-1. Her parça başka bir soruyu cevaplar; "aynı şeyin hızlısı" sınırı 3, kullanılan 2 (ikisi de
-   dalga 2: zincirli bant, uzun yaba); ilk sürümde hiç yok.
+1. Her parça başka bir soruyu cevaplar. Saf hız kademesi ilk sürümde yok; üç "yükseltme
+   çifti" farklı hata moduyla var: oluk/tambur (doyma ↔ güç), sandık/ambar (boy ↔ çürüme),
+   tınaz/şeytan yeli (rüzgâr ↔ güç). Dalga 2'de iki hız kademesi: zincirli bant, uzun yaba.
 2. Ayıklama fizik eksenleriyle: hafiflik, boyut, manyetizma, nem (+ dalga 2: uzunluk,
    yoğunluk). Derinlik eşya çeşitliliğinden gelir.
 3. Bant tek şerit, net geri basınç; tıkanmanın sebebi her zaman görünür (rozet + panel).
@@ -119,7 +126,7 @@ Sonraki ipuçları olayla bir kez gelir: ilk "güç yok" rozeti, ilk rüzgâr d�
 | dilim | hava dilimi = 1200 tik (1 dk); rüzgâr ve gök her dilimde belirlidir |
 | harman alanı | tarlanın yığınlı bölgesi (eski saman, gömülü nesneler) |
 | çayır | tarlanın yenilenen bölgesi; yaş ot büyür |
-| harman arabası | harman alanı azalınca 5 dk'da bir yeni yığın döken komşu arabası |
+| harman arabası | harman alanından 15 bin kat tüketilince (en çok 5 dk'da bir) yeni yığın döken araba |
 | doyma / sıva / sıkışma | mıknatıs doluluğu / kalburun yaş otla tıkanması / sert cisimle makine durması |
 | Komşu kapısı | tarlanın yol kenarındaki sabit teslim noktası (siparişler) |
 | damga | kilometre taşı; damga siparişi teslim edilince parça ailesi açılır |
