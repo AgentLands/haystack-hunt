@@ -7,6 +7,7 @@
 import { DALIS_SURE, ziplama, uyeKonumu } from '../../kural/hayvan-hareket.js';
 import { TURLER } from '../../kural/hayvan.js';
 import { gorunum } from '../../gorunum.js';
+import { sadeHareket } from '../sade-hareket.js';
 import { GENISLIK, YUKSEKLIK } from '../../kural/boyut.js';
 import { donuk, ekranBirim, golge, isikYerel, samanBit, zIsareti, IKI_PI } from './ortak.js';
 import { fareCiz, kurbagaCiz, kirpiCiz } from './kucuk.js';
@@ -72,7 +73,8 @@ function hayvanCiz(ctx, h, zaman) {
 /** Uyuyan kedinin üstünde ağır ağır yükselip solan iki 'z'. */
 function zler(ctx, h, zaman) {
   for (let i = 0; i < 2; i++) {
-    const u = ((zaman / 2600) + i * 0.5) % 1;
+    // Sade harekette yükselip solmaz: iki sabit, soluk 'z'.
+    const u = sadeHareket() ? 0.3 + i * 0.25 : ((zaman / 2600) + i * 0.5) % 1;
     zIsareti(ctx, h.x + 0.8 + u * 0.9, h.y - 0.7 - u * 1.5, 0.5 - 0.15 * i, u);
   }
 }

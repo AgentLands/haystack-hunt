@@ -3,7 +3,7 @@
  * dikdörtgen/elips yolları, sönük (yakıtsız) renk karışımı, ışık yönü ve tekerlek.
  * Yerel uzayda +x ileri, +y sağ taraf; birim hücre (1 hücre = OLCEK piksel).
  */
-import { OLCEK } from '../../cizim.js';
+import { OLCEK, ekranBirim } from '../../cizim.js';
 
 export const IKI_PI = Math.PI * 2;
 /** Gölge rengi (sağ alta düşer; ışık sol üstten gelir). */
@@ -127,11 +127,8 @@ export function bisel(ctx, x, y, w, h, r, isik, koyu, acik, sonuk) {
   doldur(ctx, renk(acik, sonuk));
 }
 
-/** Yerel uzayda 1 ekran pikselinin boyu (dış hat kalınlığı için). */
-export function ekranBirim(ctx) {
-  const t = ctx.getTransform();
-  return 1 / Math.hypot(t.a, t.b);
-}
+/** Yerel uzayda 1 CSS pikselinin boyu (dış hat kalınlığı için); DPR'a bağlı değildir. */
+export { ekranBirim };
 
 /** Yolu önce dış hat rengiyle kalın çizer, sonra doldurur (boyalı oyuncak görünümü). */
 export function disHat(ctx, yol, dolgu, kalinlik = 1.2) {

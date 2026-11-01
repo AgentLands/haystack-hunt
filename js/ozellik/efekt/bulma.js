@@ -4,7 +4,7 @@
  * ardından altın ışık halkaları ve ışıma yayılır; bitiş penceresi kısa bir gecikmeyle
  * belirir ki efekt görünsün (pencere hemen açılır, yalnız görünüşü gecikir).
  */
-import { OLCEK, igneModeli, igneYariBoyu } from '../../cizim.js';
+import { OLCEK, igneModeli, igneYariBoyu, ekranBirim } from '../../cizim.js';
 import { yildizIsigi } from './isiltilar.js';
 
 const KALKIS = 700;
@@ -47,17 +47,11 @@ export function bulmaSifirla() {
   document.getElementById('bitis').classList.remove('efekt-gecikme');
 }
 
-/** 1 ekran pikselinin dünya boyu. */
-function ekranPikseli(ctx) {
-  const m = ctx.getTransform();
-  return 1 / Math.hypot(m.a, m.b);
-}
-
 /** İğnenin yerdeki izini (gölgesi ve dış hattıyla) kaplayan döndürülmüş dikdörtgen. */
 function igneYolu(ctx, igne) {
   const mx = (igne.x + 0.5) * OLCEK;
   const my = (igne.y + 0.5) * OLCEK;
-  const eb = ekranPikseli(ctx);
+  const eb = ekranBirim(ctx);
   const h = igneYariBoyu(eb) + 4 * eb;
   ctx.beginPath();
   ctx.save();
@@ -146,7 +140,7 @@ export function bulmaCiz(ctx, zaman, hareketli) {
   const aci = igne.aci + fark * kalk;
   yamayiSer(ctx);
   ctx.save();
-  const eb = ekranPikseli(ctx);
+  const eb = ekranBirim(ctx);
   ctx.globalAlpha = 0.4 * (1 - kalk * 0.5);
   ctx.strokeStyle = 'rgb(30, 18, 6)';
   ctx.lineCap = 'round';

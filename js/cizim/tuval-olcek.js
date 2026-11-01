@@ -7,6 +7,7 @@
  * bütün katmanlar aynı kalıp keskinleşir.
  *
  * Tuval boyutuna bakan kodlar için sözleşme:
+ * - Ekran-sabit boyut (dış hat, işaret): `ekranBirim(ctx)` = 1 CSS pikseli (yerel birimde).
  * - Dünya çizimi (katmanlar) tuval.width/height'a bakmaz; dünya genişliği DUNYA_EN'dir.
  * - Ekran uzayında çizen (setTransform(1, 0, 0, 1, 0, 0)) arka bellek pikseliyle çalışır:
  *   boyut ctx.canvas.width/height, CSS pikseli başına `ekran.dpr` arka bellek pikseli.
@@ -36,6 +37,17 @@ export const ekran = {
 /** Bir CSS pikselinin dünya pikseli karşılığı (yakınlaştırma hariç). */
 export function dunyaPikseli() {
   return DUNYA_EN / ekran.cssEn;
+}
+
+/**
+ * Yerel çizim uzayında 1 CSS pikselinin boyu (dış hat, işaret ve etiket boyları için TEK
+ * doğru birim). Dönüşümün ölçeği arka bellek pikselidir; DPR 3 telefonda 3 kat büyük
+ * olduğundan `ekran.dpr` ile düzeltilir: aynı çizim DPR 1 ve DPR 3'te CSS pikselinde aynı
+ * kalınlıkta görünür. Node testlerinde (tuval yok) dpr = 1.
+ */
+export function ekranBirim(ctx) {
+  const t = ctx.getTransform();
+  return ekran.dpr / Math.hypot(t.a, t.b);
 }
 
 /**

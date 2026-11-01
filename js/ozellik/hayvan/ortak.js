@@ -7,17 +7,14 @@ import { OLCEK } from '../../cizim.js';
 import { gorunum } from '../../gorunum.js';
 
 export { donuk, isikYerel, IKI_PI } from '../gorsel/ortak.js';
-import { IKI_PI } from '../gorsel/ortak.js';
+import { IKI_PI, ekranBirim } from '../gorsel/ortak.js';
 
 export const DIS = '#2a1a0d';
 const DIS_KALINLIK = 1.2;
 const GOLGE = (yogun) => `rgba(40, 22, 8, ${(0.38 * yogun).toFixed(2)})`;
 
-/** Yerel uzayda 1 ekran pikselinin boyu (hücre) = dış hat kalınlığının birimi. */
-export function ekranBirim(ctx) {
-  const m = ctx.getTransform();
-  return 1 / Math.hypot(m.a, m.b);
-}
+/** Yerel uzayda 1 CSS pikselinin boyu (hücre) = dış hat kalınlığının birimi. */
+export { ekranBirim };
 
 /** Yolu önce dış hat rengiyle (ekran-sabit), sonra dolgu rengiyle boyar. */
 export function yolla(ctx, yol, dolgu, eb) {

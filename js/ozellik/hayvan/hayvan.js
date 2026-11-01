@@ -8,6 +8,7 @@ import { dinle, yay } from '../../olaylar.js';
 import { katmanEkle } from '../../cizim.js';
 import { hayvanKur } from '../../kural/hayvan.js';
 import { rahatsizEt, uyandir, ilerlet } from '../../kural/hayvan-hareket.js';
+import { sadeHareket } from '../sade-hareket.js';
 import { zeminCiz, havaCiz } from './cizim.js';
 import './ses.js';
 
@@ -19,7 +20,6 @@ const EN_UZUN_KARE = 0.05;
 let hayvanlar = [];
 let tarla = null;
 let sonZaman = null;
-const sade = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)');
 
 /** Test ve araç kancası: canlı hayvan listesi. */
 export const hayvanlariAl = () => hayvanlar;
@@ -58,5 +58,5 @@ dinle('kare', ({ zaman, durum }) => {
   ilerlet(hayvanlar, durum.tarla, dt, durum.karakter);
 });
 
-katmanEkle((ctx, durum, zaman) => zeminCiz(ctx, hayvanlar, zaman, !sade || !sade.matches), 'alt');
+katmanEkle((ctx, durum, zaman) => zeminCiz(ctx, hayvanlar, zaman, !sadeHareket()), 'alt');
 katmanEkle((ctx, durum, zaman) => havaCiz(ctx, hayvanlar, zaman), 'ust');

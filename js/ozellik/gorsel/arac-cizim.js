@@ -6,6 +6,7 @@
  * nabız atar. Sap kalınlığı ekran-sabit alt sınırlıdır (uzakta kaybolmasın).
  */
 import { IKI_PI } from './ortak.js';
+import { sadeHareket } from '../sade-hareket.js';
 import { DIS, SAMAN_RENK, hatli, hatliCizgi } from './ciftci-parca.js';
 
 const SAP = '#8a5d32';
@@ -87,12 +88,14 @@ function dedektor(ctx, o, kullan, t, dh) {
   if (kullan) {
     ctx.strokeStyle = 'rgba(190, 235, 255, 0.7)';
     ctx.lineWidth = Math.max(0.05, dh);
-    daire(ctx, dx, dy, 0.55 + 0.12 * ((t * 3) % 1));
+    daire(ctx, dx, dy, 0.55 + (sadeHareket() ? 0.06 : 0.12 * ((t * 3) % 1)));
     ctx.stroke();
   }
   const [lx, ly] = n(0.5, 0.11);
   daire(ctx, lx, ly, 0.07);
-  hatli(ctx, kullan && Math.sin(t * 12) > 0 ? '#ff5640' : '#7a2c24', dh * 0.7);
+  // Işık hızlı yanıp söner; sade harekette kullanılırken sürekli yanık kalır.
+  const yanik = kullan && (sadeHareket() || Math.sin(t * 12) > 0);
+  hatli(ctx, yanik ? '#ff5640' : '#7a2c24', dh * 0.7);
 }
 
 function miknatis(ctx, o, kullan, t, dh) {

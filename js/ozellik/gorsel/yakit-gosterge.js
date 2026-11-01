@@ -3,11 +3,14 @@
  * makinenin üstünde ekran-sabit küçük bir yay çubuk (yeşil → turuncu → kırmızı; %10'un
  * altında yanıp söner). Yakıt bitince yay yerine boş bidon simgesi. Boy yakınlaştırmadan
  * bağımsızdır; tuval ekranda küçülünce (telefon) gösterge yarı yarıya telafi edilir
- * (ölçek √(tuval px / CSS px)): okunur kalır ama küçük makineyi örtmez.
+ * (ölçek √(CSS genişlik / dünya genişliği)): okunur kalır ama küçük makineyi örtmez.
+ * Birim CSS pikselidir (ekranBirim), cihaz piksel oranına (DPR) bağlı değildir.
  */
 import { OLCEK } from '../../cizim.js';
+import { DUNYA_EN, ekran } from '../../cizim/tuval-olcek.js';
 import { ekranBirim } from './ortak.js';
 import { HAT_RENGI } from './makine-ortak.js';
+import { sadeHareket } from '../sade-hareket.js';
 
 /** Bu orandan az yakıtta gösterge sürücüsüz makinede de görünür; bunun altında yanıp söner. */
 export const YAKIT_UYARI = 0.25;
@@ -74,7 +77,7 @@ function yay(ctx, oran, t) {
   ctx.strokeStyle = 'rgba(232, 220, 192, 0.35)';
   ctx.lineWidth = KALINLIK;
   ctx.stroke();
-  const yanik = oran >= YAKIT_KRITIK || Math.sin(t * 10) > -0.2;
+  const yanik = oran >= YAKIT_KRITIK || sadeHareket() || Math.sin(t * 10) > -0.2;
   if (oran > 0.005 && yanik) {
     ctx.strokeStyle = yakitRengi(oran);
     ctx.beginPath();
@@ -92,6 +95,15 @@ function yay(ctx, oran, t) {
 }
 
 /**
+ * Göstergenin CSS pikseli başına ölçeği: tuval dünya genişliğinden (960 CSS px) geniş
+ * olunca tuvalle orantılı büyür, dar olunca (telefon) yalnız karekökü kadar küçülür.
+ */
+export function gostergeOlcegi(cssEn) {
+  const oran = cssEn / DUNYA_EN;
+  return oran >= 1 ? oran : Math.sqrt(oran);
+}
+
+/**
  * Makinenin yakıt göstergesini çizer (gerekmiyorsa hiçbir şey çizmez). yukari: göstergenin
  * makine merkezinin ne kadar üstünde (ekranda, hücre) duracağı. zaman ms.
  */
@@ -101,9 +113,7 @@ export function yakitGostergesi(ctx, makine, zaman, yukari) {
   const oran = Math.max(0, makine.yakit || 0);
   ctx.save();
   ctx.translate(makine.x * OLCEK, (makine.y - yukari) * OLCEK);
-  const tuval = ctx.canvas;
-  const css = tuval && tuval.clientWidth > 0 ? tuval.width / tuval.clientWidth : 1;
-  const eb = ekranBirim(ctx) * Math.sqrt(Math.max(1, css));
+  const eb = ekranBirim(ctx) * gostergeOlcegi(ekran.cssEn);
   ctx.scale(eb, eb);
   ctx.translate(0, -6);
   if (oran <= 0) bosBidon(ctx, t);

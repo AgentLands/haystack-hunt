@@ -9,6 +9,7 @@ import { turBilgisi, buluntuDerinligi, yakinBuluntular } from '../kural/buluntu.
 import { GOLGE_RENGI } from './gorsel/ortak.js';
 import { buluntuSekil } from './buluntu-sekil.js';
 import { ekranBirim, HAT } from './buluntu-parca.js';
+import { sadeHareket } from './sade-hareket.js';
 
 /** Eşyanın tarladaki yarıçapı (hücre). */
 const BOY = 2.3;
@@ -62,15 +63,16 @@ function esyaCiz(ctx, b, zaman) {
     ctx.beginPath();
     ctx.arc(x, y, boy * (0.6 + 1.2 * t), 0, Math.PI * 2);
     ctx.stroke();
-  } else if ((zaman + b.x * 71) % 2600 < 220) { // "beni al" göz kırpması
-    yildiz(ctx, x + boy * 0.55, y - boy * 0.55, 4, 0.9);
+  } else if (sadeHareket() || (zaman + b.x * 71) % 2600 < 220) { // "beni al" göz kırpması
+    yildiz(ctx, x + boy * 0.55, y - boy * 0.55, 4, sadeHareket() ? 0.5 : 0.9); // sade: sürekli
   }
 }
 
 function pariltiCiz(ctx, b, zaman) {
   const faz = (zaman + b.x * 53 + b.y * 17) % 2200;
-  if (faz > 260) return;
-  const alfa = Math.sin((faz / 260) * Math.PI);
+  if (faz > 260 && !sadeHareket()) return;
+  // Sade harekette yanıp sönmez: sönük, sürekli duran pırıltı.
+  const alfa = sadeHareket() ? 0.5 : Math.sin((faz / 260) * Math.PI);
   yildiz(ctx, (b.x + 0.5) * OLCEK, (b.y + 0.5) * OLCEK, 2 + 2.5 * alfa, 0.85 * alfa);
 }
 

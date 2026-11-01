@@ -3,7 +3,7 @@
  * tuşla "silüet" kipi (defterde bulunmamış eşyalar). Yerel uzay: eşya yarıçapı ~1 birim; dış hat
  * kalınlığı ekranda ~1.2 piksel kalsın diye çağıran `birim` (1 piksel = kaç yerel birim) verir.
  */
-import { IKI_PI } from './gorsel/ortak.js';
+import { IKI_PI, ekranBirim } from './gorsel/ortak.js';
 
 export const HAT = '#2a1a0d';
 const SILUET_DOLGU = '#b9a27a';
@@ -12,11 +12,8 @@ const SILUET_HAT = '#9c8660';
 let kalinlik = 0.05;
 let siluet = false;
 
-/** Yerel uzayda 1 ekran pikseli (dönüşümün ölçeğinden). */
-export function ekranBirim(ctx) {
-  const m = ctx.getTransform();
-  return 1 / Math.hypot(m.a, m.b);
-}
+/** Yerel uzayda 1 CSS pikseli (DPR'dan bağımsız). */
+export { ekranBirim };
 
 /** Bir çizimden önce çağrılır: dış hat kalınlığı ve silüet kipi. */
 export function kipAyarla(birim, siluetMi) {

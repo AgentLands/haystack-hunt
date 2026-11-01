@@ -4,11 +4,14 @@
  * sayısı) buna bakıp yoğunluğu azaltır; oyun bilgisi (iğne/çivi ipucu) kaybolmaz, yalnız
  * yumuşar. Ayar sayfa açıkken değişirse anında izlenir.
  */
-const sorgu = matchMedia('(prefers-reduced-motion: reduce)');
-let acik = sorgu.matches;
-sorgu.addEventListener('change', (e) => {
-  acik = e.matches;
-});
+const sorgu = typeof matchMedia === 'function'
+  ? matchMedia('(prefers-reduced-motion: reduce)') : null; // tarayıcısız (Node testi): kapalı
+let acik = sorgu ? sorgu.matches : false;
+if (sorgu) {
+  sorgu.addEventListener('change', (e) => {
+    acik = e.matches;
+  });
+}
 
 /** Sade hareket açık mı? */
 export function sadeHareket() {

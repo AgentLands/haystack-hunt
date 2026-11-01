@@ -7,11 +7,14 @@
 import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
 import { igneDerinligi } from './kural/igne.js';
 import { gorunum } from './gorunum.js';
+import { sadeHareket, nabizSade } from './ozellik/sade-hareket.js';
 import { boya } from './cizim/tarla-boya.js';
 import { yakinCiz, yakinSifirla, kanal, karolar } from './cizim/yakin.js';
-import { OLCEK, DUNYA_EN, DUNYA_BOY, ekran, tuvalOlcekKur } from './cizim/tuval-olcek.js';
+import {
+  OLCEK, DUNYA_EN, DUNYA_BOY, ekran, ekranBirim, tuvalOlcekKur,
+} from './cizim/tuval-olcek.js';
 
-export { OLCEK };
+export { OLCEK, ekranBirim };
 /** Boyanmış çıplak tarla (GENISLIK×YUKSEKLIK, katmansız); mini harita bundan çizer. */
 export let tarlaResmi = null;
 /**
@@ -72,12 +75,6 @@ export function cizici(tuval) {
   };
 }
 
-/** Yerel uzayda 1 ekran pikseli (dünya pikseli cinsinden). */
-function ekranPikseli(ctx) {
-  const t = ctx.getTransform();
-  return 1 / Math.hypot(t.a, t.b);
-}
-
 /**
  * İğnenin yarı boyu (dünya pikseli): ~1.6 hücre, ekranda en az ~22 px, en çok 4.4 hücre.
  * eb: 1 ekran pikselinin dünya boyu (1 / yakınlaştırma).
@@ -105,7 +102,7 @@ function igneYolu(ctx, h, w, goz) {
  * olcek: havalanan iğne için büyütme. bulma ve balya işareti de bunu kullanır.
  */
 export function igneModeli(ctx, x, y, aci, olcek = 1) {
-  const eb = ekranPikseli(ctx);
+  const eb = ekranBirim(ctx);
   const h = igneYariBoyu(eb) * olcek;
   const w = Math.max(1.2 * eb, h * 0.075) * olcek;
   const goz = Math.max(h * 0.24, 4 * eb);
@@ -154,16 +151,17 @@ function igneyiCiz(ctx, durum, zaman) {
   const derinlik = durum.goster ? 0 : igneDerinligi(durum.tarla);
   const mx = (igne.x + 0.5) * OLCEK;
   const my = (igne.y + 0.5) * OLCEK;
-  const eb = ekranPikseli(ctx);
+  const eb = ekranBirim(ctx);
   if (derinlik === 0) {
     igneModeli(ctx, mx, my, igne.aci);
-  } else if (derinlik <= 3 && zaman % 1700 < 140) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  } else if (derinlik <= 3 && (sadeHareket() || zaman % 1700 < 140)) {
+    // Sade harekette yanıp sönmez: sönük ama sürekli duran nokta.
+    ctx.fillStyle = `rgba(255, 255, 255, ${sadeHareket() ? 0.45 : 0.85})`;
     ctx.fillRect(mx - 1.5 * eb, my - 1.5 * eb, 3 * eb, 3 * eb);
   }
   if (durum.parilti && zaman < durum.parilti.bitis) {
     const s = Math.sin(((durum.parilti.bitis - zaman) / durum.parilti.sure) * Math.PI);
-    yildiz(ctx, mx, my, (6 + 16 * s) * eb, s, eb);
+    yildiz(ctx, mx, my, (6 + 16 * nabizSade(s, 0.4)) * eb, s, eb); // sade: boy sabit, yalnız solar
   }
 }
 
