@@ -12,7 +12,9 @@ import { esyaTanimi } from '../js/kural/ciftlik/esya.js';
 import { ciftlikTarlasi, araziKur, araziBagla } from '../js/kural/ciftlik/dunya/arazi.js';
 import { gomuluYerlestir } from '../js/kural/ciftlik/dunya/gomulu.js';
 import { ogreticiHuniYeri } from '../js/kural/ciftlik/dunya/ogretici.js';
-import { kur } from './ciftlik-yardim.mjs';
+import { kur, havaSabitle } from './ciftlik-yardim.mjs';
+
+havaSabitle('gercek'); // gerçek arazi testleri tohum havasıyla koşar
 
 export const ETIKETLER = ['ciftlik', 'dunya-2', 'harman-3'];
 

@@ -5,9 +5,9 @@ import { esyaTanimla, esyaKodu } from '../js/kural/ciftlik/esya.js';
 import { parcaTanimla } from '../js/kural/ciftlik/parca-kayit.js';
 import { komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
-import { ENERJI, havaKaynagiAyarla, agiBul, gucRozeti } from '../js/kural/ciftlik/ag/enerji.js';
+import { ENERJI, agiBul, gucRozeti } from '../js/kural/ciftlik/ag/enerji.js';
 import { yakitTik } from '../js/kural/ciftlik/parcalar/enerji.js';
-import { dunya, kur, kos } from './ciftlik-yardim.mjs';
+import { dunya, kur, kos, havaSabitle } from './ciftlik-yardim.mjs';
 
 const BALYA = esyaTanimla('test-yakit-balya', { kod: 511, yakit: 1200, saman: 96 }).kod;
 const KIYIM = esyaTanimla('test-yakit-kiyim', { kod: 510, yakit: 150 }).kod;
@@ -28,8 +28,8 @@ for (const guc of [20, 30, 40]) {
   parcaTanimla(`deneme-guc${guc}`, { ...MAKINE, kod: 65100 + guc, guc });
 }
 
-const hava = (siddet, yon = 0) => havaKaynagiAyarla(() => ({ yon, siddet, gok: 0 }));
-afterEach(() => havaKaynagiAyarla());
+const hava = (siddet, yon = 0) => havaSabitle({ yon, siddet });
+afterEach(() => havaSabitle());
 
 /** Makine (10,10) – şaft (11,10) – yel değirmeni (12,10; 2×2). */
 function yelHatti(siddet = 2, makine = 'deneme-makine') {

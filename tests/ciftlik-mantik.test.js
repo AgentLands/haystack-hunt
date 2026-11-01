@@ -12,8 +12,8 @@ import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { sinyalOku, sinyalDegerleri } from '../js/kural/ciftlik/ag/sinyal.js';
 import { ayarUygula } from '../js/kural/ciftlik/ag/ayar.js';
-import { MANTIK, havaSapi } from '../js/kural/ciftlik/parcalar/mantik.js';
-import { dunya, duzTarla, kur, bantCek, kos } from './ciftlik-yardim.mjs';
+import { MANTIK } from '../js/kural/ciftlik/parcalar/mantik.js';
+import { dunya, duzTarla, kur, bantCek, kos, havaSabitle } from './ciftlik-yardim.mjs';
 import {
   CIVI, CIVIT, KIRMIZI, MOR, SAMAN, SARI, besleKos, hatBul, sandikDoldur, sira,
 } from './ciftlik-mantik-yardim.mjs';
@@ -96,7 +96,7 @@ test('rüzgâr gülü: dik esiyor (eksen × yön × şiddet) ve şiddet eşiği'
   const d = dunya();
   const gul = kur(d.c, d.tarla, 'ruzgar-gulu', 10, 10, 0); // doğu ekseni: kuzey/güney dik
   const yaz = (yon, siddet) => {
-    havaSapi.hava = () => ({ yon, siddet, gok: 0 });
+    havaSabitle({ yon, siddet });
     gul.ozel.dilim = -1;
     kos(d.c, d.tarla, 1);
     return gul.ozel.yaz > 0;
@@ -117,7 +117,7 @@ test('rüzgâr gülü: dik esiyor (eksen × yön × şiddet) ve şiddet eşiği'
     assert.equal(yaz(2, 3), true, 'yönden bağımsız');
     assert.equal(ayarUygula(gul, 'esik', 4), false);
   } finally {
-    havaSapi.hava = () => ({ yon: 0, siddet: 2, gok: 0 });
+    havaSabitle();
   }
 });
 
@@ -125,10 +125,10 @@ test('rüzgâr gülü tahmini: şimdiki + sonraki 3 dilim, dilim değişince yen
   const d = dunya();
   const gul = kur(d.c, d.tarla, 'ruzgar-gulu', 10, 10, 0);
   const cagrilar = [];
-  havaSapi.hava = (tohum, dilim) => {
+  havaSabitle((dilim) => {
     cagrilar.push(dilim);
     return { yon: dilim & 3, siddet: 3, gok: 0 };
-  };
+  });
   try {
     kos(d.c, d.tarla, 1);
     assert.deepEqual(gul.ozel.tahmin.map((t) => t[0]), [0, 1, 2, 3]);
@@ -137,7 +137,7 @@ test('rüzgâr gülü tahmini: şimdiki + sonraki 3 dilim, dilim değişince yen
     assert.equal(gul.ozel.dilim, 1);
     assert.ok(gul.tanim.incele(gul).some(([e]) => e === '+1 dilim'));
   } finally {
-    havaSapi.hava = () => ({ yon: 0, siddet: 2, gok: 0 });
+    havaSabitle();
   }
 });
 
@@ -160,7 +160,7 @@ test('örnek devre 1: rüzgâra göre yol (iki kol, zıt savaklar, biri hep akar
   };
   try {
     for (const [yon, tinazAkar] of [[1, true], [0, false], [3, true]]) {
-      havaSapi.hava = () => ({ yon, siddet: 2, gok: 0 });
+      havaSabitle({ yon, siddet: 2 });
       kos(d.c, d.tarla, 150); // sinyal yerine otursun, yoldaki eşyalar boşalsın
       const [a, b] = [tinaz.ozel.toplam, seytan.ozel.toplam];
       for (let t = 0; t < 300; t++) besle();
@@ -168,7 +168,7 @@ test('örnek devre 1: rüzgâra göre yol (iki kol, zıt savaklar, biri hep akar
       assert.equal(seytan.ozel.toplam > b, !tinazAkar, `yön ${yon}: şeytan yeli kolu`);
     }
   } finally {
-    havaSapi.hava = () => ({ yon: 0, siddet: 2, gok: 0 });
+    havaSabitle();
   }
 });
 

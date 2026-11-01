@@ -30,6 +30,7 @@ import { asamaTanimla } from '../benzetim.js';
 import { komutTanimla } from '../komut.js';
 import { parcaAt } from '../izgara.js';
 import { parcaDurumu } from '../parca-kayit.js';
+import { havaAl } from '../dunya/hava.js';
 
 /** Enerji sayıları (denge.js gelince oraya taşınır). bg = beygir gücü, tik = 50 ms. */
 export const ENERJI = Object.freeze({
@@ -39,20 +40,8 @@ export const ENERJI = Object.freeze({
   VOLAN_KAP: 2400, VOLAN_SARJ: 12, VOLAN_DESARJ: 30,
 });
 
-/** SAP (GEÇİCİ): sabit rüzgâr 2. D (dunya/hava.js) gelince havaKaynagiAyarla ile değişir:
- * (c, tik) => hava(c.tohum, Math.floor(tik / 1200)); yon: rüzgârın gittiği yön. */
-const havaSap = () => ({ yon: 0, siddet: 2, gok: 0 });
-let havaKaynagi = havaSap;
-
-/** Bu tikteki hava (D'nin hava(tohum, dilim)'i gelince onun sonucu). */
-export function havaAl(c, tik) {
-  return havaKaynagi(c, tik);
-}
-
-/** Hava kaynağını değiştirir (D ya da test); (c, tik) → { yon, siddet, gok }. */
-export function havaKaynagiAyarla(islev = havaSap) {
-  havaKaynagi = islev;
-}
+/** Bu tikteki hava: dunya/hava.js havaAl (yon: rüzgârın gittiği yön; testler havaSabitle). */
+export { havaAl };
 
 const TALEP_DURUMLARI = new Set(['calisiyor', 'guc-yok', 'guc-az']);
 const iletkenMi = (p) => p.tanim.iletken ?? p.tanim.aile === 'enerji';

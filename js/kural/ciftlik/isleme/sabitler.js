@@ -1,13 +1,13 @@
 /**
  * İşleme ailesinin ortak sabitleri ve sapları (parcalar/isleme.js ve isleme/kiyici-gubre.js):
  * denge sayıları (ISLEME; G denge.js'e taşıyabilir), eşya kodları, rozet yardımcıları.
- * Hava enerji ağının kaynağından okunur (ag/enerji.js havaAl; D bağlayınca gerçek hava).
+ * Hava dunya/hava.js havaAl'dan okunur (testler havaSabitle ile sabitler).
  * SAP (D dünya): gübre → çayır `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo sayısı)`
  * (varsayılan -1: çayır katmanı yok, yalnız sayılır). D: dunya/arazi.js gubrele(c, kx, ky, r,
  * sure) ile tek satırda bağlanır.
  */
 import { esyaKodu } from '../esya.js';
-import { havaAl } from '../ag/enerji.js';
+import { havaAl } from '../dunya/hava.js';
 import { ONARIM } from '../ekonomi/denge.js';
 import { ozellik } from './esya-ozellik.js';
 

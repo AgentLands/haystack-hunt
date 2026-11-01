@@ -13,8 +13,11 @@ import { tikAt, komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js
 import { parcaIcerigi, parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
 import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
-import { ruzgarAyarla, TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
-import { dunya, kur, bantCek, duzTarla, gucVer } from './ciftlik-yardim.mjs';
+import { TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
+import { dunya, kur, bantCek, duzTarla, gucVer, havaSabitle } from './ciftlik-yardim.mjs';
+
+const ruzgarAyarla = (yon, siddet) => havaSabitle({ yon, siddet }); // yon: gittiği yön
+ruzgarAyarla(1, 2); // dosyanın varsayılanı (eski sap): güneye 2
 import { toplamaBulunan } from './ciftlik-isleme-yardim.mjs';
 
 const K = (ad) => esyaKodu(ad);

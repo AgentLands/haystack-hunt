@@ -11,11 +11,10 @@ import { tikAt, komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
 import { ISLEME, gubreKaynagiKur } from '../js/kural/ciftlik/parcalar/isleme.js';
-import { havaKaynagiAyarla } from '../js/kural/ciftlik/ag/enerji.js';
-import { dunya, kur, bantCek, kos } from './ciftlik-yardim.mjs';
+import { dunya, kur, bantCek, kos, havaSabitle } from './ciftlik-yardim.mjs';
 import { K, hatKur, ekle, bulunanlar, kosKadar } from './ciftlik-isleme-yardim.mjs';
 
-const hava = (gok, siddet) => havaKaynagiAyarla(() => ({ yon: 0, gok, siddet }));
+const hava = (gok, siddet) => havaSabitle({ yon: 0, gok, siddet });
 const talep = (m) => m.tanim.talep(m);
 
 test('ot savurucu: kuruma süresi havaya bağlı (200 / 240 / 400 tik), güçsüz ⅓', () => {

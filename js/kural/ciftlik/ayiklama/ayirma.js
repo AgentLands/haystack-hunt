@@ -10,6 +10,7 @@
  */
 import { esyaTanimi, esyaKodu } from '../esya.js';
 import { yonDondur } from '../olcu.js';
+import { havaAl } from '../dunya/hava.js';
 
 /** Oluk mıknatısı tutucusunun yuva sayısı (dolunca manyetikler geçer). */
 export const TUTUCU_YUVA = 6;
@@ -39,22 +40,12 @@ export const yasOtMu = (kod) => kod === esyaKodu('yas-ot');
  */
 export const yuvaDolu = (o) => o.kod !== 0;
 
-/* ------------------------------------------------------------------------------------ */
-/* GEÇİCİ SAP: hava (D işi: kural/ciftlik/dunya/hava.js, `hava(tohum, dilim)`).          */
-/* D gelince `ruzgarOku` gövdesi `hava(ctx.c.tohum, Math.floor(ctx.tik / DILIM_TIK))`     */
-/* olur ({ yon, siddet }); testler `ruzgarAyarla` yerine havayı sabitler.                  */
-/* ------------------------------------------------------------------------------------ */
-const SAP_RUZGAR = { yon: 1, siddet: 2 };
-
-/** Şimdiki rüzgâr: { yon: rüzgârın GİTTİĞİ yön (0 doğu .. 3 kuzey), siddet: 0..3 }. */
-export function ruzgarOku() {
-  return SAP_RUZGAR;
-}
-
-/** (Yalnız test/sap) sabit rüzgârı değiştirir. */
-export function ruzgarAyarla(yon, siddet) {
-  SAP_RUZGAR.yon = yon;
-  SAP_RUZGAR.siddet = siddet;
+/**
+ * Şimdiki rüzgâr (dunya/hava.js; testler havaSabitle ile sabitler): { yon: rüzgârın GİTTİĞİ
+ * yön (0 doğu .. 3 kuzey), siddet: 0..3, gok }.
+ */
+export function ruzgarOku(ctx) {
+  return havaAl(ctx.c, ctx.tik);
 }
 
 /**

@@ -11,8 +11,6 @@
  * tınaz, işleme: ot savurucu, HUD: havaTahmini). Dilim başında 'hava-degisti' yayılır.
  */
 import { asamaTanimla } from '../benzetim.js';
-import { havaKaynagiAyarla } from '../ag/enerji.js';
-import { havaSapi } from '../parcalar/mantik.js';
 
 export const DILIM_TIK = 1200;
 export const CEPHE_DILIM = 3;
@@ -71,15 +69,33 @@ export function hava(tohum, dilim) {
 /** Tikin dilimi. */
 export const dilimNo = (tik) => Math.floor(tik / DILIM_TIK);
 
-/** Dünyanın şimdiki (ya da verilen tikteki) havası. */
+let sabitHava = null;
+/**
+ * TEST KANCASI (oyun hiç çağırmaz): bütün dünyaların havası `h` olur: { yon, siddet, gok }
+ * nesnesi, (dilim) → o nesne ya da null (tohum havası). Kayıttan yüklenen dünya da aynı
+ * havayı okur (kaydet → yükle → sürdür testleri). Tek dünya için `c.havaSabit` (aynı biçim,
+ * kayda girmez) bundan önce gelir.
+ */
+export function havaSabitle(h = null) {
+  sabitHava = h;
+}
+
+/** Dünyanın dilimdeki havası (test kancaları yoksa tohumdan). */
+export function dilimHavasi(c, dilim) {
+  const s = c.havaSabit ?? sabitHava;
+  if (!s) return hava(c.tohum, dilim);
+  return { dilim, ...(typeof s === 'function' ? s(dilim) : s) };
+}
+
+/** Dünyanın şimdiki (ya da verilen tikteki) havası. Bütün parçalar buradan okur. */
 export function havaAl(c, tik = c.tik) {
-  return hava(c.tohum, dilimNo(tik));
+  return dilimHavasi(c, dilimNo(tik));
 }
 
 /** Şimdiki dilim + sonraki n dilim (HUD tahmini, rüzgâr gülü paneli). */
 export function havaTahmini(c, n = 3, tik = c.tik) {
   const d = dilimNo(tik);
-  return Array.from({ length: n + 1 }, (_, k) => hava(c.tohum, d + k));
+  return Array.from({ length: n + 1 }, (_, k) => dilimHavasi(c, d + k));
 }
 
 /** Rüzgâr yönü bir eksene (0: doğu-batı, 1: kuzey-güney) dik mi? (tınaz için yardımcı) */
@@ -93,6 +109,3 @@ asamaTanimla('hava', 5, {
   },
 });
 
-// B · enerji (yel değirmeni) ve C · mantık (rüzgâr gülü) saplarını gerçek havaya bağlar.
-havaKaynagiAyarla((c, tik) => havaAl(c, tik));
-havaSapi.hava = hava;

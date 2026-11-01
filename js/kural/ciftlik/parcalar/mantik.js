@@ -10,8 +10,8 @@
  * Ayarlar: tanım `ayarlar` şemasıyla; `ag/ayar.js` `ayarUygula(p, ad, deger)` doğrular ve
  * p.ozel'e yazar ('ayar' komutu bunu çağırır). ozel yalnız JSON'lanabilir veri taşır.
  *
- * SAPLAR: hava (D işi gelince dunya/hava.js'ten) ve depo doluluğu (`tanim.doluluk(p)` →
- * { n, kap }; B/E/F kendi depolarına ekler, o zamana kadar DOLULUK_SAP).
+ * Hava dunya/hava.js'ten (dilimHavasi; testler havaSabitle). SAP: depo doluluğu
+ * (`tanim.doluluk(p)` → { n, kap }; B/E/F kendi depolarına ekler, o zamana kadar DOLULUK_SAP).
  * Sabitler (denge.js'e G taşır): MANTIK.
  */
 import { parcaTanimla } from '../parca-kayit.js';
@@ -20,21 +20,17 @@ import { DX, DY } from '../olcu.js';
 import { parcaAt } from '../izgara.js';
 import { renkAdi } from '../ag/ayar.js';
 import { SANDIK_KAP } from './temel.js';
+import { dilimHavasi, DILIM_TIK } from '../dunya/hava.js';
 
 /** Mantık sabitleri (tek kaynak ekonomi/denge.js'e taşınabilir). */
 export const MANTIK = {
-  dilimTik: 1200, // hava dilimi (sistemler.md §3; D'nin sabitiyle aynı olmalı)
+  dilimTik: DILIM_TIK, // hava dilimi (dunya/hava.js)
   darbeTik: 20, // kile sayacı "darbe" kipinde yazma süresi
   kileN: [5, 10, 20, 40, 80],
   kantarEsik: [25, 50, 75, 100],
   ruzgarEsik: [1, 2, 3],
   dikSiddet: 2, // "dik esiyor" kipinin en az şiddeti
 };
-/**
- * GEÇİCİ SAP (D işi, kural/ciftlik/dunya/hava.js): hava(tohum, dilim) → { yon, siddet, gok }.
- * Gelince `hava` oradan içe aktarılır; testler buraya sahte hava koyar.
- */
-export const havaSapi = { hava: () => ({ yon: 0, siddet: 2, gok: 0 }) };
 
 /** GEÇİCİ SAP: `doluluk` tanımlamayan depolar için { n, kap } okuyucuları (anahtar → işlev). */
 const DOLULUK_SAP = new Map([['sandik', (p) => ({ n: p.ozel.toplam, kap: SANDIK_KAP })]]);
@@ -79,11 +75,11 @@ parcaTanimla('ruzgar-gulu', {
   adim(ctx, p) {
     const o = p.ozel;
     const dilim = Math.floor(ctx.tik / MANTIK.dilimTik);
-    const simdi = havaSapi.hava(ctx.c.tohum, dilim);
+    const simdi = dilimHavasi(ctx.c, dilim);
     if (o.dilim !== dilim) { // tahmin panelde: şimdiki + sonraki 3 dilim
       o.dilim = dilim;
       o.tahmin = [0, 1, 2, 3].map((k) => {
-        const h = k ? havaSapi.hava(ctx.c.tohum, dilim + k) : simdi;
+        const h = k ? dilimHavasi(ctx.c, dilim + k) : simdi;
         return [h.yon, h.siddet, ruzgarKosulu(o, p.yon, h) ? 1 : 0];
       });
     }

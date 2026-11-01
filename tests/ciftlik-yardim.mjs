@@ -10,6 +10,7 @@ import { parcaTanimla, parcaTanimi } from '../js/kural/ciftlik/parca-kayit.js';
 import { yerlestirmeEngeli } from '../js/kural/ciftlik/izgara.js';
 import { DX, DY } from '../js/kural/ciftlik/olcu.js';
 import { ENERJI, havaAl } from '../js/kural/ciftlik/ag/enerji.js';
+import { havaSabitle as kuralHavasi } from '../js/kural/ciftlik/dunya/hava.js';
 import '../js/kural/ciftlik/parcalar/hepsi.js';
 
 /** Bütün hücreleri `taban` kat olan tarla; `yigin` verilirse (x, y, r, t) koni eklenir. */
@@ -26,7 +27,22 @@ export function duzTarla(taban = 0, yiginlar = []) {
   return { h, kirli: true, kaldirilan: 0 };
 }
 
-/** Boş dünya + sentetik tarla. */
+/** Sentetik dünyaların varsayılan havası (eski sapların değeri): doğuya rüzgâr 2, güneş. */
+export const TEST_HAVASI = Object.freeze({ yon: 0, siddet: 2, gok: 'gunes' });
+
+/**
+ * Testlerin havası (dunya/hava.js havaSabitle kancası; bütün dünyalar, kayıttan yüklenenler
+ * de): { yon, siddet, gok } (eksik alan TEST_HAVASI'ndan), (dilim) → o nesne, 'gercek'
+ * (tohum havası) ya da yok (TEST_HAVASI). Bu modülü içe aktaran testlerde varsayılan
+ * TEST_HAVASI'dır; gerçek arazi testleri (ciftlik-dunya-yardim.mjs) 'gercek' kurar.
+ */
+export function havaSabitle(h) {
+  if (typeof h === 'function') kuralHavasi((d) => ({ ...TEST_HAVASI, ...h(d) }));
+  else kuralHavasi(h === 'gercek' ? null : { ...TEST_HAVASI, ...h });
+}
+havaSabitle();
+
+/** Boş dünya + sentetik tarla (hava: havaSabitle). */
 export function dunya(tohum = 7, tarla = duzTarla(), secenek = {}) {
   return { c: ciftlikKur(tohum, secenek), tarla };
 }

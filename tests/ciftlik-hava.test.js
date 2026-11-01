@@ -9,11 +9,12 @@ import {
   hava, havaAl, havaTahmini, DILIM_TIK, CEPHE_DILIM, GUN_DILIM, GOK, ruzgarDik,
 } from '../js/kural/ciftlik/dunya/hava.js';
 import { havaAl as enerjiHavasi } from '../js/kural/ciftlik/ag/enerji.js';
-import { havaSapi } from '../js/kural/ciftlik/parcalar/mantik.js';
 import { CAYIR, cayirBuyut, gubrele, gubreliMi, ZEMIN } from '../js/kural/ciftlik/dunya/arazi.js';
 import { dunyaHazirla } from '../js/kural/ciftlik/dunya/zemin.js';
 import { karoIndeks } from '../js/kural/ciftlik/olcu.js';
-import { dunya, duzTarla, kos } from './ciftlik-yardim.mjs';
+import { dunya, duzTarla, kos, havaSabitle } from './ciftlik-yardim.mjs';
+
+havaSabitle('gercek'); // bu dosya tohum havasını sınar
 
 const TOHUMLAR = [1, 12345, 0xdeadbeef];
 const N = 10000;
@@ -77,14 +78,17 @@ test('ruzgarDik: eksene dik ve esiyorsa', () => {
   assert.equal(ruzgarDik({ yon: 1, siddet: 0 }, 0), false);
 });
 
-test('hava-degisti yeni dilim başında; B ve C sapları gerçek havayı okur', () => {
+test('hava-degisti yeni dilim başında; enerji aynı havayı okur; c.havaSabit kancası', () => {
   const { c, tarla } = dunya(9);
   const olaylar = kos(c, tarla, 2 * DILIM_TIK + 1).filter((o) => o.ad === 'hava-degisti');
   assert.deepEqual(olaylar.map((o) => o.veri), [hava(c.tohum, 1), hava(c.tohum, 2)]);
   for (const tik of [0, 1300, 99999]) {
     assert.deepEqual(enerjiHavasi(c, tik), havaAl(c, tik), 'yel değirmeni');
   }
-  assert.deepEqual(havaSapi.hava(c.tohum, 42), hava(c.tohum, 42), 'rüzgâr gülü');
+  const d = { tohum: 3, tik: 0, havaSabit: { yon: 2, siddet: 1, gok: 'bulut' } };
+  assert.deepEqual(havaAl(d, 5000), { dilim: 4, yon: 2, siddet: 1, gok: 'bulut' });
+  d.havaSabit = (dilim) => ({ yon: dilim & 3, siddet: 3, gok: 'gunes' });
+  assert.equal(havaAl(d, 2 * DILIM_TIK).yon, 2, 'işlev biçimi dilimi alır');
 });
 
 /** Çayırlı küçük dünya: (10..13, 10..11) karoları çayır, hücreleri 0. */
