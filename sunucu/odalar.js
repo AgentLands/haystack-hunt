@@ -181,7 +181,10 @@ export class Odalar {
       this.odalar.delete(oda.kod);
       return;
     }
-    if (oda.kurucu === oyuncu.id) oda.kurucu = kalan[0].id;
+    if (oda.kurucu === oyuncu.id) {
+      oda.kurucu = kalan[0].id;
+      oda.ip = kalan[0].oyuncu.ip; // oda kotası yeni kurucunun adresine geçer
+    }
     this.#guncelle(oda);
   }
 

@@ -239,3 +239,28 @@ test('dedektör telafisi: hepsi Soğuk çıkıp hak bitince bir kez bir hak daha
   assert.equal(d.dedektor, 0);
   assert.equal(d.dedektorTelafi, 1);
 });
+
+test('dedektör telafi hakkı bedava: "kullanılan" ve puan değişmez', async () => {
+  const { yeniOyun, durumAl, bas, birak, aracSec, sonucOlustur } = await import('../js/oyun.js');
+  yeniOyun('telafi-puan', 'normal');
+  const d = durumAl();
+  d.baslangic = 0;
+  const { igne } = d.tarla;
+  const uzak = { x: igne.x > 120 ? 2 : 237, y: igne.y > 80 ? 2 : 157 };
+  aracSec('dedektor');
+  Object.assign(d.karakter, { x: uzak.x + 0.5, y: uzak.y + 0.5 });
+  const hak = d.dedektorHakki;
+  for (let i = 0; i < hak; i++) {
+    bas(uzak, 100 * i);
+    birak();
+  }
+  assert.equal(d.dedektorTelafi, 1, 'telafi verildi, kullanılmadı');
+  const kullanilmadi = sonucOlustur(60000);
+  assert.equal(kullanilmadi.dedektorKullanilan, hak, 'okuma sayısı kadar, eksik sayılmaz');
+  bas(uzak, 1000);
+  birak();
+  assert.equal(d.halkalar.length, hak + 1);
+  const kullanildi = sonucOlustur(60000);
+  assert.equal(kullanildi.dedektorKullanilan, hak, 'telafi okuması sayılmaz');
+  assert.equal(kullanildi.puan, kullanilmadi.puan, 'telafiyi kullanmak puan düşürmez');
+});

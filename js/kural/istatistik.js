@@ -17,6 +17,7 @@ export function bosIstatistik() {
   return {
     surum: 1,
     oynanan: 0, bulunan: 0, pesEdilen: 0,
+    sureliBulunan: 0, // süresi tutulan (rahat olmayan) bulmalar: ortalama süre bunlara bölünür
     enIyiMs: null, toplamSureMs: 0, toplamSaman: 0,
     zorlukEnIyi: Object.create(null), // zorluk → en iyi süre (ms): rekor zorluğa göre
     tohumEnIyi: Object.create(null), // tarlaAnahtari(etiket, zorluk) → en iyi süre (ms)
@@ -53,6 +54,9 @@ export function temizle(ham) {
   if (!ham || typeof ham !== 'object') return ist;
   for (const alan of ['oynanan', 'bulunan', 'pesEdilen', 'toplamSureMs', 'toplamSaman',
     'seri', 'enUzunSeri']) ist[alan] = sayi(ham[alan]);
+  // Eski kayıtta sayaç yoktu: bütün bulmalar süreli sayılır (geriye uyum).
+  ist.sureliBulunan = sayiMi(ham.sureliBulunan)
+    ? Math.min(ham.sureliBulunan, ist.bulunan) : ist.bulunan;
   ist.enIyiMs = sayiMi(ham.enIyiMs) ? ham.enIyiMs : null;
   ist.gunlukSon = etiketMi(ham.gunlukSon) ? ham.gunlukSon : null;
   ist.dondurmaSon = etiketMi(ham.dondurmaSon) ? ham.dondurmaSon : null;
@@ -180,6 +184,7 @@ export function bulunduKaydet(ist, sonuc, bugun = gununEtiketi()) {
   yeni.bulunan += 1;
   yeni.toplamSaman += sayi(sonuc.kaldirilan);
   if (ms !== null) {
+    yeni.sureliBulunan += 1;
     yeni.toplamSureMs += ms;
     rapor.rekor = oncekiEnIyiMs !== null && ms < oncekiEnIyiMs;
     if (oncekiEnIyiMs === null || ms < oncekiEnIyiMs) yeni.zorlukEnIyi[zorluk] = ms;
@@ -221,7 +226,8 @@ export function ozet(ist, bugun = gununEtiketi()) {
     pesEdilen: ist.pesEdilen,
     bulmaYuzde: ist.oynanan > 0 ? Math.round((100 * ist.bulunan) / ist.oynanan) : null,
     enIyiMs: ist.enIyiMs,
-    ortalamaMs: ist.bulunan > 0 ? Math.round(ist.toplamSureMs / ist.bulunan) : null,
+    ortalamaMs: ist.sureliBulunan > 0
+      ? Math.round(ist.toplamSureMs / ist.sureliBulunan) : null,
     toplamSaman: ist.toplamSaman,
     seri: gecerliSeri(ist, bugun),
     enUzunSeri: ist.enUzunSeri,

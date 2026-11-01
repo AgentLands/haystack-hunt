@@ -270,3 +270,25 @@ test('paylaşım bağlantısı: zorluk normal değilse &zorluk= eklenir', () => 
   assert.equal(ek('normal'), 'https://o/?tohum=abc');
   assert.equal(ek(undefined), 'https://o/?tohum=abc');
 });
+
+test('ortalama süre yalnız süreli bulmalarla hesaplanır (rahat bulmalar girmez)', () => {
+  let ist = bulunduKaydet(bosIstatistik(), sonuc('a', 120000), '2026-10-31').ist;
+  for (const e of ['b', 'c', 'd']) ist = bulunduKaydet(ist, sonuc(e, null), '2026-10-31').ist;
+  assert.equal(ist.bulunan, 4);
+  assert.equal(ist.sureliBulunan, 1);
+  const o = ozet(ist, '2026-10-31');
+  assert.equal(o.ortalamaMs, 120000);
+  assert.equal(o.bulunan, 4);
+  const yalnizRahat = bulunduKaydet(bosIstatistik(), sonuc('r', null), '2026-10-31').ist;
+  assert.equal(ozet(yalnizRahat, '2026-10-31').ortalamaMs, null);
+});
+
+test('eski kayıtta süreli sayaç yok: bulunan ile başlar; kaydedilen sayaç korunur', () => {
+  const eski = temizle({ oynanan: 5, bulunan: 4, toplamSureMs: 400000 });
+  assert.equal(eski.sureliBulunan, 4);
+  assert.equal(ozet(eski, '2026-10-31').ortalamaMs, 100000);
+  const yeni = temizle(JSON.parse(JSON.stringify(
+    bulunduKaydet(bosIstatistik(), sonuc('a', 90000), '2026-10-31').ist)));
+  assert.equal(yeni.sureliBulunan, 1);
+  assert.equal(temizle({ bulunan: 2, sureliBulunan: 9 }).sureliBulunan, 2, 'bulunan\'ı aşamaz');
+});
