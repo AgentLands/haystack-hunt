@@ -123,3 +123,26 @@ test('bozuk kayıt: bilinmeyen parça kodu ve kesik h hata verir', () => {
   kesik.h = kesik.h.slice(0, 100);
   assert.throws(() => dunyaCoz(kesik, duzTarla(0)), /kayıt: h/);
 });
+
+test('saniye ortasında kayıt: saniye içi sayaçlar (çevrimdışı pencere girdisi) kaybolmaz', () => {
+  const a = yeniDunya();
+  kos(a, 5000, araKomut);
+  const b = yeniDunya();
+  const dolu = () => b.c.sayaclar.depolanan?.some((n) => n > 0);
+  let kesit = 0; // ilk yarım saniyelik depolanan sayacı (saniye sınırı değil, sıfırlanmamış)
+  while (kesit < 4000 && !dolu()) {
+    kos(b, 1, (d) => araKomut(d, kesit));
+    kesit += 1;
+  }
+  assert.ok(dolu(), 'kesitte yarım saniyelik sayaç dolu olmalı (test anlamlı kalsın)');
+  const kayit = JSON.parse(JSON.stringify(dunyaKodla(b.c, b.tarla)));
+  const tarla = duzTarla(0);
+  const { c } = dunyaCoz(kayit, tarla);
+  assert.deepEqual(c.sayaclar, b.c.sayaclar);
+  kos({ c, tarla }, 5000 - kesit, (d, i) => araKomut(d, i + kesit));
+  assert.deepEqual(c.ekonomi.pencere, a.c.ekonomi.pencere);
+  assert.equal(dunyaOzeti(c, tarla), dunyaOzeti(a.c, a.tarla));
+  const eski = { ...kayit };
+  delete eski.sayaclar; // sayaclar alanından önceki kayıt: boş sayaçla yüklenir
+  assert.deepEqual(dunyaCoz(eski, duzTarla(0)).c.sayaclar, {});
+});
