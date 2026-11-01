@@ -145,16 +145,18 @@ test('eski kayıt (v1 armağan dosyası) bugünkü kodla yüklenir, akar, saman 
   assert.equal(toplam(), once, 'yüklenen eski kayıtta saman korunumu');
 });
 
-test('eski kayıt: eşya kodları göçle yeni tabloya eşlenir (gömülü iğne/çivi/buluntu)', {
-  todo: 'ÇEKİRDEK HATASI (c-dogrulama bulgu 4): iğne 2→10, çivi 3→13 yeniden kodlandı ama '
-    + 'SURUM 1→2 göçü eşya kodlarını eşlemiyor; v1 kaydındaki iğne "yaş ot", çivi "kuru ot" olur',
-}, () => {
+test('eski kayıt: eşya kodları göçle yeni tabloya eşlenir (gömülü iğne/çivi/buluntu)', () => {
   const { c } = v1Yukle();
   const turler = c.gomulu.map((g) => esyaTanimi(g.esya)?.anahtar).sort();
   assert.deepEqual(turler, ['buluntu:dugme', 'civi', 'igne']);
   const igne = esyaKodu('igne');
   const varMi = c.gomulu.filter((g) => g.esya === igne && !g.alindi).length;
-  assert.equal(varMi + c.envanter[igne], 1, 'iğne korunur');
+  assert.equal(varMi + c.envanter[igne], 1, 'iğne korunur (v1 sandığındaki → envanter)');
+  assert.equal(c.envanter[esyaKodu('buluntu:dugme')], 1, 'v1 sandığındaki buluntu → envanter');
+  const sandik = [...c.parcalar.values()].find((p) => p.tanim.anahtar === 'sandik');
+  assert.deepEqual(sandik.ozel.say, { [esyaKodu('saman')]: 137 });
+  assert.equal(sandik.ozel.toplam, 137);
+  assert.equal(c.envanter[esyaKodu('yas-ot')] + c.envanter[esyaKodu('kuru-ot')], 0);
 });
 
 test('kural katmanı (js/kural/ciftlik): rastgelelik, zaman, DOM ve kayan nokta işlevi yok', () => {

@@ -10,7 +10,8 @@
  * değişken uzunluk bayt → base64 (ham 77 KB, tipik 5-25 KB).
  * Göç: surum < SURUM ise GOCLER[surum] sırayla uygulanır; bozuk/tanınmayan veri hata verir
  * (çağıran yedeği dener). 1 → 2: ekonomi (kuruş, pano) dünyaya girdi; eski dünyanın kurulu
- * parçaları ödenmiş sayılır (kuruş = max(0, 300 − Σ fiyat)), yoksa söküm bedava kuruş verirdi.
+ * parçaları ödenmiş sayılır (kuruş = max(0, 300 − Σ fiyat)), yoksa söküm bedava kuruş verirdi;
+ * Faz 0 eşya kodları bugünkü tabloya eşlenir (kayit-goc.js: iğne 2→10, çivi 3→13).
  * sayaclar: saniye içi eşya sayaçları (c.sayaclar, saniyede bir sıfırlanır); çevrimdışı
  * ölçüm penceresi saniye sonunda bunları okuduğundan durumdur ve kayda girer (yoksa saniye
  * ortasında kesilen kayıt o saniyenin sayımını yitirir; eski kayıtta yoksa boş).
@@ -29,6 +30,7 @@ import {
   ekonomiKur, ekonomiKodla, ekonomiCoz, parcaMaliyeti,
 } from './ekonomi/kurus.js';
 import { ilerlemeBagla } from './ekonomi/damga.js';
+import { gocEsyaKodlari } from './kayit-goc.js';
 
 export const SURUM = 2;
 
@@ -43,7 +45,8 @@ function gocEkonomi(v) {
 }
 
 /** Göç tablosu: surum → (veri) → bir sonraki sürümün verisi. */
-export const GOCLER = { 1: gocEkonomi };
+/** Göçler: 1 → 2 eşya kodları (kayit-goc.js) + ekonomi. */
+export const GOCLER = { 1: (v) => gocEkonomi(gocEsyaKodlari(v)) };
 const alanlar = new Map();
 
 /**
