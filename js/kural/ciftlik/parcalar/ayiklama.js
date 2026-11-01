@@ -76,7 +76,7 @@ function yuvaliTanimla(anahtar, ayar) {
 const tutar = (p, kod) => manyetikMi(kod) && p.ozel.tutucu.length < TUTUCU_YUVA;
 
 parcaTanimla('oluk-miknatisi', {
-  kod: 40, ad: 'Oluk mıknatısı', aile: 'ayiklama', boyut: [1, 1],
+  kod: 8, ad: 'Oluk mıknatısı', aile: 'ayiklama', boyut: [1, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 0, y: 0, yon: 0 }],
   maliyet: { kurus: 30 }, kilit: 'D1',
   kur(p) {
@@ -135,7 +135,7 @@ komutTanimla('bosalt', (c, tarla, k, olaylar) => {
 
 // --- 41 Mıknatıslı tambur: 2×1, güçlü, doymaz; ön manyetik değil, sağ manyetik ---
 yuvaliTanimla('miknatisli-tambur', {
-  kod: 41, ad: 'Mıknatıslı tambur', boyut: [2, 1], sure: TAMBUR_TIK, guc: TAMBUR_GUC,
+  kod: 9, ad: 'Mıknatıslı tambur', boyut: [2, 1], sure: TAMBUR_TIK, guc: TAMBUR_GUC,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 1 }],
   maliyet: { kurus: 120 }, kilit: 'D5',
@@ -144,7 +144,7 @@ yuvaliTanimla('miknatisli-tambur', {
 
 // --- 42 Kalbur: 2×1, güçsüz; ön iri, sağ ince; yaş ot sıvar ---
 yuvaliTanimla('kalbur', {
-  kod: 42, ad: 'Kalbur', boyut: [2, 1], sure: KALBUR_TIK,
+  kod: 10, ad: 'Kalbur', boyut: [2, 1], sure: KALBUR_TIK,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 1 }],
   maliyet: { kurus: 50 }, kilit: 'D4',
@@ -176,7 +176,7 @@ const TINAZ_YAZI = {
   esinti: 'Dik esinti: toz ayrılıyor', ruzgar: 'Dik rüzgâr: toz ve saman ayrılıyor',
 };
 yuvaliTanimla('tinaz', {
-  kod: 43, ad: 'Tınaz', boyut: [3, 3], sure: TINAZ_TIK,
+  kod: 11, ad: 'Tınaz', boyut: [3, 3], sure: TINAZ_TIK,
   girisler: [{ x: 0, y: 1, yon: 2 }],
   cikislar: [{ x: 2, y: 1, yon: 0 }, { x: 1, y: 0, yon: 3 }, { x: 1, y: 2, yon: 1 }],
   maliyet: { kurus: 60 }, kilit: 'D6',
@@ -190,7 +190,7 @@ yuvaliTanimla('tinaz', {
 
 // --- 44 Şeytan yeli: 2×2, güçlü, rüzgârsız üç yollu (ön hafif, sol çok hafif, sağ ağır) ---
 yuvaliTanimla('seytan-yeli', {
-  kod: 44, ad: 'Şeytan yeli', boyut: [2, 2], sure: YEL_TIK, guc: YEL_GUC,
+  kod: 12, ad: 'Şeytan yeli', boyut: [2, 2], sure: YEL_TIK, guc: YEL_GUC,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 3 }, { x: 1, y: 1, yon: 1 }],
   maliyet: { kurus: 160 }, kilit: 'D5',
