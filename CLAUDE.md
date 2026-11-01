@@ -8,11 +8,20 @@ değildir: başka oyunların adını, görselini ya da birebir mekaniğini kulla
 ```
 npm test                      # birim testleri (node --test, bağımlılık yok)
 npm run duman                 # Chromium'da uçtan uca duman testi (Playwright kurulu)
+npm run e2e                   # 9 uçtan uca senaryo (tests/e2e/*.cjs; --yavas 4: CPU 4× yavaş)
 npm run denetim               # kod kuralları denetimi ("DENETİM TEMİZ" demeli)
 node sunucu/sunucu.js --port 8080   # yarış sunucusu (oyunu da sunar; bkz. sunucu/PROTOKOL.md)
 node tests/e2e/duman.cjs --ekran KLASOR   # ekran görüntüleriyle
 python3 -m http.server 8000   # elle oynamak için
 ```
+
+## Uçtan uca testler (tests/e2e/)
+Ortak araçlar `ortak.cjs` / `ortak-girdi.cjs`: sunucu, sayfa, koşul bekleme (`bekle`: sabit
+bekleme yok), klavye/dokunma sürücüleri. Durum kancası oyun koduna eklenmez: test, sayfa
+açılınca `window.__e2e = await import('./js/oyun.js')` ile oyunun kendi modül örneğine
+bağlanır (durumAl, yeniOyun...). `bekle` koşulu eşzamanlı olmalı (async koşul hemen "doğru"
+sayılır). Gerçek hatadan başarısız denetim silinmez: `bilinen.cjs` listesine anahtarla
+(`senaryo:kimlik`) yazılır, CI'yı kırmaz, düzelince "listeden çıkarılabilir" uyarısı verir.
 
 ## Mimari
 - `js/kural/`: saf oyun kuralları (DOM yok, Node'da test edilir). Deterministik: aynı
