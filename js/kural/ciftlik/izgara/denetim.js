@@ -1,23 +1,28 @@
 /**
  * Yerleşim denetimi: bir kümenin (kumeKonumla çıktısı) tek işlemde kurulup kurulamayacağı.
  * Karo karo engel (dışarıda, yasak, dolu, saman), kilitli parça ve kuruş eksiği; hepsi ya
- * hiç. Kuruş ve kilit kaynakları `kumeBaglam` ile bağlanır (SAP: ekonomi/acilis birleşince).
+ * hiç. Kuruş, bedel ve kilit G'nin ekonomisinden (`kumeBaglam`; testler değiştirebilir).
  */
 import { parcaTanimi } from '../parca-kayit.js';
 import { yerlestirmeEngeli } from '../izgara.js';
 import { kutu } from './kume.js';
+import { ekonomiAl, parcaMaliyeti } from '../ekonomi/kurus.js';
+import { acikMi } from '../ekonomi/acilis.js';
+import { ilerlemeAl } from '../ekonomi/damga.js';
+import { PARCA_MALIYET } from '../ekonomi/denge.js';
 
 /** Karo denetimi için 1×1 yönsüz sahte tanım (yerlestirmeEngeli yalnız boyut/yonlu okur). */
 const KARO_TANIMI = Object.freeze({ boyut: [1, 1], yonlu: false });
 
 /**
- * Dış bağlam (SAP). Ekonomi (G) birleşince kurus(c) = c.kurus, maliyet(t) = kuruş bedeli,
- * kilitli(t, c) = !acikMi(...) olur; o zamana dek kuruş sınırsız, hiçbir parça kilitli değil.
+ * Ekonomi bağlamı (G): kuruş, parça bedeli, kilit. Fiyat tablosunda olmayan (test) parça
+ * ekonomi dışıdır (kurus.js kurulumEngeli ile aynı kural).
  */
 export const kumeBaglam = {
-  kurus: () => Infinity,
-  maliyet: (tanim) => tanim.maliyet?.kurus ?? 0,
-  kilitli: () => false,
+  kurus: (c) => ekonomiAl(c).kurus,
+  maliyet: (tanim) => parcaMaliyeti(tanim.anahtar),
+  kilitli: (tanim, c) => Object.hasOwn(PARCA_MALIYET, tanim.anahtar)
+    && !acikMi(tanim.anahtar, ilerlemeAl(c)),
 };
 
 /** Bağlamı (kısmen) değiştirir. */

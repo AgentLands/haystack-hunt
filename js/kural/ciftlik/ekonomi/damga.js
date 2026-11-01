@@ -4,7 +4,8 @@
  * kilit kipi, araştırılan parçalar, toplamlar, çiftliğin kendi defter sayacı, ayarlar.
  *   { surum, kilit, damgalar: ['D1'...], arastirilan: [anahtar], rozetler: [],
  *     toplam: { igne, buluntu, siparis }, defterCiftlik: { tur: adet },
- *     ayarlar: { cevrimdisi, ortakDefter } }
+ *     ayarlar: { cevrimdisi, ortakDefter }, sablonlar: [kod | null] (I2 şablon yuvaları:
+ *     sağlamalı metin kodları, izgara/sablon-kod.js; dünyalar arası) }
  * Benzetim ilerlemeyi `c.ilerleme` üzerinden okur (numaralanmaz, dünya kaydına girmez):
  * oyun açılışta `ilerlemeBagla(c, il)` der; bağlanmamışsa ilk okumada varsayılan (damga kipi)
  * bağlanır. Damga kartı panonun 0. yuvasıdır; koşulu tutunca basılır (siparis.js).
@@ -22,7 +23,7 @@ export function ilerlemeKur({ kilit = 'damga' } = {}) {
   return {
     surum: ILERLEME_SURUM, kilit, damgalar: [], arastirilan: [], rozetler: [],
     toplam: { igne: 0, buluntu: 0, siparis: 0 }, defterCiftlik: {},
-    ayarlar: { cevrimdisi: true, ortakDefter: true },
+    ayarlar: { cevrimdisi: true, ortakDefter: true }, sablonlar: [],
   };
 }
 
@@ -66,6 +67,13 @@ export function ilerlemeCoz(veri) {
   il.toplam = { ...il.toplam, ...sayilar(veri.toplam, 'toplam') };
   il.defterCiftlik = sayilar(veri.defterCiftlik, 'defterCiftlik');
   il.ayarlar = { ...il.ayarlar, ...veri.ayarlar };
+  if (veri.sablonlar !== undefined) {
+    const s = veri.sablonlar;
+    if (!Array.isArray(s) || !s.every((x) => x === null || typeof x === 'string')) {
+      throw new Error('ilerleme: sablonlar bozuk');
+    }
+    il.sablonlar = [...s];
+  }
   return il;
 }
 

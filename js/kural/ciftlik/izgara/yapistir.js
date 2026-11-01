@@ -4,14 +4,17 @@
  *       kopyayı konumlandırıp yollar; yeniden oynatma pano durumuna bağlı değildir). Tikte
  *       önce bütün küme denetlenir; tek engel/kilit/kuruş eksiği varsa HİÇBİRİ kurulmaz
  *       ('komut-reddedildi' neden 'yapistir-engelli' + engelliKaro, eksik). Sonra sırayla
- *       kurulur; beklenmedik bir ret olursa kurulanlar geri sökülür.
- *   { tur: 'sokAlan', xa, ya, xb, yb }   dikdörtgene değen bütün parçaları söker.
+ *       kurulur ve bedeli ödenir (kurulumOde); beklenmedik bir ret olursa kurulanlar geri
+ *       sökülür (bedelsiz).
+ *   { tur: 'sokAlan', xa, ya, xb, yb }   dikdörtgene değen bütün parçaları 'sok' gibi söker
+ *       (bedel iadesi, söküm kancaları; Komşu kapısı sökülmez).
  *   { tur: 'ayarTasi', x, y, ayar }      karodaki parçaya ayarı yazar (pipet ortak ayarı).
  * Olaylar: 'parca-kuruldu' (parça başına), 'yapistirildi' { parcalar },
  * 'parca-sokuldu' (parça başına), 'alan-sokuldu' { parcalar }, 'ayar-tasindi' { parca }.
  * `hazirSablonlar()`: "Önerilen ilk hat" (huni, 6 bant, sandık).
  */
-import { komutTanimla, parcaKur, parcaSok } from '../komut.js';
+import { komutTanimla, parcaKur, parcaSok, oyuncuSokumu } from '../komut.js';
+import { kurulumOde } from '../ekonomi/kurus.js';
 import { parcaTanimi } from '../parca-kayit.js';
 import { parcaAt } from '../izgara.js';
 import { ayarYaz } from './kume.js';
@@ -40,7 +43,10 @@ komutTanimla('yapistir', (c, tarla, k, olaylar) => {
     ayarYaz(s.parca, q.ayar);
     kurulan.push(s.parca);
   }
-  for (const p of kurulan) olaylar.push({ ad: 'parca-kuruldu', veri: { parca: p } });
+  for (const p of kurulan) {
+    kurulumOde(c, p); // bedel denetimi yerlesimDenetle'de (hepsi ya hiç)
+    olaylar.push({ ad: 'parca-kuruldu', veri: { parca: p } });
+  }
   olaylar.push({ ad: 'yapistirildi', veri: { parcalar: kurulan } });
   return undefined;
 });
@@ -53,12 +59,10 @@ komutTanimla('sokAlan', (c, tarla, k, olaylar) => {
       if (p) bulunan.set(p.id, p);
     }
   }
-  if (!bulunan.size) return red(olaylar, k, 'bos');
-  const sokulen = [...bulunan.values()].sort((a, b) => a.id - b.id);
-  for (const p of sokulen) {
-    const iade = parcaSok(c, tarla, p);
-    olaylar.push({ ad: 'parca-sokuldu', veri: { parca: p, iade } });
-  }
+  const sokulen = [...bulunan.values()].filter((p) => !p.tanim.sokulmez)
+    .sort((a, b) => a.id - b.id);
+  if (!sokulen.length) return red(olaylar, k, 'bos');
+  for (const p of sokulen) oyuncuSokumu(c, tarla, p, olaylar); // iade + söküm kancaları
   olaylar.push({ ad: 'alan-sokuldu', veri: { parcalar: sokulen } });
   return undefined;
 });

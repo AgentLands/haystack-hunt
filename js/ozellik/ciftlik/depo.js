@@ -8,7 +8,7 @@
  * (kayitlariOku().bozuk). Kota hatası yutulmaz: console.error + oyuncuya bildirim.
  */
 import { bildir } from '../../arayuz.js';
-import { ilerlemeKodla, ilerlemeCoz } from '../../kural/ciftlik/ekonomi/damga.js';
+import { ilerlemeKodla, ilerlemeCoz, ilerlemeKur } from '../../kural/ciftlik/ekonomi/damga.js';
 
 export const ANAHTAR = 'haystack-hunt:ciftlik';
 export const YEDEK = 'haystack-hunt:ciftlik-yedek';
@@ -112,8 +112,18 @@ export function ilerlemeOku() {
   }
 }
 
+let oturumIlerlemesi = null;
+/**
+ * Oturumun kalıcı ilerlemesi (ilk istekte depodan, yoksa yeni). Bütün çiftlikler ve şablon
+ * yuvaları aynı nesneyi paylaşır.
+ */
+export function ilerlemeAl() {
+  oturumIlerlemesi ??= ilerlemeOku() ?? ilerlemeKur();
+  return oturumIlerlemesi;
+}
+
 /** Kalıcı ilerlemeyi yazar; başarıyı döndürür. */
-export function ilerlemeYaz(ilerleme) {
+export function ilerlemeYaz(ilerleme = ilerlemeAl()) {
   const d = depo();
   if (!d) return false;
   try {

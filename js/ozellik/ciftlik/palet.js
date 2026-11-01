@@ -77,7 +77,7 @@ let kurulan = 0;
 
 /** Kartları ve sekmeleri parça kaydından kurar (yeni parça tanımlanınca yeniler). */
 function kartlariKur() {
-  const turler = parcaTurleri();
+  const turler = parcaTurleri().filter((t) => !t.paletDisi); // Komşu kapısını dünya kurar
   if (turler.length === kurulan) return;
   kurulan = turler.length;
   const sira = (a) => (AILELER.includes(a) ? AILELER.indexOf(a) : AILELER.length);

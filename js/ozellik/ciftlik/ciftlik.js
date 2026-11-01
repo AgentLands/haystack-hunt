@@ -12,8 +12,8 @@ import { durumAl, modAc, rastgeleEtiket } from '../../oyun.js';
 import '../../oyun-ciftlik.js';
 import { dunyaKodla } from '../../kural/ciftlik/sakla.js';
 import { bildir } from '../../arayuz.js';
-import { kayitlariOku, kayitYaz, ilerlemeOku, ilerlemeYaz } from './depo.js';
-import { ilerlemeKur } from '../../kural/ciftlik/ekonomi/damga.js';
+import { kayitlariOku, kayitYaz, ilerlemeAl, ilerlemeYaz } from './depo.js';
+import './baglar.js';
 import { cevrimdisiIlerle } from '../../kural/ciftlik/ekonomi/cevrimdisi.js';
 import { havaAl } from '../../kural/ciftlik/dunya/hava.js';
 import { paletGoster } from './palet.js';
@@ -40,12 +40,6 @@ stil.rel = 'stylesheet';
 stil.href = new URL('./ciftlik.css', import.meta.url).href;
 document.head.append(stil);
 
-let ilerleme = null;
-/** Kalıcı ilerleme (ilk istekte depodan; yoksa yeni). Bütün çiftlikler aynı nesneyi paylaşır. */
-function ilerlemeAl() {
-  ilerleme ??= ilerlemeOku() ?? ilerlemeKur();
-  return ilerleme;
-}
 
 /**
  * Kayıttan açılışta "sen yokken" kazancı (ekonomi/cevrimdisi.js): kayıttaki zaman damgasından

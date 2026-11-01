@@ -45,6 +45,12 @@ function yaz() {
   }
 }
 
+/** Öğretici bitti ya da atlandı mı (hazır şablonlar bundan sonra açılır)? */
+export function ogreticiBitti() {
+  if (!kutu) oku();
+  return Boolean(kayit.bitti);
+}
+
 /** Palet "ilk damgaya kadar az parça" göstermek isterse: öğretici sürüyor mu? */
 export const ogreticiAktif = () => Boolean(kutu) && !kayit.bitti && sira < ADIMLAR.length;
 

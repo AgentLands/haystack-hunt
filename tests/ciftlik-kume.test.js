@@ -374,3 +374,16 @@ test('şablon deposu: 10 yuva, bozuk yuva boş sayılır, içe aktarma ve dolu d
   sablon.sablonBaglam.hazirAcik = () => false;
   assert.deepEqual(sablon.hazirlariOku(), [], 'öğretici bitmeden hazır şablon yok');
 });
+
+test('yapıştır bedel öder, alan sökümü iade eder (G ekonomisi; kapı sökülmez)', async () => {
+  const { ekonomiAl } = await import('../js/kural/ciftlik/ekonomi/kurus.js');
+  const { c, tarla } = dunya(5, duzTarla(0));
+  const [ilk] = hazirSablonlar();
+  komutEkle(c, { tur: 'yapistir', parcalar: kumeKonumla(ilk.kume, 20, 20) });
+  kos(c, tarla, 1);
+  assert.equal(ekonomiAl(c).kurus, 300 - 40 - 6 * 2 - 15, 'huni + 6 bant + sandık');
+  komutEkle(c, { tur: 'sokAlan', xa: 19, ya: 19, xb: 30, yb: 22 });
+  kos(c, tarla, 1);
+  assert.equal(c.parcalar.size, 0);
+  assert.equal(ekonomiAl(c).kurus, 300, 'hepsi iade');
+});

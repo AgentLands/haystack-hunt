@@ -109,13 +109,22 @@ komutTanimla('kur', (c, tarla, k, olaylar) => {
   return undefined;
 });
 
-komutTanimla('sok', (c, tarla, k, olaylar) => {
-  const p = parcaAt(c, k.x, k.y);
-  if (!p) return red(olaylar, k, 'bos');
-  if (p.tanim.sokulmez) return red(olaylar, k, 'sokulmez');
+/**
+ * Oyuncu sökümü (komutların ortak yolu: 'sok', alan sökümü): içerik envantere, bedel iade,
+ * söküm kancaları, 'parca-sokuldu'. Sökülmez parça (kapı) için null.
+ */
+export function oyuncuSokumu(c, tarla, p, olaylar) {
+  if (p.tanim.sokulmez) return null;
   const iade = { ...parcaSok(c, tarla, p), kurus: sokumIade(c, p) };
   for (const kanca of sokumKancalari) kanca(c, tarla, p, iade, olaylar);
   olaylar.push({ ad: 'parca-sokuldu', veri: { parca: p, iade } });
+  return iade;
+}
+
+komutTanimla('sok', (c, tarla, k, olaylar) => {
+  const p = parcaAt(c, k.x, k.y);
+  if (!p) return red(olaylar, k, 'bos');
+  if (!oyuncuSokumu(c, tarla, p, olaylar)) return red(olaylar, k, 'sokulmez');
   return undefined;
 });
 
