@@ -9,75 +9,9 @@
  */
 const o = require('./ortak.cjs');
 
-const REHBER_GORULDU = () => {
-  try {
-    localStorage.setItem('haystack-hunt:rehber-goruldu', '1');
-  } catch (hata) {
-    console.error(hata);
-  }
-};
-
-/** Çiftlik bilgisi: parça listesi, sandık içerikleri. */
-const ciftlikOzet = (s) => s.evaluate(() => {
-  const d = window.__e2e.durumAl();
-  if (d.mod !== 'ciftlik') return { mod: d.mod };
-  const parcalar = [...d.ciftlik.parcalar.values()];
-  const sandik = parcalar.find((p) => p.tanim.anahtar === 'sandik');
-  return { mod: d.mod, parca: parcalar.map((p) => p.tanim.anahtar).sort(),
-    sandik: sandik ? sandik.ozel.toplam : null, tik: d.ciftlik.tik };
-});
-
-/** Huni + 4 bant + sandık sığan, huninin çevresi samanlı yer (karo) ve ekran çevirici. */
-const yerBul = (s) => s.evaluate(async () => {
-  const iz = await import('./js/kural/ciftlik/izgara.js');
-  const pk = await import('./js/kural/ciftlik/parca-kayit.js');
-  const d = window.__e2e.durumAl();
-  const { ciftlik: c, tarla: t } = d;
-  const tani = (ad) => pk.parcaTanimi(ad);
-  let en = null;
-  for (let ky = 2; ky < 76; ky++) {
-    for (let kx = 2; kx < 110; kx++) {
-      if (iz.yerlestirmeEngeli(c, t, tani('huni'), kx, ky, 0)) continue;
-      let uygun = !iz.yerlestirmeEngeli(c, t, tani('sandik'), kx + 6, ky, 0);
-      for (let i = 2; i <= 5 && uygun; i++) {
-        uygun = !iz.yerlestirmeEngeli(c, t, tani('bant'), kx + i, ky, 0);
-      }
-      if (!uygun) continue;
-      let top = 0;
-      for (let y = ky * 2 - 2; y <= ky * 2 + 6; y++) {
-        for (let x = kx * 2 - 2; x <= kx * 2 + 6; x++) top += t.h[y * 240 + x];
-      }
-      if (!en || top > en.top) en = { kx, ky, top };
-    }
-  }
-  return en;
-});
-
-/** Karonun ekran (CSS px) merkezi. */
-const ekran = (s, kx, ky) => s.evaluate(async ([x, y]) => {
-  const { gorunum } = await import('./js/gorunum.js');
-  const { dunyadanEkrana } = await import('./js/kural/gorunum.js');
-  const r = document.getElementById('tarla').getBoundingClientRect();
-  const p = dunyadanEkrana(gorunum, x * 2 + 1, y * 2 + 1);
-  return { x: r.left + p.fx * r.width, y: r.top + p.fy * r.height };
-}, [kx, ky]);
-
-/** Kamerayı karoya getirir (takip bırakılmış olmalı: 0 tuşu ya da sığdır). */
-const odakla = (s, kx, ky, z) => s.evaluate(async ([x, y, zz]) => {
-  const { gorunumAyarla } = await import('./js/gorunum.js');
-  const { odakla: od } = await import('./js/kural/gorunum.js');
-  const { gorunum } = await import('./js/gorunum.js');
-  const { takipBirak } = await import('./js/ozellik/kamera-takip.js');
-  takipBirak();
-  gorunumAyarla(od({ ...gorunum, gx: x * 2 - 20, gy: y * 2 - 14 }, 0.5, 0.5, zz));
-}, [kx, ky, z]);
-
-async function tikla(s, kx, ky) {
-  const p = await ekran(s, kx, ky);
-  await s.mouse.move(p.x, p.y);
-  await s.mouse.down();
-  await s.mouse.up();
-}
+const {
+  REHBER_GORULDU, ciftlikOzet, yerBul, ekran, odakla, tikla,
+} = require('./ciftlik-ortak.cjs');
 
 async function masaustu(tarayici, kok, sc) {
   const { sayfa: s, hatalar } = await o.sayfaYarat(tarayici);
