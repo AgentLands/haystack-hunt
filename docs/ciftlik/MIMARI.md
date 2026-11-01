@@ -26,7 +26,9 @@ js/kural/ciftlik/             saf kural (DOM yok, Node'da test edilir, Math.rand
                       hatBasiBos, hedefKabul, hedefeVer, cikisaVer
   tasima/dugum.js     düğüm altyapısı: dagit, oncelikle, sirayla, tampon*, yuva*, bekleIsle
   tasima/menfez.js    menfez eşleme kuralı: menfezEsi, MENFEZ_ARA_EN_AZ/EN_COK
-  parcalar/temel.js   dikey dilim: bant (kod 1), huni (2), sandik (3)
+  parcalar/temel.js   dikey dilim: bant (kod 1), sandik (3)
+  parcalar/toplama.js huni (2; temel.js'ten taşındı), tırmık kolu (4), taş toplayıcı (5)
+  dunya/              arazi, zemin, hava, gomulu, araba, ogretici, esya-sap (GEÇİCİ): §18
   parcalar/tasima.js  çatal (40), birleştirme oluğu (41), menfez (42)
   parcalar/hepsi.js   aile dosyalarını yükler (yeni aile = bir satır)
 js/oyun-ciftlik.js            modTanimla('ciftlik'): durum kurulumu, tik, iğneler, olay yayma
@@ -314,3 +316,32 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   bitince `ctx.sayac('yakilan', kod)` ve saman sistemden çıkar. Yakıt bitip açık varsa `yakit-bitti`.
 - Ölü döngü: yakıt + yel yoksa krank (bedava) hattı yürütür, sandıktaki balya yaba koluyla
   lokomobile verilir (lokomobil girişi güç istemez). Test: `tests/ciftlik-enerji.test.js`.
+
+## 18. Dünya (D işi: `kural/ciftlik/dunya/`, `parcalar/toplama.js`)
+- **Arazi** (`arazi.js`, `zemin.js`): `ciftlikTarlasi(tohum)` = `tarlaKurAyar` (normal formül,
+  `CIFTLIK_YIGIN`); `araziKur(tarla, garaj, yasakDaire, tohum)` → `c.arazi = { zemin: Uint8Array
+  (karo; ZEMIN.HARMAN/CAYIR/EKIN), gubre: Uint32Array (gübrenin bittiği tik), cayir, kapi, dokum,
+  seviye, baslangicStok }`; `araziBagla(c, arazi)`. Arazisiz dünya (testler, eski kayıt) =
+  hepsi harman (`dunyaHazirla`). Çayır karosunda kurma eşiği yok (`izgara.js`). Oyun:
+  `durumKur(…, { tarlaKur: ciftlikTarlasi })` (normal tarla izi AYNI; `oyun.js` tek satır).
+- **Kaynak sayaçları** (c üstünde): `cayirKat`, `arabaKat`, `cevrimdisiKat` (G yazar),
+  `tuketilenKat` (harmandan toplanan; araba tetiği). Korunum: `ciftlikSamani + kaldirilan −
+  cayirKat − arabaKat − cevrimdisiKat` sabit.
+- **Hava** (`hava.js`, durumsuz): `hava(tohum, dilim) → { dilim, yon, siddet, gok }`,
+  `havaAl(c, tik = c.tik)`, `havaTahmini(c, n = 3)`, `ruzgarDik(h, eksen)`, `DILIM_TIK` 1200,
+  `GOK.GUNES/BULUT/YAGMUR` ('gunes'/'bulut'/'yagmur'). B'nin `havaKaynagiAyarla`'sı ve C'nin
+  `havaSapi`'sı buna bağlanır. Aşama 5: yeni dilimde `hava-degisti`.
+- **Aşamalar**: hava 5, çayır büyümesi 55, araba 57, yuvarlanma 65, öğretici 66.
+- **Toplama kuralı** (`saman.js` eki: `karoHucreleri`, `agizdanAl`, `gomuluBirAl`): huni ağzı
+  çıkışın KARŞI kenarındaki 2×1 karo (yon 0: çıkış doğu, ağız batı; Faz 0 kayıt uyumu için),
+  `ilerleme += oran` (1024 = 1 kat), tutam türü ağız zemininden (çayır → yaş ot; harman →
+  saman, `c.zar` binde 125 toz), bir tikte bir eşya (gömülü önce), tampon doluyken almaz.
+  `etki(p)` önizleme için ağız/halka/menzil verir. `gucsuzOran` huni 512, tırmık/taş 0.
+- **Gömülü** (`gomulu.js`): başlangıç 4 iğne + 1 çuvaldız + (%30) altın, 120 çivi, 90 taş,
+  40 buluntu; `gomuluEkle(c, nesneler, olay)` → `gomulu-eklendi` (oyun listeleri yeniler);
+  hiçbir nesne silinmez. `igneMi(kod)`, `enYakinAcik`.
+- **Kayıt**: `sakla.js kayitAlaniTanimla(ad, { kodla(c), coz(c, v|undefined) })` → kayıtta
+  `alanlar[ad]` (arazi+sayaçlar, araba, ogretici). Alanı olmayan eski kayıt varsayılan kurar.
+- **Kuruş kuyuları**: `arabaCagir`, `cayirGenislet` komutları bedeli `bedelBagla(islev(c, tur,
+  seviye) → bool)` ile sorar (G bağlar; bağlanana dek bedava).
+

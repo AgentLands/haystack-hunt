@@ -166,8 +166,9 @@ async function telefon(tarayici, kok, sc) {
     .size === 5), `bant çekilmedi: ${JSON.stringify((await ciftlikOzet(s)).parca)}`);
   const c = await ekran(s, yer.kx + 2, yer.ky + 4);
   await dokun.bas(1, c.x, c.y);
-  await dokun.bas(2, c.x + 60, c.y + 60);
-  await dokun.tasi(2, c.x + 90, c.y + 90);
+  // İkinci parmak yukarıda: aşağısı paletin düğmelerine düşebilir (tuval görmez).
+  await dokun.bas(2, c.x + 60, c.y - 60);
+  await dokun.tasi(2, c.x + 90, c.y - 90);
   await dokun.hepsiniBirak();
   await o.kareBekle(s, 6);
   sc.dogrula('tel-iki-parmak', (await ciftlikOzet(s)).parca.length === 5,

@@ -86,7 +86,8 @@ test('determinizm: aynı tohum + aynı komutlar → 5000 tik sonra aynı özet',
   kos(b, 5000, araKomut);
   assert.equal(dunyaOzeti(a.c, a.tarla), dunyaOzeti(b.c, b.tarla));
   const sandik = [...a.c.parcalar.values()].find((p) => p.tanim.anahtar === 'sandik');
-  assert.ok(sandik.ozel.toplam > 50, `sandıkta ${sandik.ozel.toplam}`);
+  // Şebekesiz huni 1 kat/2 tik (50 tutam/dk): 900 tikte ≈ 37 tutam, sonra hat yeniden kurulur.
+  assert.ok(sandik.ozel.toplam > 30, `sandıkta ${sandik.ozel.toplam}`);
   const farkli = yeniDunya();
   kos(farkli, 5000, (d, i) => araKomut(d, i === 900 ? 901 : i));
   assert.notEqual(dunyaOzeti(farkli.c, farkli.tarla), dunyaOzeti(a.c, a.tarla));

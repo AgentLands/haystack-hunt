@@ -101,6 +101,24 @@ export function gomuluYerlestir(tarla, arazi, tohum) {
   return liste;
 }
 
+/**
+ * (cx2, cy2) merkezine (iki katı hücre koordinatı) uzaklık karesi ≤ r2 (iki katı) olan,
+ * AÇIKTAKİ (h ≤ z, taban değil) en yakın nesne; eşitlikte küçük hücre indeksi. Yoksa null.
+ */
+export function enYakinAcik(c, tarla, cx2, cy2, r2) {
+  let en = null;
+  for (const g of c.gomulu) {
+    if (!tarladaMi(g)) continue;
+    const i = (g.y | 0) * GENISLIK + (g.x | 0);
+    if (tarla.h[i] > g.z || c.izgara.taban[i]) continue;
+    const dx = 2 * (g.x | 0) + 1 - cx2;
+    const dy = 2 * (g.y | 0) + 1 - cy2;
+    const d = dx * dx + dy * dy;
+    if (d <= r2 && (!en || d < en.d || (d === en.d && i < en.i))) en = { g, d, i };
+  }
+  return en?.g ?? null;
+}
+
 /** Sonradan nesne ekler (araba, öğretici); olay 'gomulu-eklendi' { nesneler }. */
 export function gomuluEkle(c, nesneler, olay) {
   for (const g of nesneler) c.gomulu.push(g);

@@ -16,10 +16,12 @@ import { asamaTanimla } from '../benzetim.js';
 import { komutTanimla } from '../komut.js';
 import { kayitAlaniTanimla, ozelKodla, ozelCoz } from '../sakla.js';
 import { havaAl, karma, GOK } from './hava.js';
-import { ZEMIN, bosArazi, dunyaHazirla } from './zemin.js';
+import { ZEMIN, bosArazi, dunyaHazirla, harmanStogu } from './zemin.js';
 import './esya-sap.js';
 
-export { ZEMIN, zeminAl, hucreZemini, dunyaHazirla } from './zemin.js';
+export {
+  ZEMIN, zeminAl, hucreZemini, dunyaHazirla, harmanStogu, gubrele, gubreliMi,
+} from './zemin.js';
 
 /** Çiftlik yığın ayarı (biçim zorluk.js): yarıçap 14-32 hücre, tepe 50-105 kat. */
 export const CIFTLIK_YIGIN = Object.freeze({ taban: 6, ek: 3, r: [14, 18], t: [50, 55] });
@@ -156,35 +158,11 @@ function cayirIsaretle(a, r) {
   }
 }
 
-/** Harman zeminindeki toplam saman (araba "stok %10" eşiği). */
-export function harmanStogu(a, tarla) {
-  let s = 0;
-  for (let i = 0; i < tarla.h.length; i++) {
-    const k = karoIndeks(((i % GENISLIK) / KARO) | 0, ((i / GENISLIK) / KARO) | 0);
-    if (a.zemin[k] === ZEMIN.HARMAN) s += tarla.h[i];
-  }
-  return s;
-}
-
 /** Arazi dünyaya bağlanır (yeni çiftlik). */
 export function araziBagla(c, arazi) {
   c.arazi = arazi;
   dunyaHazirla(c);
 }
-
-/** (kx, ky) çevresinde r karo içindeki çayır karoları `sure` tik gübreli (F · gübre çukuru). */
-export function gubrele(c, kx, ky, r, sure) {
-  const a = dunyaHazirla(c);
-  for (let y = Math.max(0, ky - r); y <= Math.min(KARO_BOY - 1, ky + r); y++) {
-    for (let x = Math.max(0, kx - r); x <= Math.min(KARO_EN - 1, kx + r); x++) {
-      const i = karoIndeks(x, y);
-      if ((x - kx) ** 2 + (y - ky) ** 2 > r * r || a.zemin[i] !== ZEMIN.CAYIR) continue;
-      a.gubre[i] = Math.max(a.gubre[i], c.tik + sure);
-    }
-  }
-}
-
-export const gubreliMi = (c, kx, ky) => (c.arazi?.gubre[karoIndeks(kx, ky)] ?? 0) > c.tik;
 
 /**
  * Çayır büyümesi (tik aşaması 55): her `adim` tikte (yağmurda 120, değilse 240) çayır

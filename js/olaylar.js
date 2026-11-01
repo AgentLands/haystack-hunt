@@ -96,7 +96,16 @@
  *                                                  deger: o tik 1 yazan yazıcı sayısı)
  *   kile-doldu       { parca }                     kile sayacı N'e vardı ve kapıyı kapattı
  *
- *   [D dünya] (bu ailenin/işin olayları buraya)
+ *   [D dünya] (kural/ciftlik/dunya/: arazi, hava, gomulu, araba, ogretici; toplama ailesi)
+ *   hava-degisti     { dilim, yon, siddet, gok }   yeni hava dilimi (1200 tik; ilk dilimde
+ *                                                  yok); gok 'gunes' | 'bulut' | 'yagmur'
+ *   gomulu-eklendi   { nesneler }                  araba ya da öğretici gömülü nesne ekledi
+ *                                                  (oyun çivi/buluntu listelerini yeniler)
+ *   harman-arabasi   { asama, x, y, ... }          'duyuru' (+ tik: döküm tiki) | 'dokum'
+ *                                                  (+ kat, sayi) | 'yer-yok' (bir kez)
+ *   cayir-genisledi  { seviye, cayir }             Çayır genişlet uygulandı (cayir: karo
+ *                                                  dikdörtgeni)
+ *   ('ciftlik-igne' artık tur da taşır: eşya kodu; iğne, çuvaldız ya da altın iğne)
  *
  *   [E ayıklama] (bu ailenin/işin olayları buraya)
  *

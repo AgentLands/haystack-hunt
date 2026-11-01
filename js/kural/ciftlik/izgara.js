@@ -4,7 +4,8 @@
  * park alanı, tarla kenarı). Yerleştirme kuralları: kutu ızgarada, yasak değil, boş ve
  * altındaki her hücrede saman ≤ KURMA_ESIK (çayır karosunda eşik yok: ayakta ot). Kurulunca
  * alttaki saman 1 hücrelik çevre halkasına dağıtılır (toplam korunur) ve alttaki gömülü
- * nesneler halkadaki en yakın hücreye (yere, z = 0) itilir. Çarpışma: karakter yürünmez parçalara, makineler hepsine çarpar.
+ * nesneler halkadaki en yakın hücreye (yere, z = 0) itilir. Çarpışma: karakter yürünmez
+ * parçalara, makineler hepsine çarpar.
  */
 import { GENISLIK, YUKSEKLIK } from '../boyut.js';
 import { KARO, KARO_EN, KARO_BOY, KARO_SAYISI, karoIndeks, donmusBoyut } from './olcu.js';

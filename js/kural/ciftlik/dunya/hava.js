@@ -1,7 +1,7 @@
 /**
  * Hava: rüzgâr yönü, şiddeti ve gök (docs/ciftlik/sistemler.md §3). DURUMSUZ: yalnız tohum
  * ve dilim numarasından hesaplanır (kayıtta ve çevrimdışı hesapta ek durum yok); tam sayı
- * karıştırma, Math.random/trigonometri yok. Dilim = DILIM_TIK (1200 tik, 1 oyun dakikası).
+ * karıştırma, tarayıcı rastgeleliği ve trigonometri yok. Dilim = DILIM_TIK (1200 tik = 1 dk).
  *   yon     0 doğu, 1 güney, 2 batı, 3 kuzey (rüzgârın GİTTİĞİ yön); CEPHE_DILIM (3) dilimlik
  *           cephe boyunca sabit, cephe başına eşit olasılık
  *   siddet  0 durgun %15, 1 esinti %35, 2 rüzgâr %35, 3 sert %15 (toplamda; yağmurda ≥ 1)
@@ -11,6 +11,8 @@
  * tınaz, işleme: ot savurucu, HUD: havaTahmini). Dilim başında 'hava-degisti' yayılır.
  */
 import { asamaTanimla } from '../benzetim.js';
+import { havaKaynagiAyarla } from '../ag/enerji.js';
+import { havaSapi } from '../parcalar/mantik.js';
 
 export const DILIM_TIK = 1200;
 export const CEPHE_DILIM = 3;
@@ -90,3 +92,7 @@ asamaTanimla('hava', 5, {
     ctx.olay('hava-degisti', havaAl(ctx.c, ctx.tik));
   },
 });
+
+// B · enerji (yel değirmeni) ve C · mantık (rüzgâr gülü) saplarını gerçek havaya bağlar.
+havaKaynagiAyarla((c, tik) => havaAl(c, tik));
+havaSapi.hava = hava;

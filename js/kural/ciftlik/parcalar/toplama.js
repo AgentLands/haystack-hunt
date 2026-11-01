@@ -15,7 +15,7 @@ import { karoHucreleri, agizdanAl, gomuluBirAl, tarladaMi, kirliIsaretle } from 
 import { ZEMIN, hucreZemini } from '../dunya/arazi.js';
 import { agizKarolari } from '../dunya/ogretici.js';
 import '../dunya/hava.js';
-import '../dunya/gomulu.js';
+import { enYakinAcik } from '../dunya/gomulu.js';
 import '../dunya/araba.js';
 
 const SAMAN = esyaKodu('saman');
@@ -201,25 +201,6 @@ parcaTanimla('tirmik-kolu', {
 export const TAS_TOPLAYICI = Object.freeze({ aralik: 60, menzil: 4, tampon: 4, guc: 6 });
 const TAS_ISI = TAS_TOPLAYICI.aralik * 1024;
 
-/** Menzildeki en yakın açıktaki nesne (eşitlikte küçük hücre indeksi) ya da null. */
-export function enYakinAcik(c, tarla, p) {
-  const cx2 = 2 * p.x * KARO + p.en * KARO;
-  const cy2 = 2 * p.y * KARO + p.boy * KARO;
-  const r2 = 4 * (TAS_TOPLAYICI.menzil * KARO) ** 2;
-  let en = null;
-  for (const g of c.gomulu) {
-    if (!tarladaMi(g)) continue;
-    const i = (g.y | 0) * GENISLIK + (g.x | 0);
-    if (tarla.h[i] > g.z || c.izgara.taban[i]) continue;
-    const dx = 2 * (g.x | 0) + 1 - cx2;
-    const dy = 2 * (g.y | 0) + 1 - cy2;
-    const d = dx * dx + dy * dy;
-    if (d > r2) continue;
-    if (!en || d < en.d || (d === en.d && i < en.i)) en = { g, d, i };
-  }
-  return en?.g ?? null;
-}
-
 function tasDurumu(p) {
   if (p.ozel.cikis.length >= TAS_TOPLAYICI.tampon) return 'cikis-dolu';
   return p.ozel.son ? 'calisiyor' : 'girdi-yok';
@@ -237,7 +218,9 @@ parcaTanimla('tas-toplayici', {
     if (o.cikis.length < TAS_TOPLAYICI.tampon) {
       o.ilerleme = Math.min(TAS_ISI, o.ilerleme + ctx.oran(p));
       if (o.ilerleme >= TAS_ISI) {
-        const g = enYakinAcik(ctx.c, ctx.tarla, p);
+        const r2 = 4 * (TAS_TOPLAYICI.menzil * KARO) ** 2;
+        const g = enYakinAcik(ctx.c, ctx.tarla, 2 * p.x * KARO + p.en * KARO,
+          2 * p.y * KARO + p.boy * KARO, r2);
         o.son = g ? 1 : 0;
         if (g) {
           g.alindi = true;
