@@ -36,8 +36,9 @@ parcaTanimla('sandik', {
   kabulEder(p, port, kod) {
     return p.ozel.toplam < SANDIK_KAP || degerliMi(kod);
   },
-  /** Kantar için doluluk. */
+  /** Kantar için doluluk; çevrimdışı kazancın depo arayüzü. */
   doluluk: (p) => ({ n: p.ozel.toplam, kap: SANDIK_KAP }),
+  depo: sayacDeposu(SANDIK_KAP),
   al(p, port, kod, ctx) {
     if (degerliMi(kod)) {
       bulundu(ctx, kod, 'sandik', 'yari', p);
@@ -78,6 +79,20 @@ export function depodanCek(o, uygun) {
     return kod;
   }
   return 0;
+}
+
+/**
+ * Tür sayaçlı depoların ({ say, toplam }) çevrimdışı arayüzü (ekonomi/cevrimdisi.js):
+ * { bos(p) → boş yer, ekle(p, kod, n) }. Sandık ve ambar kullanır.
+ */
+export function sayacDeposu(kap) {
+  return Object.freeze({
+    bos: (p) => Math.max(0, kap - p.ozel.toplam),
+    ekle(p, kod, n) {
+      p.ozel.say[kod] = (p.ozel.say[kod] ?? 0) + n;
+      p.ozel.toplam += n;
+    },
+  });
 }
 
 /** Depo parçasının "bulunan" sayacını artırır (eski kayıtta alan yoksa açar). */

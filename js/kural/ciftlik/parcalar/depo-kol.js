@@ -16,7 +16,7 @@ import { ozellik, degerliMi, esyaAdi as ad } from '../isleme/esya-ozellik.js';
 import { bulundu, samanCikti, girisBekleyen } from '../isleme/bulundu.js';
 import { teslimEt } from '../ekonomi/siparis.js';
 import { karodanCek, karoyaBirak } from '../isleme/hat-el.js';
-import { depodanCek, sayacArtir } from './temel.js';
+import { depodanCek, sayacArtir, sayacDeposu } from './temel.js';
 
 /** Denge sayıları (parcalar.md; G denge.js'e taşıyabilir). */
 export const DEPO_KOL = {
@@ -68,6 +68,7 @@ parcaTanimla('ambar', {
     return depodanCek(p.ozel, uygun);
   },
   doluluk: (p) => ({ n: p.ozel.toplam, kap: DEPO_KOL.ambar.kap }),
+  depo: sayacDeposu(DEPO_KOL.ambar.kap),
   icerik(p) {
     return { esya: Object.entries(p.ozel.say).map(([kod, n]) => [Number(kod), n]), saman: 0 };
   },

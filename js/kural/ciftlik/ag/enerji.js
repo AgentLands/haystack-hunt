@@ -13,7 +13,8 @@
  *                'guc-az' ise `guc`, başka her durumda (girdi yok, çıkış dolu...) 0
  *   uret(p, ctx, hava)   koşulsuz üretim (bg) ve kendi durumunu günceller (krank, yel);
  *                enCokBg: en çok üretim (üreticinin p.oran'ı = üretim / enCokBg, çizim için)
- *   depo { kap, sarj, desarj }   volan: p.ozel.dolu (bg·tik) tutar
+ *   enerjiDepo { kap, sarj, desarj }   volan: p.ozel.dolu (bg·tik) tutar ('depo' adı
+ *                eşya deposunun çevrimdışı arayüzüdür: ekonomi/cevrimdisi.js)
  *   destek(p, ctx, acik) → bg   açığı (volandan sonra kalan) kapatan üretici (lokomobil)
  *   iletken      şaft gibi aks taşır (varsayılan: aile 'enerji'); aksYonler: [yon...] aksın
  *                çıktığı kenarlar (yon 0 çerçevesinde; yoksa dört kenar)
@@ -88,7 +89,7 @@ function aglariKur(c) {
     aglar.push({
       uyeler, arz: 0, talep: 0, oran: 1024,
       uretici: uyeler.filter((p) => p.tanim.uret),
-      volan: uyeler.filter((p) => p.tanim.depo),
+      volan: uyeler.filter((p) => p.tanim.enerjiDepo),
       destek: uyeler.filter((p) => p.tanim.destek),
       makine: uyeler.filter(makineMi),
     });
@@ -110,7 +111,7 @@ function talepOku(p, ctx) {
 function volanlar(ag) {
   for (const v of ag.volan) {
     if (!v.etkin) continue;
-    const { kap, sarj, desarj } = v.tanim.depo;
+    const { kap, sarj, desarj } = v.tanim.enerjiDepo;
     const fark = ag.arz - ag.talep;
     if (fark > 0) {
       const s = Math.min(fark, sarj, kap - v.ozel.dolu);

@@ -142,7 +142,7 @@ parcaTanimla('saft', {
 
 parcaTanimla('volan', {
   kod: 26, ad: 'Volan', aile: 'enerji', boyut: [2, 2], yonlu: false, maliyet: { kurus: 80 },
-  depo: { kap: ENERJI.VOLAN_KAP, sarj: ENERJI.VOLAN_SARJ, desarj: ENERJI.VOLAN_DESARJ },
+  enerjiDepo: { kap: ENERJI.VOLAN_KAP, sarj: ENERJI.VOLAN_SARJ, desarj: ENERJI.VOLAN_DESARJ },
   kur(p) {
     Object.assign(p.ozel, { dolu: 0 });
   },

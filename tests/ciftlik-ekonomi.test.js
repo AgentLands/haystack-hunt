@@ -24,7 +24,7 @@ import {
 } from '../js/kural/ciftlik/ekonomi/kurus.js';
 import { teslimEt } from '../js/kural/ciftlik/ekonomi/siparis.js';
 import {
-  cevrimdisiHesapla, cevrimdisiIlerle, satisKaydet,
+  cevrimdisiHesapla, cevrimdisiIlerle, cevrimdisiUygula, satisKaydet,
 } from '../js/kural/ciftlik/ekonomi/cevrimdisi.js';
 import { ESYA_KAP } from '../js/kural/ciftlik/esya.js';
 import { dunyaHazirla } from '../js/kural/ciftlik/dunya/arazi.js';
@@ -381,4 +381,16 @@ test('çevrimdışı: değişmeyenler (tarla, gömülü, sipariş, damga, tik) v
   assert.equal(c.cevrimdisiKat, fis.esya[0][1] * 12);
   il.ayarlar.cevrimdisi = false;
   assert.deepEqual(cevrimdisiHesapla(c, 60).esya, [], 'ayar kapalı');
+});
+
+test('çevrimdışı: volan (enerji deposu) eşya deposu sayılmaz; ambar ve sandık doldurulur', () => {
+  const { c, tarla } = dunya(5, duzTarla(0));
+  ilerlemeBagla(c, ilerlemeKur({ kilit: 'acik' }));
+  const s = kur(c, tarla, 'sandik', 10, 10);
+  const a = kur(c, tarla, 'ambar', 20, 10);
+  kur(c, tarla, 'volan', 30, 10);
+  const h = { dk: 10, esya: [[esyaKodu('saman'), 100]], kurus: 0, doldu: false, istenen: [] };
+  cevrimdisiUygula(c, h);
+  assert.equal(s.ozel.toplam + a.ozel.toplam, 100);
+  assert.ok(s.ozel.toplam > 0 && a.ozel.toplam > 0, 'boş yer oranında dağıtıldı');
 });

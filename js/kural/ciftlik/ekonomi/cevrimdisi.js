@@ -10,29 +10,14 @@
  * Depo arayüzü: parça tanımında `depo: { bos(p) → n, ekle(p, kod, n) }`.
  */
 import { esyaSamani } from '../esya.js';
-import { SANDIK_KAP } from '../parcalar/temel.js';
 import { CEVRIMDISI } from './denge.js';
 import { ekonomiAl, bulunurSinif, kurusEkle } from './kurus.js';
 import { ilerlemeAl } from './damga.js';
 
 const { dkTik, pencereDk } = CEVRIMDISI;
 
-/**
- * SAP (F · işleme-depo gelince kalkar): sandığın `depo` arayüzü henüz yok; çekirdek sandık
- * ozel'i ({ say, toplam }) ve SANDIK_KAP ile okunur. F ambar/sandığa `depo` ekler.
- */
-const SANDIK_SAP = Object.freeze({
-  bos: (p) => Math.max(0, SANDIK_KAP - p.ozel.toplam),
-  ekle: (p, kod, n) => {
-    p.ozel.say[kod] = (p.ozel.say[kod] ?? 0) + n;
-    p.ozel.toplam += n;
-  },
-});
-
-function depoArayuzu(p) {
-  if (p.tanim.depo) return p.tanim.depo;
-  return p.tanim.anahtar === 'sandik' ? SANDIK_SAP : null;
-}
+/** Parçanın depo arayüzü (sandık, ambar: parcalar/temel.js sayacDeposu) ya da null. */
+const depoArayuzu = (p) => p.tanim.depo ?? null;
 
 /** Şimdiki dakikanın kovası; dakika değiştiyse aradaki kovalar boşaltılır. */
 function kova(c) {
