@@ -14,7 +14,7 @@ import { parcaIcerigi, parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
 import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { ruzgarAyarla, TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
-import { dunya, kur, bantCek, duzTarla } from './ciftlik-yardim.mjs';
+import { dunya, kur, bantCek, duzTarla, gucVer } from './ciftlik-yardim.mjs';
 
 const K = (ad) => esyaKodu(ad);
 const BULUNTULAR = KATALOG.map((b) => K(`buluntu:${b.tur}`));
@@ -23,14 +23,17 @@ const IGNELER = [K('igne'), K('cuvaldiz'), K('altin-igne')];
 /**
  * Sahne: makine (30, 30)'da; girişin arkasında 3 bant; her çıkışta bir sandık
  * (sandikYok: bu çıkış numaralarına sandık konmaz). d.kuyruk eşyaları sırayla hatta basılır.
+ * Güç isteyen makineye gerçek enerji (şaft + yel değirmeni) bağlanır; `guc: false` ise
+ * şebekesiz bırakılır (oran 0), `oran` < 1024 ise şebeke o orana düşürülür (gucVer).
  */
-function sahne(anahtar, { yon = 0, sandikYok = [] } = {}) {
+function sahne(anahtar, { yon = 0, sandikYok = [], guc = true, oran = 1024 } = {}) {
   const { c, tarla } = dunya();
   const p = kur(c, tarla, anahtar, 30, 30, yon);
   const sandiklar = p.cikis.map((o, i) => (sandikYok.includes(i) ? null
     : kur(c, tarla, 'sandik', o.hx, o.hy)));
   const g = p.giris[0];
   bantCek(c, tarla, g.hx + DX[g.yon] * 2, g.hy + DY[g.yon] * 2, tersYon(g.yon), 3);
+  if (guc && p.tanim.guc > 0) gucVer(c, tarla, p, { oran });
   return { c, tarla, p, sandiklar, kuyruk: [], sonsuz: 0 };
 }
 
@@ -176,14 +179,15 @@ test('tambur: doymaz (50 çivi hepsi sağdan); güçsüz durur; yan çıkış do
   d.kuyruk.push(...Array(50).fill(K('civi')));
   kos(d, 600);
   assert.equal(say(d.sandiklar[1], K('civi')), 50);
-  const g = sahne('miknatisli-tambur');
-  g.p.oran = 0;
+  const g = sahne('miknatisli-tambur', { guc: false }); // şebekesiz: oran 0
   g.kuyruk.push(K('saman'));
   kos(g, 300);
+  assert.equal(g.p.oran, 0);
   assert.equal(say(g.sandiklar[0], K('saman')), 0, 'güçsüz durur');
   assert.equal(parcaDurumu(g.p), 'calisiyor', 'durum güç oranına bakmaz (talep döngüsü yok)');
-  g.p.oran = 1024;
+  gucVer(g.c, g.tarla, g.p); // enerji bağlanınca kaldığı yerden sürer
   kos(g, 10);
+  assert.equal(g.p.oran, 1024);
   assert.equal(say(g.sandiklar[0], K('saman')), 1);
   const k = sahne('miknatisli-tambur', { sandikYok: [1] });
   k.kuyruk.push(K('civi'), K('saman'), K('saman'));
@@ -301,15 +305,20 @@ for (const [anahtar, sure] of SURELER) {
 
 test('güç oranı: 512 → süre ikiye katlanır; oran 0 → ilerlemez (tambur, şeytan yeli)', () => {
   for (const [anahtar, sure] of [['miknatisli-tambur', 5], ['seytan-yeli', 6]]) {
-    const d = sahne(anahtar);
-    d.p.oran = 512;
+    const d = sahne(anahtar, { oran: 512 });
     d.p.tanim.al(d.p, 0, K('saman'), { olay() {} });
     let t = 0;
     while (parcaDurumu(d.p) === 'calisiyor' && t < 80) {
       tikAt(d.c, d.tarla);
       t++;
     }
+    assert.equal(d.p.oran, 512, 'şebeke oranı gerçekten 512');
     assert.ok(Math.abs(t - 2 * sure) <= 1, `${anahtar}: ${t}`);
+    // şebekesiz makine (oran 0) ilerlemez
+    const g = sahne(anahtar, { guc: false });
+    g.p.tanim.al(g.p, 0, K('saman'), { olay() {} });
+    kos(g, 100);
+    assert.equal(g.p.ozel.ilerleme, 0, `${anahtar}: oran 0 ilerlemez`);
   }
 });
 
