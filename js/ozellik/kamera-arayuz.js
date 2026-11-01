@@ -79,11 +79,12 @@ function miniHaritaKur(kap, elleKaydirildi) {
     ctx.setTransform(harita.width / EN, 0, 0, harita.height / BOY, 0, 0);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(tarlaResmi, 0, 0, EN, BOY);
+    // Görünür alan (dikey kutuda tarladan taşabilir) tarlaya kırpılır.
     const a = gorunurAlan(gorunum);
-    const x = (a.x / GENISLIK) * EN;
-    const y = (a.y / YUKSEKLIK) * BOY;
-    const w = (a.en / GENISLIK) * EN;
-    const h = (a.boy / YUKSEKLIK) * BOY;
+    const x = (Math.max(0, a.x) / GENISLIK) * EN;
+    const y = (Math.max(0, a.y) / YUKSEKLIK) * BOY;
+    const w = (Math.min(GENISLIK, a.x + a.en) / GENISLIK) * EN - x;
+    const h = (Math.min(YUKSEKLIK, a.y + a.boy) / YUKSEKLIK) * BOY - y;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
     ctx.fillRect(0, 0, EN, y);
     ctx.fillRect(0, y + h, EN, BOY - y - h);

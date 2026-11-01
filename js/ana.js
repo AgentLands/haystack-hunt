@@ -7,6 +7,7 @@ import { yeniOyun, adim, durumAl } from './oyun.js';
 import { girdiKur } from './girdi.js';
 import { arayuzKur } from './arayuz.js';
 import { gununEtiketi } from './kural/rastgele.js';
+import { duraklatildiMi } from './ozellik/sure-duraklat.js';
 // Özellik modülleri (js/ozellik/): her biri kendi satırında, olaylara kendisi bağlanır.
 import './ozellik/ses.js';
 import './ozellik/ses-makine.js';
@@ -41,7 +42,9 @@ girdiKur(tuval);
 yeniOyun(new URLSearchParams(location.search).get('tohum') || gununEtiketi());
 
 function kare(zaman) {
-  adim(zaman);
+  // Duraklatılmışken (menü açık) oyun ilerlemez, yalnız çizilir; yeni tarlanın ilk karesi
+  // (dt = 0) yine atılır ki HUD ve kamera o tarlaya göre kurulsun.
+  if (!duraklatildiMi() || durumAl().sonZaman === null) adim(zaman);
   ciz(durumAl(), zaman);
   requestAnimationFrame(kare);
 }

@@ -4,9 +4,14 @@
  * göre (klavye ya da dokunmatik). Görüldüğü localStorage'ta tutulur.
  * Üst sıradaki "?" düğmesi rehberi yeniden açar. Bindirme tuvale tıklamayı engellemez:
  * tuvale ilk dokunuşta, hareket tuşlarında ya da 1-4 tuşlarında kendiliğinden kapanır.
+ * İlk açılışta menü kartı (menu.js, #menu) açıksa rehber menü kapanınca başlar. Kart
+ * çiftçiyi örtmesin diye çiftçi tuvalin üst yarısındaysa altta, alt yarısındaysa üstte durur.
  */
 import { dugmeEkle } from '../arayuz.js';
 import { YON_TUSLARI } from '../girdi.js';
+import { dinle } from '../olaylar.js';
+import { gorunum } from '../gorunum.js';
+import { dunyadanEkrana } from '../kural/gorunum.js';
 import { ikon } from './ikon.js';
 
 const ANAHTAR = 'haystack-hunt:rehber-goruldu';
@@ -80,6 +85,8 @@ function oyunBasladi(e) {
 }
 
 function tusBasildi(e) {
+  // Pencere (menü, yardım sekmeleri) ya da yazı alanındaki tuşlar rehberi kapatmaz.
+  if (e.target.closest && e.target.closest('dialog, input, textarea, select')) return;
   if (e.key === 'Escape' || ['1', '2', '3', '4'].includes(e.key) || YON_TUSLARI[e.code]) kapat();
 }
 
@@ -116,6 +123,15 @@ function ciz() {
   kutu.querySelector('.rehber-ileri').focus({ preventScroll: true });
 }
 
+/** Kartı çiftçinin karşı yarısına koyar (yalnız değişince DOM'a yazar). */
+function yerlestir(durum) {
+  const k = durum?.karakter;
+  if (!kutu || !k) return;
+  const ust = dunyadanEkrana(gorunum, k.x, k.y).fy >= 0.5;
+  if (kutu.classList.contains('rehber-ust') !== ust) kutu.classList.toggle('rehber-ust', ust);
+}
+dinle('kare', ({ durum }) => yerlestir(durum));
+
 export function rehberiAc() {
   const kap = document.getElementById('tarla-kap');
   if (kutu || !kap) return;
@@ -138,4 +154,11 @@ document.head.append(link);
 dugmeEkle('ust', {
   metin: 'Rehber', baslik: 'Nasıl oynanır? Rehberi aç', ikon: ikon('soru'), tikla: rehberiAc,
 });
-if (!goruldu()) rehberiAc();
+/** İlk açılış: açılış menüsü açıksa önce o kapansın (rehber arkasında kalmasın). */
+function ilkAcilis() {
+  const menu = document.getElementById('menu');
+  if (menu && menu.open) menu.addEventListener('close', ilkAcilis, { once: true });
+  else if (!goruldu()) rehberiAc();
+}
+// Menü ilk oyunla (ana.js, bu modülden sonra) açılır; karar o kurulduktan sonra verilir.
+if (!goruldu()) setTimeout(ilkAcilis, 0);

@@ -4,14 +4,16 @@
  * (ResizeObserver, yakınlaştırmayla değişen devicePixelRatio) yeniler. Dünya koordinatları
  * değişmez: dünya hep DUNYA_EN×DUNYA_BOY (hücre × OLCEK) pikseldir; cizim.js dönüşümüne
  * `ekran.tabanX/tabanY` (arka bellek pikseli / dünya pikseli) çarpanını ekler, böylece
- * bütün katmanlar aynı kalıp keskinleşir.
+ * bütün katmanlar aynı kalıp keskinleşir. Kutu 3:2 olmak zorunda değildir (dikey telefonda
+ * daha uzun): çarpan iki eksende aynıdır (dünya çarpılmaz) ve z = 1'de tarla kutuya sığar
+ * (kural/gorunum.js tabanAlan); kutunun oranı `ekran.oran`.
  *
  * Tuval boyutuna bakan kodlar için sözleşme:
  * - Dünya çizimi (katmanlar) tuval.width/height'a bakmaz; dünya genişliği DUNYA_EN'dir.
  * - Ekran uzayında çizen (setTransform(1, 0, 0, 1, 0, 0)) arka bellek pikseliyle çalışır:
  *   boyut ctx.canvas.width/height, CSS pikseli başına `ekran.dpr` arka bellek pikseli.
- * - Ekran (CSS) pikselinden dünyaya: girdi getBoundingClientRect oranıyla (0..1) çalışır;
- *   bir CSS pikseli `DUNYA_EN / ekran.cssEn` dünya pikselidir (dunyaPikseli()).
+ * - Ekran (CSS) pikselinden dünyaya: girdi getBoundingClientRect oranıyla (0..1) çalışır ve
+ *   görünümün oranını hesaba katar; bir CSS pikseli dunyaPikseli() dünya pikselidir.
  */
 import { GENISLIK, YUKSEKLIK } from '../kural/boyut.js';
 
@@ -25,17 +27,28 @@ export const EN_COK_PIKSEL = 4.5e6;
 /**
  * Son ölçüm: arka bellek boyutu (en, boy), görüntülenen CSS boyutu (cssEn, cssBoy), etkin
  * piksel oranı (dpr: CSS pikseli başına arka bellek pikseli, sınır uygulanmış) ve dünya
- * pikselinden arka bellek pikseline çarpanlar (tabanX, tabanY). sayac her boyut
- * değişikliğinde artar (önbellekli ekran uzayı çizimleri için).
+ * pikselinden arka bellek pikseline z = 1'deki çarpan (tabanX = tabanY: tek ölçek), kutu
+ * oranı (oran = en / boy). sayac her boyut değişikliğinde artar (önbellekli ekran uzayı
+ * çizimleri için).
  */
 export const ekran = {
   en: DUNYA_EN, boy: DUNYA_BOY, cssEn: DUNYA_EN, cssBoy: DUNYA_BOY,
-  dpr: 1, tabanX: 1, tabanY: 1, sayac: 0,
+  dpr: 1, tabanX: 1, tabanY: 1, oran: DUNYA_EN / DUNYA_BOY, sayac: 0,
 };
 
 /** Bir CSS pikselinin dünya pikseli karşılığı (yakınlaştırma hariç). */
 export function dunyaPikseli() {
-  return DUNYA_EN / ekran.cssEn;
+  return ekran.dpr / ekran.tabanX;
+}
+
+/** Tarlanın z = 1'deki CSS genişliği (dikey kutuda tuval genişliği, genişte daha az). */
+export function tarlaCssEn() {
+  return DUNYA_EN / dunyaPikseli();
+}
+
+/** Kutuya sığan tek ölçek: arka bellek pikseli / dünya pikseli (z = 1, saf). */
+export function tabanCarpani(en, boy) {
+  return Math.min(en / DUNYA_EN, boy / DUNYA_BOY);
 }
 
 /**
@@ -59,8 +72,9 @@ export function tuvaliOlcekle(tuval) {
   const cssBoy = tuval.clientHeight;
   if (!(cssEn > 0 && cssBoy > 0)) return false; // gizli: eski boyut kalır
   const { en, boy, oran } = arkaBellekBoyu(cssEn, cssBoy, window.devicePixelRatio || 1);
-  Object.assign(ekran, { en, boy, cssEn, cssBoy, dpr: oran,
-    tabanX: en / DUNYA_EN, tabanY: boy / DUNYA_BOY });
+  const taban = tabanCarpani(en, boy);
+  Object.assign(ekran, { en, boy, cssEn, cssBoy, dpr: oran, tabanX: taban, tabanY: taban,
+    oran: en / boy });
   if (tuval.width === en && tuval.height === boy) return false;
   tuval.width = en;
   tuval.height = boy;

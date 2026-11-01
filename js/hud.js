@@ -22,14 +22,24 @@ export function sureMetni(ms) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-/** Lot numarası gibi: "Tarla No. DENEME · Normal" ya da "Günün tarlası · 31 Ekim · Zor". */
-export function etiketMetni(etiket, zorluk) {
+/**
+ * Lot etiketinin iki parçası: ön ek ("Tarla No. " ya da "Günün tarlası · ") ve gövde
+ * ("DENEME · Normal", "31 Ekim · Zor"). Telefonda yalnız gövde görünür (stil-telefon.css).
+ */
+export function etiketParcalari(etiket, zorluk) {
   const ad = zorlukAl(zorluk).ad;
   const tarih = /^(\d{4})-(\d{2})-(\d{2})$/.exec(etiket);
   if (etiket === gununEtiketi() && tarih) {
-    return `Günün tarlası · ${Number(tarih[3])} ${AYLAR[Number(tarih[2]) - 1]} · ${ad}`;
+    const gun = `${Number(tarih[3])} ${AYLAR[Number(tarih[2]) - 1]}`;
+    return { on: 'Günün tarlası · ', govde: `${gun} · ${ad}` };
   }
-  return `Tarla No. ${etiket} · ${ad}`;
+  return { on: 'Tarla No. ', govde: `${etiket} · ${ad}` };
+}
+
+/** Lot numarası gibi: "Tarla No. DENEME · Normal" ya da "Günün tarlası · 31 Ekim · Zor". */
+export function etiketMetni(etiket, zorluk) {
+  const { on, govde } = etiketParcalari(etiket, zorluk);
+  return on + govde;
 }
 
 /** Değer değişince yazan küçük önbellek: aynı değer için DOM'a dokunmaz. */
@@ -98,7 +108,11 @@ export function hudKur() {
   const makine = makineKartiKur();
 
   dinle('oyun-basladi', ({ durum }) => {
-    $('etiket').textContent = etiketMetni(durum.etiket, durum.zorluk);
+    const { on, govde } = etiketParcalari(durum.etiket, durum.zorluk);
+    const parca = (sinif, metin) => Object.assign(document.createElement('span'),
+      { className: sinif, textContent: metin });
+    $('etiket').replaceChildren(parca('etiket-on', on), parca('etiket-govde', govde));
+    $('etiket').title = on + govde;
   });
   dinle('kare', ({ zaman, durum }) => {
     const gecen = durum.baslangic === null ? 0 : (durum.bitis ?? zaman) - durum.baslangic;

@@ -7,7 +7,7 @@
 import { ekrandanHucre } from './kural/gorunum.js';
 import { gorunum } from './gorunum.js';
 import { bas, surukle, birak, imlecCikti, aracSec } from './oyun.js';
-import { kontrol, yonAyarla, kullanAyarla } from './kontrol.js';
+import { kontrol, yonAyarla, kullanAyarla, kontrolSifirla } from './kontrol.js';
 
 export const KISAYOLLAR = { 1: 'el', 2: 'tirmik', 3: 'dedektor', 4: 'miknatis' };
 /** Hareket tuşları (e.code; klavye düzeninden bağımsız fiziksel konum) → [dx, dy]. */
@@ -92,11 +92,15 @@ function tusBirakildi(e) {
   }
 }
 
-/** Pencere odağı kaybolunca basılı tuşlar takılı kalmasın. */
-function hepsiniBirak() {
+/**
+ * Bütün girdileri bırakır (pencere odağı kaybolunca, menü açılınca): basılı tuşlar, kol,
+ * Kullan ve tıkla-yürü hedefi; tuvaldeki basılı araç da bırakılır.
+ */
+export function hepsiniBirak() {
   basiliYonler.clear();
-  yonAyarla(0, 0, 'klavye');
-  kullanAyarla(false, 'klavye');
+  bosluk = { basildi: 0, sayi: bosluk.sayi + 1 };
+  kontrolSifirla();
+  birak();
 }
 
 export function girdiKur(tuval) {

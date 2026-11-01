@@ -86,7 +86,8 @@
 /* Canlı tablo: tuvalin köşesine iğnelenmiş küçük kâğıt. */
 .yaris-tablo {
   position: absolute;
-  top: 12px;
+  /* Sağ üstteki ikon düğmeleri tuvalin üst kenarına biner; tablo onların altında başlar. */
+  top: calc(var(--hud-ust) + 14px);
   right: 10px;
   width: min(230px, 62%);
   padding: 12px 10px 8px;

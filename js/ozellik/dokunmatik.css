@@ -97,14 +97,15 @@
 
 /* Dokunmatikte kısayol rakamı ve küçük hedefler yok. */
 body.dokunmatik .arac-kart kbd { display: none; }
-body.dokunmatik .dugme-sirasi .dugme-ikon { min-width: 44px; min-height: 44px; }
+body.dokunmatik .dugme-sirasi .dugme-ikon,
+body.dokunmatik .menu-ac { min-width: 44px; min-height: 44px; }
 body.dokunmatik .kamera-dugmeleri button { width: 44px; height: 44px; }
 
 /* Yatay: köşeler kumandanın; mini harita sol üste, kamera düğmeleri sağ üste. */
 @media (orientation: landscape) {
-  body.dokunmatik canvas.minik-harita { bottom: auto; top: calc(var(--hud-ust) + 34px); }
+  /* Mini harita sol üstteki etiket yığınının (temizlik, akış) altında. */
+  body.dokunmatik canvas.minik-harita { bottom: auto; top: calc(var(--hud-ust) + 78px); }
   body.dokunmatik .kamera-dugmeleri { bottom: auto; top: calc(var(--hud-ust) + 22px); }
-  body.dokunmatik .rehber { top: var(--hud-ust); bottom: auto; }
 }
 @media (orientation: landscape) and (max-height: 500px) {
   .kumanda { padding: 0 8px 8px; }
@@ -129,10 +130,25 @@ body.dokunmatik .kamera-dugmeleri button { width: 44px; height: 44px; }
   .dokunmatik-kol-parmak { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
   .dokunmatik-dugme { width: 76px; height: 76px; }
   .dokunmatik-dugme.kullan { width: 96px; height: 96px; font-size: 1rem; }
-  body.dokunmatik .rehber { top: var(--hud-ust); bottom: auto; padding: 6px 10px 8px; }
+  body.dokunmatik .rehber { bottom: 10px; padding: 6px 10px 8px; }
   body.dokunmatik .rehber p { font-size: 0.8rem; line-height: 1.25; }
   body.dokunmatik .rehber h2 { font-size: 0.95rem; margin-bottom: 2px; }
   body.dokunmatik .rehber-dugmeler { margin-top: 6px; }
+}
+/* Kısa dikey ekran: kumanda küçülür, tuvale yer kalır (oyun alanı ekranın yarısından çok). */
+@media (orientation: portrait) and (max-height: 700px) {
+  .kumanda { padding: 2px 14px 8px; }
+  .dokunmatik-kol { width: 108px; height: 108px; }
+  .dokunmatik-kol::before { inset: 11px; }
+  .dokunmatik-kol-parmak { width: 48px; height: 48px; margin: -24px 0 0 -24px; }
+  .dokunmatik-eylemler { gap: 10px; }
+  .dokunmatik-dugme { width: 60px; height: 60px; font-size: 0.74rem; }
+  .dokunmatik-dugme.kullan { width: 78px; height: 78px; font-size: 0.88rem; }
+}
+@media (orientation: portrait) and (max-height: 600px) {
+  .dokunmatik-kol { width: 96px; height: 96px; }
+  .dokunmatik-kol-parmak { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+  .dokunmatik-dugme.kullan { width: 72px; height: 72px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dokunmatik-dugme { transition: none; }

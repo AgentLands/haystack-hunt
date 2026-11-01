@@ -1,5 +1,5 @@
 /*
- * Menü ("çuval etiketi" kartı, menu.js) ve "Nasıl oynanır" defteri (yardim.js).
+ * Menü ("çuval etiketi" kartı, menu.js). "Nasıl oynanır" defteri yardim.css'te.
  * Renk ve yazı belirtec.css'ten; yeni sabit renk yok.
  */
 
@@ -48,6 +48,7 @@
 
 .menu-kapat {
   position: absolute;
+  z-index: 1; /* logo tabelası düğmenin üstüne taşmasın */
   top: 14px;
   right: 14px;
   width: 34px;
@@ -123,17 +124,12 @@
   color: var(--murekkep-soluk);
 }
 
-.menu-ana {
-  display: grid;
-  gap: 10px;
-}
+.menu-ana { display: grid; gap: 10px; }
 .menu-ana #gunun {
   font-size: 1.3rem;
   padding: 0.65em 1em;
 }
-.menu-ana #yeni {
-  font-size: 1rem;
-}
+.menu-ana #yeni { font-size: 1rem; }
 
 .menu-zorluk {
   display: flex;
@@ -162,13 +158,27 @@
   transition: transform 80ms ease-out;
 }
 .zorluk-damga:hover:not(:disabled) { border-color: var(--murekkep-soluk); }
-.zorluk-damga[aria-checked='true'] {
+.zorluk-damga[aria-checked='true'],
+.zorluk-damga[aria-pressed='true'] {
   color: var(--damga);
   border: 2px solid currentColor;
   box-shadow: inset 0 0 0 1px currentColor;
   transform: rotate(-4deg);
 }
 .zorluk-damga:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Ayar satırı (menuAyarEkle): rahat mod anahtarı ve kısa notu, zorluğun hemen altında. */
+.menu-ayarlar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+.menu-ayarlar[hidden] { display: none; }
+.menu-ayar-not { font-size: 0.85rem; color: var(--murekkep-soluk); }
+.rahat-damga[aria-pressed='true'] { color: var(--cayir); transform: rotate(-2deg); }
+.rahat-damga[aria-pressed='true']::before { content: '✓ '; }
 
 .menu-onay {
   margin: 14px 0 4px;
@@ -202,6 +212,7 @@
   background: none;
   border: none;
   border-radius: 0;
+  box-shadow: none;
   padding: 0.2em 0;
   margin: 0;
   color: var(--civit);
@@ -210,7 +221,8 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
-#menu .menu-baglantilar > button + button::before {
+/* Ayraç yalnız görünür iki bağlantının arasına (gizli Yarış baştaki ayracı bırakmasın). */
+#menu .menu-baglantilar > button:not([hidden]) ~ button:not([hidden])::before {
   content: '·';
   display: inline-block;
   width: 1.4em;
@@ -226,116 +238,55 @@
 /* ≡ düğmesi (HUD'da sol üst). */
 .menu-ac svg { width: 22px; height: 22px; }
 
-/* --- Nasıl oynanır defteri --- */
-#yardim.yardim {
-  width: min(520px, calc(100vw - 24px));
-  max-width: none;
-  max-height: calc(100dvh - 24px);
-  overflow: auto;
-  padding: 20px 20px 18px;
-  transform: rotate(0.4deg);
+/* Masaüstü: kart alet rafının (tuvalin alt kenarı) üstünde ortalanır, rafa binmez. */
+@media (orientation: landscape) and (min-height: 501px) {
+  #menu.menu-kart {
+    inset-block-end: 110px;
+    max-height: calc(100dvh - 134px);
+  }
 }
-#yardim h2 {
-  margin: 0 44px 12px 0;
-  font-size: 1.35rem;
+
+/* Alçak yatay ekran (telefon yan): tabela solda, düğmeler sağda; kart kaydırmadan sığar. */
+@media (orientation: landscape) and (max-height: 500px) {
+  #menu.menu-kart {
+    width: min(660px, calc(100vw - 24px));
+    padding: 18px 20px 12px;
+  }
+  /* Yalnız açıkken ızgara: kapalı dialog'un display: none'ı ezilmesin. */
+  #menu.menu-kart[open] {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    column-gap: 22px;
+    align-content: start;
+  }
+  #menu.menu-kart > * { grid-column: 2; }
+  #menu.menu-kart > .menu-tabela { grid-column: 1; grid-row: 1 / span 8; align-self: center; }
+  #menu.menu-kart::before { left: 25%; }
+  #menu .menu-logo { max-width: 240px; }
+  .menu-ana #gunun { font-size: 1.1rem; padding: 0.5em 1em; }
+  .menu-ana,
+  .menu-yarim { margin-right: 50px; } /* sağ üstteki kapat düğmesine binmesin */
+  .menu-zorluk { margin-top: 10px; }
+  .menu-ayarlar { margin-top: 6px; }
+  #menu nav.menu-baglantilar { margin-top: 8px; padding-top: 6px; }
+  .menu-pes { margin-top: 4px; }
 }
-.yardim-kapat {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
+
+/* Parmakla: menüdeki küçük hedefler en az 44 px. */
+@media (pointer: coarse) {
+  #menu .menu-baglantilar > button { min-width: 44px; }
+  .zorluk-damga,
+  #menu .menu-baglantilar > button,
+  .menu-pes button,
+  .menu-yarim button,
+  .menu-onay-dugmeler button { min-height: 44px; }
+  .menu-kapat { width: 44px; height: 44px; }
 }
-.yardim-kapat svg { width: 18px; height: 18px; }
-.yardim-sekmeler {
-  display: flex;
-  gap: 3px;
-  overflow-x: auto;
-  border-bottom: var(--kenar);
-  padding: 0 2px;
-}
-.yardim-sekme {
-  flex: none;
-  font: 0.95rem var(--yazi-govde);
-  color: var(--murekkep);
-  background: var(--kraft);
-  border: var(--kenar);
-  border-bottom: none;
-  border-radius: var(--yaricap) var(--yaricap) 0 0;
-  padding: 0.3em 0.65em 0.2em;
-  margin-top: 4px;
-  cursor: pointer;
-}
-.yardim-sekme[aria-selected='true'] {
-  background: var(--kagit);
-  margin-top: 0;
-  padding-bottom: 0.4em;
-  position: relative;
-  top: 2px;
-}
-.yardim-panel {
-  min-height: 220px;
-  padding: 6px 2px 0;
-}
-.yardim-liste {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.yardim-liste li {
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 12px;
-  align-items: start;
-  padding: 9px 0;
-  border-bottom: 1px dashed var(--kraft-koyu);
-  line-height: 1.4;
-}
-.yardim-liste li:last-child { border-bottom: none; }
-.yardim-liste svg { color: var(--murekkep); margin-top: 1px; }
-.yardim-puan {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-}
-.yardim-puan th,
-.yardim-puan td {
-  padding: 7px 2px;
-  border-bottom: 1px dashed var(--kraft-koyu);
-  text-align: left;
-  font-weight: 400;
-  vertical-align: top;
-}
-.yardim-puan td { text-align: right; }
-.yardim-carpan {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
-  margin: 14px 0 0;
-}
-.yardim-carpan-baslik { flex-basis: 100%; }
-.yardim-damga {
-  font-family: var(--yazi-sayi);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--damga);
-  border: 2px solid currentColor;
-  border-radius: var(--yaricap);
-  padding: 3px 8px 2px;
-}
-.yardim-damga:nth-child(odd) { transform: rotate(-3deg); }
-.yardim-damga:nth-child(even) { transform: rotate(2deg); }
-.yardim-not { margin: 10px 0 0; font-size: 0.9rem; color: var(--murekkep-soluk); }
 
 @media (max-width: 420px) {
   #menu.menu-kart { padding: 28px 18px 14px; }
   .menu-ana #gunun { font-size: 1.15rem; }
   .zorluk-damga { padding: 5px 7px 4px; }
-  #yardim.yardim { padding: 18px 14px 14px; }
-  .yardim-sekmeler { gap: 2px; padding: 0; }
-  .yardim-sekme { font-size: 0.82rem; padding: 0.3em 0.38em 0.2em; }
 }
 
 @media (prefers-reduced-motion: reduce) {

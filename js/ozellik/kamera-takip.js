@@ -8,7 +8,7 @@
  */
 import { gorunum, gorunumAyarla } from '../gorunum.js';
 import { takipEt, ekranaGoreYakinlik, YAKIN_EN_AZ } from '../kural/gorunum.js';
-import { ekran } from '../cizim/tuval-olcek.js';
+import { tarlaCssEn } from '../cizim/tuval-olcek.js';
 import { kontrol } from '../kontrol.js';
 import { dinle } from '../olaylar.js';
 
@@ -20,7 +20,7 @@ const TAKIP_HIZI = 6;
 const takip = { acik: true, z: null, sonZaman: null, birakilanHedef: null };
 
 function takipZ() {
-  return takip.z ?? ekranaGoreYakinlik(TAKIP_Z, ekran.cssEn);
+  return takip.z ?? ekranaGoreYakinlik(TAKIP_Z, tarlaCssEn());
 }
 
 /** Takibi bırakır (elle kaydırma, tüm tarla); süren tıkla-yürü takibi geri getirmez. */

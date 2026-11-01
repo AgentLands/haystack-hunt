@@ -48,8 +48,10 @@
   border: 2px solid var(--murekkep);
 }
 
-/* Üst sıra: tabela + lot etiketi solda, ikon düğmeleri sağda. */
+/* Üst sıra: tabela + lot etiketi solda, ikon düğmeleri sağda. Başlık süre/saman
+   etiketlerinin üstünde: dar yatay ekranda kesişseler de ≡ ve ikonlara dokunulabilsin. */
 .hud-baslik {
+  z-index: 4;
   align-self: start;
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -102,10 +104,19 @@
   text-transform: uppercase;
   background-color: var(--kagit);
   transform: rotate(0.9deg);
+  /* Uzun tohum taşmasın: gövde üç noktayla kısalır (hud.js iki span yazar). */
+  display: flex;
+  max-width: min(440px, 42vw);
+  white-space: nowrap;
 }
 .etiket:empty { display: none; }
+.etiket-on { flex: none; }
+.etiket-govde { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .dugme-sirasi { grid-area: dugme; display: flex; gap: 8px; margin-top: 2px; }
 .dugme-sirasi .dugme-ikon { font-size: 1.1rem; line-height: 1; }
+
+/* Tuvalin sol üstündeki etiket yığını (etiket-yigini.js) tabela ve lot etiketinin altında. */
+.tarla-kap > .meydan-yigin { top: calc(var(--hud-ust) + 28px); }
 
 /* Süre ve saman: üst ortada iki kâğıt etiket. */
 .panel { align-self: start; justify-self: center; display: flex; gap: 14px; margin-top: -18px; }
@@ -202,29 +213,8 @@
   background: var(--damga);
   transform: rotate(-35deg);
 }
-.araclar .zorluk-secici {
-  appearance: none;
-  height: 40px;
-  margin-left: 4px;
-  padding: 0 24px 0 9px;
-  font-family: var(--yazi-sayi);
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--murekkep);
-  background-color: var(--kagit);
-  /* Elle çizilmiş aşağı ok (gradyansız SVG). */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1.5 1.8 6.1 6l4.4-4.3' fill='none' stroke='%232b2118' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  border: var(--kenar);
-  border-radius: var(--yaricap);
-  box-shadow: var(--golge);
-  cursor: pointer;
-}
-
-/* Makine kartı: binince alet kartları ve zorluk seçici çekilir. */
-.araclar.binik .arac-kart,
-.araclar.binik .zorluk-secici { display: none; }
+/* Makine kartı: binince alet kartları çekilir. */
+.araclar.binik .arac-kart { display: none; }
 .makine-karti {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -285,6 +275,7 @@
   .hud-baslik,
   .panel,
   .araclar { zoom: 1.25; }
+  .tarla-kap > .meydan-yigin { top: calc(var(--hud-ust) + 52px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

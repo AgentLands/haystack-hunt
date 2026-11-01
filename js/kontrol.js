@@ -48,6 +48,15 @@ export function kullanAyarla(basili, kaynak = 'varsayilan') {
   kontrol.kullan = kullananlar.size > 0;
 }
 
+/** Bütün kaynakları bırakır: yön, kullan, hedef ve bekleyen istek (ör. menü açılınca). */
+export function kontrolSifirla() {
+  yonlar.clear();
+  kullananlar.clear();
+  Object.assign(kontrol, { kullan: false, binIste: false, hedef: null });
+  Object.assign(kontrol.yon, { x: 0, y: 0 });
+  Object.assign(kontrol.ekranYon, { x: 0, y: 0 });
+}
+
 /** Ekran yönlü hedef yönü ayarlar (sanal kol; bırakınca 0, 0). */
 export function ekranYonAyarla(x, y) {
   kontrol.ekranYon.x = x;
