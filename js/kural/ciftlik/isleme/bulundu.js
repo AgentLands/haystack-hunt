@@ -8,28 +8,17 @@
  * `ortam` bir tik ctx'i ya da komut ortamı `{ c, olay(ad, veri) }`.
  * Söküm kancası (komut.js): sökülen parçanın içindeki ve sökülen bant karosundaki iğne/
  * buluntu oyuncuya döner (envantere çekirdek koyar; burada "bulundu", tam ödeme).
- * SAP (G ekonomi, ekonomi/kurus.js gelince): kurusEkle/kurusHarca/bulundu'nun kuruş ve
- * toplam kısmı G'nin aynı adlı işlevlerine devredilir (G: bulundu(c, kod, kip, olay)).
- * Şimdilik kuruş `c.kurus`. Dünyadan çıkan saman `c.cikanKat` (satılan, gübrelenen; korunum:
- * ciftlikSamani + kaldirilan + cikanKat sabit); kayda G/D göçüyle girmeli.
+ * Kuruş, iğne toplamları ve çiftlik defter sayacı G'nin ekonomi/kurus.js `bulundu(c, kod,
+ * kip)`'inde; burada olay kaynağı ve parçayla zenginleştirilir. SAP: dünyadan çıkan saman
+ * `c.cikanKat` (satılan, atılan, gübrelenen; korunum: ciftlikSamani + kaldirilan + cikanKat
+ * sabit); kayda G/D göçüyle girmeli.
  */
 import { esyaTanimi, esyaSamani } from '../esya.js';
 import { karoIndeks, karoIcinde } from '../olcu.js';
 import { sokumKancasiEkle } from '../komut.js';
 import { hatKonumu } from '../tasima/hat.js';
+import { bulundu as ekonomiBulundu } from '../ekonomi/kurus.js';
 import { ozellik, degerliMi } from './esya-ozellik.js';
-
-/** Kuruş ekler (SAP: G'nin kurus.js'i gelince ona devredilir). */
-export function kurusEkle(c, n) {
-  if (n > 0) c.kurus = (c.kurus ?? 0) + n;
-}
-
-/** Kuruş harcar; yetmezse false (hiçbir şey değişmez). */
-export function kurusHarca(c, n) {
-  if ((c.kurus ?? 0) < n) return false;
-  c.kurus -= n;
-  return true;
-}
 
 /** Eşya dünyadan çıktı (satıldı, atıldı, gübre oldu): samanı korunum sayacına. */
 export function samanCikti(c, kod, n = 1) {
@@ -39,12 +28,9 @@ export function samanCikti(c, kod, n = 1) {
 
 /** Değerli eşya bulundu: kuruş (kip oranında) + olay. Ödenen kuruşu döndürür. */
 export function bulundu(ortam, kod, kaynak, kip, p = null) {
-  const oz = ozellik(kod);
-  if (!degerliMi(kod)) throw new Error(`bulundu: ${kod} iğne ya da buluntu değil`);
-  if (!['tam', 'yari', 'kurussuz'].includes(kip)) throw new Error(`bulundu: kip ${kip}?`);
-  const kurus = kip === 'tam' ? oz.deger : kip === 'yari' ? oz.deger >> 1 : 0;
-  kurusEkle(ortam.c, kurus);
+  const kurus = ekonomiBulundu(ortam.c, kod, kip);
   const t = esyaTanimi(kod);
+  const oz = ozellik(kod);
   ortam.olay('ciftlik-bulundu', {
     kod, anahtar: t?.anahtar ?? null, buluntu: t?.buluntu ?? null, sinif: oz.sinif, kaynak,
     kip, kurus, parca: p, x: p ? p.x : null, y: p ? p.y : null,

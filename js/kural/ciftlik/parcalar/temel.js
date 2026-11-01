@@ -59,7 +59,8 @@ parcaTanimla('huni', {
 
 /**
  * Sandık: dört kenardan alır, türe göre sayar; KAPASITE eşyada dolar. İğne/buluntu girerse
- * "bulundu" sayılır (yarı kuruş, defter; esyalar.md §5), depoda tutulmaz, dolulukta da alınır.
+ * "bulundu" sayılır (yarı kuruş, defter; esyalar.md §5), depoda tutulmaz, dolulukta da alınır
+ * (`ozel.bulunan`: bu sandıkta bulunanların tür sayacı).
  * Yaba kolu `cek` ile en küçük kodlu uygun eşyayı çeker.
  */
 export const SANDIK_KAP = 400;
@@ -67,7 +68,7 @@ parcaTanimla('sandik', {
   kod: 3, ad: 'Sandık', aile: 'depo', boyut: [1, 1], yonlu: false,
   girisler: [0, 1, 2, 3].map((yon) => ({ x: 0, y: 0, yon })), maliyet: { tahta: 4 },
   kur(p) {
-    Object.assign(p.ozel, { say: {}, toplam: 0 });
+    Object.assign(p.ozel, { say: {}, toplam: 0, bulunan: {} });
   },
   kabulEder(p, port, kod) {
     return p.ozel.toplam < SANDIK_KAP || degerliMi(kod);
@@ -75,6 +76,7 @@ parcaTanimla('sandik', {
   al(p, port, kod, ctx) {
     if (degerliMi(kod)) {
       bulundu(ctx, kod, 'sandik', 'yari', p);
+      sayacArtir(p.ozel, kod);
       return;
     }
     p.ozel.say[kod] = (p.ozel.say[kod] ?? 0) + 1;
@@ -111,4 +113,10 @@ export function depodanCek(o, uygun) {
     return kod;
   }
   return 0;
+}
+
+/** Depo parçasının "bulunan" sayacını artırır (eski kayıtta alan yoksa açar). */
+export function sayacArtir(o, kod) {
+  o.bulunan ??= {};
+  o.bulunan[kod] = (o.bulunan[kod] ?? 0) + 1;
 }

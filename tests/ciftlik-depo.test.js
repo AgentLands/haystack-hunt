@@ -6,6 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { ekonomiAl } from '../js/kural/ciftlik/ekonomi/kurus.js';
 import { tikAt, komutEkle } from '../js/kural/ciftlik/benzetim.js';
 import { parcaDurumu, parcaIcerigi } from '../js/kural/ciftlik/parca-kayit.js';
 import { DEPO_KOL } from '../js/kural/ciftlik/parcalar/depo-kol.js';
@@ -29,7 +30,7 @@ test('sandık ve ambar: iğne/buluntu "bulundu" (yarı kuruş), depoda tutulmaz;
     const { c, m, bulunan } = besle(ad, ['igne', 'buluntu:yuzuk', 'civi', 'saman']);
     assert.deepEqual(bulunan.map((b) => [b.anahtar, b.kaynak, b.kip, b.kurus]),
       [['igne', ad, 'yari', 125], ['buluntu:yuzuk', ad, 'yari', 150]]);
-    assert.equal(c.kurus, 275);
+    assert.equal(ekonomiAl(c).kurus, 300 + 275);
     assert.equal(m.ozel.toplam, 2);
     assert.ok(degerliYok(m));
     assert.equal(c.envanter[K('igne')], 0);
@@ -70,7 +71,7 @@ test('defter masası: iğne ailesi ve buluntular tam kuruş; yabancı girişte b
   assert.deepEqual(bulunan.map((b) => [b.kaynak, b.kip, b.kurus]),
     [['masa', 'tam', 250], ['masa', 'tam', 400], ['masa', 'tam', 1500], ['masa', 'tam', 30],
       ['masa', 'tam', 300]]);
-  assert.equal(c.kurus, 2480);
+  assert.equal(ekonomiAl(c).kurus, 300 + 2480);
   assert.equal(m.ozel.sayi, 5);
   const d = dunya();
   const masa = kur(d.c, d.tarla, 'defter-masasi', 20, 20, 0);
@@ -165,17 +166,17 @@ test('yaba kolu: oluk mıknatısı tutucusundan çeker, defter masasına verir',
 test('Komşu kapısı: değeri olanı satar, olmayanı atar; iğne iade; ayarla satış kapanır', () => {
   const { c, m, k, olaylar, tarla } = besle('komsu-kapisi',
     ['saman', 'balya-ot', 'toz', 'civi', 'igne', 'buluntu:nal'], 10);
-  assert.equal(c.kurus, 1 + 30);
+  assert.equal(ekonomiAl(c).kurus, 300 + 1 + 30);
   assert.deepEqual([m.ozel.satildi, m.ozel.atildi, m.ozel.iade], [2, 2, 2]);
   assert.equal(c.envanter[K('igne')], 1);
   assert.equal(c.envanter[K('buluntu:nal')], 1);
   assert.deepEqual(bulunanlar(olaylar).map((b) => b.kip), ['kurussuz', 'kurussuz']);
   assert.equal(c.cikanKat, 12 + 96 + 12, 'satılan/atılan saman dünyadan çıktı');
-  komutEkle(c, { tur: 'ayar', x: m.x, y: m.y, ad: 'sat', deger: 0 });
+  komutEkle(c, { tur: 'kapiSat', acik: false });
   ekle(k, 'balya-ot', 300);
   kos(c, tarla, 310);
   assert.equal(k.ozel.kuyruk.length, 0, 'kapı asla tıkanmaz');
-  assert.equal(c.kurus, 31, 'satış kapalı: atıldı');
+  assert.equal(ekonomiAl(c).kurus, 331, 'satış kapalı: atıldı');
   assert.equal(m.ozel.atildi, 302);
 });
 

@@ -100,7 +100,8 @@ test('çatal: iğne ve çivi türe bakılmadan geçer, hiçbiri yok olmaz', () =
   kos(c, tarla, 40);
   besle(c, 15, 20, CIVI);
   kos(c, tarla, 150);
-  assert.deepEqual(sandiklar[0].ozel.say, { [IGNE]: 1, [CIVI]: 1 });
+  assert.deepEqual(sandiklar[0].ozel.say, { [CIVI]: 1 });
+  assert.deepEqual(sandiklar[0].ozel.bulunan, { [IGNE]: 1 }, 'iğne sandıkta "bulundu" sayıldı');
 });
 
 test('oluk: üç doygun giriş çıkışı adilce paylaşır (±1) ve bant hızı korunur', () => {
@@ -117,7 +118,7 @@ test('oluk: üç doygun giriş çıkışı adilce paylaşır (±1) ve bant hız�
   const toplam = pay.reduce((a, b) => a + b, 0);
   const beklenen = ((1500 - 70) * 4.5) / 20; // 70 tik: girişteki 5 karoluk bant yolculuğu
   assert.ok(Math.abs(toplam - beklenen) <= 5, `çıkış ${toplam} (beklenen ≈ ${beklenen})`);
-  const say = sandik.ozel.say;
+  const say = { ...sandik.ozel.say, ...sandik.ozel.bulunan }; // iğne "bulundu" sayılır (F)
   assert.ok(Math.abs(say[SAMAN] - say[IGNE]) <= 2 && Math.abs(say[IGNE] - say[CIVI]) <= 2);
 });
 
@@ -133,7 +134,7 @@ test('oluk: boş giriş atlanır, yavaş giriş aç kalmaz, tek doygun giriş ta
   kos(c, tarla, 150);
   assert.equal(oluk.ozel.pay[2], 0);
   assert.equal(oluk.ozel.pay[1], yavas, 'yavaş girişin her eşyası geçti');
-  assert.equal(sandik.ozel.say[IGNE], yavas);
+  assert.equal(sandik.ozel.bulunan[IGNE], yavas);
   const toplam = oluk.ozel.pay[0] + oluk.ozel.pay[1];
   assert.ok(toplam >= (1000 * 4.5) / 20 - 10, `çıkış ${toplam}: boş giriş hattı yavaşlattı`);
 });

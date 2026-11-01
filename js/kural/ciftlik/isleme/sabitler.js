@@ -8,14 +8,15 @@
  */
 import { esyaKodu } from '../esya.js';
 import { havaAl } from '../ag/enerji.js';
+import { ONARIM } from '../ekonomi/denge.js';
 import { ozellik } from './esya-ozellik.js';
 
-/** Denge sayıları (parcalar.md; tik ve bg). */
+/** Denge sayıları (parcalar.md; tik ve bg; kuruşlar ekonomi/denge.js'ten). */
 export const ISLEME = {
   savurucu: { kap: 9, puan: 1200, gunes: 5, gunesRuzgar: 6, bulut: 3, guc: 3 },
   kurutma: { yuva: 24, sure: 600, guc: 8 },
   pres: { kalip: 8, dolum: 7, basma: 40, gucDolum: 4, gucBasma: 30 },
-  kiyici: { sure: 10, guc: 12, onarKurus: 50, onarTik: 200 },
+  kiyici: { sure: 10, guc: 12, onarKurus: ONARIM.kiyici, onarTik: 200 },
   gubre: { kap: 120, aralik: 2400, esik: 20, menzil: 8, sure: 2400 },
 };
 export const YAS = esyaKodu('yas-ot');

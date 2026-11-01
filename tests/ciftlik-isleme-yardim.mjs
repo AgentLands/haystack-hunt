@@ -86,3 +86,13 @@ export function kosKadar(c, tarla, tikAt, n, kosul, olaylar = []) {
   }
   return -1;
 }
+
+/** Sink'te tüketilen (sandık/ambar/masa "bulundu") değerli eşyalar: kod → adet. */
+export function toplamaBulunan(olaylar) {
+  const t = new Map();
+  for (const { ad, veri } of olaylar) {
+    if (ad !== 'ciftlik-bulundu' || !['sandik', 'ambar', 'masa'].includes(veri.kaynak)) continue;
+    t.set(veri.kod, (t.get(veri.kod) ?? 0) + 1);
+  }
+  return t;
+}

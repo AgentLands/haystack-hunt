@@ -98,7 +98,7 @@ test('kile filtresi: yalnız seçilen tür/sınıf sayılır, ötekiler karışm
     kos(d.c, d.tarla, 6);
   }
   assert.ok(kile.ozel.say >= 5 || kile.ozel.kapali === 1);
-  assert.equal(d.sandik.ozel.say[IGNE], 5, 'tam 5 iğne sayıldı; kapanınca kalan geçmez');
+  assert.equal(d.sandik.ozel.bulunan[IGNE], 5, 'tam 5 iğne sayıldı; kapanınca kalan geçmez');
   ayarUygula(kile, 'sifirla', 1);
   assert.equal(ayarUygula(kile, 'filtre', { tur: 'sinif', sinif: 'urun' }), true);
   for (let t = 0; t < 30; t++) {

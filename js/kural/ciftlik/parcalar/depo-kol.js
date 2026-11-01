@@ -5,18 +5,18 @@
  * öndeki parçaya ya da hat karosuna bırakır; 16 tik salınım) ve Komşu kapısı (kurulu gelir,
  * sökülmez; kabul tarafı: sipariş → fazlasını sat → at; iğne/buluntu oyuncuya iade).
  * Sandık ve ambar iğne/buluntuyu "bulundu" sayar (yarı kuruş), depoda tutmaz.
- * SAP (G ekonomi): kapı teslimi `kapiTeslimKur(islev(ctx, kod, p) → { sonuc, kurus? })`;
- * varsayılan hiçbir siparişe uymaz ("fazlasını sat" açıksa değeri olanı satar).
+ * Kapı her eşyayı G'nin ekonomi/siparis.js `teslimEt`'ine verir (sipariş → fazlasını sat →
+ * at; iğne/buluntu "bulundu" kuruşsuz ve envantere iade); "Fazlasını sat" ekonomidedir
+ * (komut kapiSat).
  */
 import { parcaTanimla } from '../parca-kayit.js';
 import { esyaKodu, esyaTanimi } from '../esya.js';
 import { DX, DY } from '../olcu.js';
 import { ozellik, degerliMi, esyaAdi as ad } from '../isleme/esya-ozellik.js';
-import {
-  bulundu, kurusEkle, samanCikti, girisBekleyen,
-} from '../isleme/bulundu.js';
+import { bulundu, samanCikti, girisBekleyen } from '../isleme/bulundu.js';
+import { teslimEt } from '../ekonomi/siparis.js';
 import { karodanCek, karoyaBirak } from '../isleme/hat-el.js';
-import { depodanCek } from './temel.js';
+import { depodanCek, sayacArtir } from './temel.js';
 
 /** Denge sayıları (parcalar.md; G denge.js'e taşıyabilir). */
 export const DEPO_KOL = {
@@ -35,9 +35,9 @@ parcaTanimla('ambar', {
   kod: 19, ad: 'Ambar', aile: 'depo', boyut: [3, 3], yonlu: false,
   girisler: [{ x: 1, y: 0, yon: 3 }, { x: 2, y: 1, yon: 0 }, { x: 1, y: 2, yon: 1 },
     { x: 0, y: 1, yon: 2 }],
-  maliyet: { kurus: 180 }, kilit: 'D7',
+ 
   kur(p) {
-    Object.assign(p.ozel, { say: {}, toplam: 0, sayac: 0, curuyen: 0 });
+    Object.assign(p.ozel, { say: {}, toplam: 0, sayac: 0, curuyen: 0, bulunan: {} });
   },
   kabulEder(p, port, kod) {
     return degerliMi(kod) || p.ozel.toplam < DEPO_KOL.ambar.kap;
@@ -45,6 +45,7 @@ parcaTanimla('ambar', {
   al(p, port, kod, ctx) {
     if (degerliMi(kod)) {
       bulundu(ctx, kod, 'ambar', 'yari', p);
+      sayacArtir(p.ozel, kod);
       return;
     }
     p.ozel.say[kod] = (p.ozel.say[kod] ?? 0) + 1;
@@ -66,6 +67,7 @@ parcaTanimla('ambar', {
   cek(p, uygun) {
     return depodanCek(p.ozel, uygun);
   },
+  doluluk: (p) => ({ n: p.ozel.toplam, kap: DEPO_KOL.ambar.kap }),
   icerik(p) {
     return { esya: Object.entries(p.ozel.say).map(([kod, n]) => [Number(kod), n]), saman: 0 };
   },
@@ -85,7 +87,7 @@ parcaTanimla('ambar', {
 parcaTanimla('defter-masasi', {
   kod: 20, ad: 'Defter masası', aile: 'depo', boyut: [2, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }, { x: 0, y: 0, yon: 3 }, { x: 0, y: 0, yon: 1 }],
-  maliyet: { kurus: 40 }, kilit: 'D2',
+ 
   kur(p) {
     Object.assign(p.ozel, { sayi: 0, kurus: 0, son: 0, bekleyen: 0 });
   },
@@ -136,7 +138,7 @@ function filtreGecerli(f) {
 
 /** Yaba kolu: arkadan alır, 16 tik salınır, öne bırakır; bırakamazsa havada bekler. */
 parcaTanimla('yaba-kolu', {
-  kod: 21, ad: 'Yaba kolu', aile: 'depo', boyut: [1, 1], maliyet: { kurus: 30 }, kilit: 'D2',
+  kod: 21, ad: 'Yaba kolu', aile: 'depo', boyut: [1, 1],
   kur(p) {
     Object.assign(p.ozel, { el: 0, il: 0, filtre: { tur: 'hepsi' }, hal: 'ac' });
   },
@@ -186,40 +188,23 @@ parcaTanimla('yaba-kolu', {
   },
 });
 
-/**
- * Kapı teslimi (G'nin ekonomi/siparis.js teslimEt(c, kod, olay) sözleşmesi): { sonuc:
- * 'siparis' | 'iade' | 'satildi' | 'atildi', kurus? }. İğne/buluntu "bulundu" (kuruşsuz)
- * sayılır; 'iade'de kapı eşyayı oyuncunun envanterine koyar. SAP: sipariş yok, fazlasını
- * sat kapı ayarından (G gelince `kapiTeslimKur` ile teslimEt bağlanır, ayar ekonomiye geçer).
- */
-let kapiTeslimi = (ctx, kod, p) => {
-  if (degerliMi(kod)) {
-    bulundu(ctx, kod, 'kapi', 'kurussuz', p);
-    return { sonuc: 'iade' };
-  }
-  const deger = ozellik(kod).deger;
-  if (!p.ozel.sat || deger <= 0) return { sonuc: 'atildi' };
-  kurusEkle(ctx.c, deger);
-  return { sonuc: 'satildi', kurus: deger };
-};
-export function kapiTeslimKur(islev) {
-  kapiTeslimi = islev;
-}
-
 /** Komşu kapısı: sınırsız alır, asla tıkanmaz; kurulu gelir, sökülmez, palette yok. */
 parcaTanimla('komsu-kapisi', {
   kod: 31, ad: 'Komşu kapısı', aile: 'depo', boyut: [2, 2], sokulmez: true, paletDisi: true,
   girisler: [{ x: 0, y: 0, yon: 2 }, { x: 0, y: 1, yon: 2 }],
-  ayarlar: { sat: { ad: 'Fazlasını sat', tur: 'iki', secenekler: [1, 0] } },
   kur(p) {
-    Object.assign(p.ozel, { sat: 1, siparis: 0, satildi: 0, atildi: 0, iade: 0, kurus: 0 });
+    Object.assign(p.ozel, { siparis: 0, satildi: 0, atildi: 0, iade: 0, kurus: 0 });
   },
   kabulEder() {
     return true;
   },
   al(p, port, kod, ctx) {
     const o = p.ozel;
-    const s = kapiTeslimi(ctx, kod, p);
+    const olay = (ad, veri) => ctx.olay(ad, ad !== 'ciftlik-bulundu' ? veri : {
+      ...veri, anahtar: esyaTanimi(kod)?.anahtar ?? null, buluntu: esyaTanimi(kod)?.buluntu
+        ?? null, sinif: ozellik(kod).sinif, kaynak: 'kapi', parca: p, x: p.x, y: p.y,
+    });
+    const s = teslimEt(ctx.c, kod, olay);
     o[s.sonuc] += 1;
     if (s.sonuc === 'iade') ctx.c.envanter[kod] += 1;
     else samanCikti(ctx.c, kod);
@@ -230,8 +215,8 @@ parcaTanimla('komsu-kapisi', {
   },
   incele(p) {
     const o = p.ozel;
-    return [['Durum', o.sat ? 'Fazlasını satıyor' : 'Siparişe uymayanı atıyor'],
-      ['Siparişe', o.siparis], ['Satılan', `${o.satildi} (${o.kurus} kuruş)`],
-      ['Boşa giden', o.atildi], ['Geri getirilen', o.iade]];
+    return [['Durum', 'Komşu bekliyor (sipariş, fazlası satılır)'], ['Siparişe', o.siparis],
+      ['Satılan', `${o.satildi} (${o.kurus} kuruş)`], ['Boşa giden', o.atildi],
+      ['Geri getirilen', o.iade]];
   },
 });

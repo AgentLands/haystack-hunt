@@ -6,6 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { ekonomiAl } from '../js/kural/ciftlik/ekonomi/kurus.js';
 import { tikAt, komutEkle, ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { parcaDurumu } from '../js/kural/ciftlik/parca-kayit.js';
@@ -161,7 +162,7 @@ test('balya presi: iğne kalıbı sıkıştırır; Temizle iğneyi tam ödemeyle
   assert.equal(b.kaynak, 'temizle');
   assert.equal(b.kurus, 250);
   assert.equal(c.envanter[K('igne')], 1);
-  assert.equal(c.kurus, 250);
+  assert.equal(ekonomiAl(c).kurus, 300 + 250);
 });
 
 test('kıyıcı: saman/kuru ot → kıyım, 10 tik (≈ 120/dk); yabancı reddedilir', () => {
@@ -191,13 +192,14 @@ test('kıyıcı: sert eşya çekici kırar, çıkıştan atılır; Onar 50 kuru�
   assert.equal(parcaDurumu(m), 'kirik');
   assert.ok(olaylar.some((o) => o.ad === 'parca-tikandi' && o.veri.neden === 'kirik'));
   assert.equal(k.ozel.kuyruk.length, 1, 'kırıkken almaz');
+  ekonomiAl(c).kurus = 20;
   komutEkle(c, { tur: 'onar', x: m.x, y: m.y });
   let red = kos(c, tarla, 1).find((o) => o.ad === 'komut-reddedildi');
   assert.equal(red.veri.neden, 'kurus-yok');
-  c.kurus = 80;
+  ekonomiAl(c).kurus = 80;
   komutEkle(c, { tur: 'onar', x: m.x, y: m.y });
   kos(c, tarla, 1);
-  assert.equal(c.kurus, 80 - ISLEME.kiyici.onarKurus);
+  assert.equal(ekonomiAl(c).kurus, 80 - ISLEME.kiyici.onarKurus);
   komutEkle(c, { tur: 'onar', x: m.x, y: m.y });
   red = kos(c, tarla, 1).find((o) => o.ad === 'komut-reddedildi');
   assert.equal(red.veri.neden, 'suruyor');

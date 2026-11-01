@@ -7,9 +7,8 @@
 import { parcaTanimla } from '../parca-kayit.js';
 import { gucRozeti } from '../ag/enerji.js';
 import { degerliMi, esyaAdi as ad } from './esya-ozellik.js';
-import {
-  oyuncuyaVer, kurusHarca, samanCikti, girisBekleyen, ilerle,
-} from './bulundu.js';
+import { kurusHarca } from '../ekonomi/kurus.js';
+import { oyuncuyaVer, samanCikti, girisBekleyen, ilerle } from './bulundu.js';
 import {
   ISLEME, KURU, SAMAN, KIYIM, GUBRE_PUAN, sert, redRozeti, gubrele,
 } from './sabitler.js';
@@ -18,7 +17,7 @@ import {
 parcaTanimla('cekicli-kiyici', {
   kod: 16, ad: 'Çekiçli kıyıcı', aile: 'isleme', boyut: [2, 2],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 1, y: 0, yon: 0 }],
-  guc: ISLEME.kiyici.guc, maliyet: { kurus: 180 }, kilit: 'D7',
+  guc: ISLEME.kiyici.guc,
   kur(p) {
     Object.assign(p.ozel, { islenen: 0, il: 0, cikis: [], kirik: 0, onarim: 0, bekleyen: 0,
       dolu: 0 });
@@ -91,7 +90,7 @@ const gubreGirisleri = [0, 1].flatMap((i) => [
 ]);
 parcaTanimla('gubre-cukuru', {
   kod: 17, ad: 'Gübre çukuru', aile: 'isleme', boyut: [2, 2], yonlu: false,
-  girisler: gubreGirisleri, maliyet: { kurus: 60 }, kilit: 'D6',
+  girisler: gubreGirisleri,
   kur(p) {
     Object.assign(p.ozel, { puan: 0, sayac: 0, son: -1, bekleyen: 0 });
   },
@@ -119,6 +118,7 @@ parcaTanimla('gubre-cukuru', {
     o.son = gubrele(ctx, p, G.menzil, G.sure);
     ctx.olay('gubre-serpildi', { parca: p, karo: o.son });
   },
+  doluluk: (p) => ({ n: p.ozel.puan, kap: ISLEME.gubre.kap }),
   durum(p) {
     const o = p.ozel;
     if (o.bekleyen && !GUBRE_PUAN.has(o.bekleyen)) return 'yabanci';

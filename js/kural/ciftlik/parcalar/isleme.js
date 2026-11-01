@@ -25,7 +25,7 @@ export { ISLEME, gubreKaynagiKur } from '../isleme/sabitler.js';
 parcaTanimla('ot-savurucu', {
   kod: 13, ad: 'Ot savurucu', aile: 'isleme', boyut: [3, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 2, y: 0, yon: 0 }],
-  guc: ISLEME.savurucu.guc, gucsuzOran: 341, maliyet: { kurus: 90 }, kilit: 'D6',
+  guc: ISLEME.savurucu.guc, gucsuzOran: 341,
   kur(p) {
     Object.assign(p.ozel, { tur: [], puan: [], yagmur: 0, dolu: 0 });
   },
@@ -84,7 +84,7 @@ parcaTanimla('ot-savurucu', {
 parcaTanimla('kurutma-ambari', {
   kod: 14, ad: 'Kurutma ambarı', aile: 'isleme', boyut: [3, 3],
   girisler: [{ x: 0, y: 1, yon: 2 }], cikislar: [{ x: 2, y: 1, yon: 0 }],
-  guc: ISLEME.kurutma.guc, gucsuzOran: 256, maliyet: { kurus: 200 }, kilit: 'D7',
+  guc: ISLEME.kurutma.guc, gucsuzOran: 256,
   kur(p) {
     Object.assign(p.ozel, { yuva: [], hazir: 0, il: 0, bekleyen: 0, dolu: 0 });
   },
@@ -112,6 +112,7 @@ parcaTanimla('kurutma-ambari', {
   icerik(p) {
     return { esya: [[YAS, p.ozel.yuva.length], [KURU, p.ozel.hazir]], saman: 0 };
   },
+  doluluk: (p) => ({ n: p.ozel.yuva.length + p.ozel.hazir, kap: ISLEME.kurutma.yuva }),
   durum(p) {
     const o = p.ozel;
     if (o.dolu) return 'cikis-dolu';
@@ -140,7 +141,7 @@ function balyaTuru(kalip) {
 parcaTanimla('balya-presi', {
   kod: 15, ad: 'Balya presi', aile: 'isleme', boyut: [3, 2],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 2, y: 0, yon: 0 }],
-  guc: 15, maliyet: { kurus: 150 }, kilit: 'D3',
+  guc: 15,
   kur(p) {
     Object.assign(p.ozel, { kalip: [], doluyor: 0, basiyor: 0, il: 0, cikis: 0, sikisan: 0,
       bekleyen: 0, dolu: 0 });
