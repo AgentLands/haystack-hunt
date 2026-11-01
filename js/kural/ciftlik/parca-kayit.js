@@ -11,7 +11,7 @@
  *              (yon 0 çerçevesinde); bağlandığı karo o kenarın komşusudur
  *   hat        { hiz } verilirse 1×1 taşıma parçası: uç uca hatlara katılır (tasima/hat.js)
  *   guc        enerji talebi (Faz 1 enerji ağı; üretici negatif), varsayılan 0
- *   maliyet, kilit  ilerleme için veri (Faz 1); çekirdek yalnız saklar
+ *   (fiyat ve kilit tanımda DEĞİL: tek kaynak ekonomi/denge.js PARCA_MALIYET, acilis.js)
  *   kur(p, ctx)            p.ozel'i hazırlar (ozel JSON'lanabilir olmalı: sayı, dizi, düz
  *                          nesne, tipli dizi)
  *   adim(ctx, p)           her tik, id sırasıyla (benzetim.js)
@@ -64,8 +64,8 @@ export function parcaTanimla(anahtar, tanim) {
     throw new Error(`parcaTanimla(${anahtar}): hat parçası 1×1 ve hat.hiz > 0 olmalı`);
   }
   const kayit = Object.freeze({
-    ad: anahtar, aile: 'diger', yonlu: true, yurunur: false, guc: 0, maliyet: {},
-    kilit: null, hat: null, ...tanim, anahtar, boyut: Object.freeze([...boyut]),
+    ad: anahtar, aile: 'diger', yonlu: true, yurunur: false, guc: 0, hat: null, ...tanim,
+    anahtar, boyut: Object.freeze([...boyut]),
     girisler: Object.freeze((tanim.girisler ?? []).map((p) => portDenetle(anahtar, p, boyut))),
     cikislar: Object.freeze((tanim.cikislar ?? []).map((p) => portDenetle(anahtar, p, boyut))),
   });

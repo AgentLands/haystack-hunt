@@ -34,7 +34,7 @@ function payMetni(say, adlar) {
 }
 
 parcaTanimla('catal', {
-  kod: 40, ad: 'Çatal', aile: 'tasima', boyut: [1, 1], kilit: 'D1', maliyet: { kurus: 20 },
+  kod: 40, ad: 'Çatal', aile: 'tasima', boyut: [1, 1],
   tampon: { giris: 1 },
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 0, y: 0, yon: 0 }, { x: 0, y: 0, yon: 3 }, { x: 0, y: 0, yon: 1 }],
@@ -75,8 +75,7 @@ parcaTanimla('catal', {
 });
 
 parcaTanimla('birlestirme-olugu', {
-  kod: 41, ad: 'Birleştirme oluğu', aile: 'tasima', boyut: [1, 1], kilit: 'D1',
-  maliyet: { kurus: 20 },
+  kod: 41, ad: 'Birleştirme oluğu', aile: 'tasima', boyut: [1, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }, { x: 0, y: 0, yon: 3 }, { x: 0, y: 0, yon: 1 }],
   cikislar: [{ x: 0, y: 0, yon: 0 }],
   kur(p) {
@@ -105,7 +104,7 @@ parcaTanimla('birlestirme-olugu', {
  * (eş, rol, mesafe; her tik tazelenir, kural her seferinde topolojiden hesaplanır).
  */
 parcaTanimla('menfez', {
-  kod: 42, ad: 'Menfez', aile: 'tasima', boyut: [1, 1], kilit: 'D2', maliyet: { kurus: 15 },
+  kod: 42, ad: 'Menfez', aile: 'tasima', boyut: [1, 1],
   menfez: true,
   hat: {
     hiz: BANT_HIZ,

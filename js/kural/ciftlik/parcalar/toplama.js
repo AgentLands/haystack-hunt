@@ -50,7 +50,6 @@ function huniDurumu(p) {
 parcaTanimla('huni', {
   kod: 2, ad: 'Emici huni', aile: 'toplama', boyut: [2, 2],
   cikislar: [{ x: 1, y: 0, yon: 0 }], guc: HUNI.guc, gucsuzOran: HUNI.gucsuzOran,
-  maliyet: { kurus: 40 }, kilit: 'T0',
   kur(p) {
     Object.assign(p.ozel, { birikim: 0, cayir: 0, ilerleme: 0, cikis: [], son: 0 });
   },
@@ -151,7 +150,6 @@ function surukle(c, tarla, alan) {
 
 parcaTanimla('tirmik-kolu', {
   kod: 4, ad: 'Tırmık kolu', aile: 'toplama', boyut: [1, 1], guc: TIRMIK.guc, gucsuzOran: 0,
-  maliyet: { kurus: 120 }, kilit: 'D6',
   ayarlar: { yaricap: { tur: 'secim', secenekler: [1, 2, 3], etiket: 'Yarıçap' } },
   kur(p) {
     Object.assign(p.ozel, { yaricap: TIRMIK.yaricap, ilerleme: 0, son: 0, durum: 'bos' });
@@ -218,7 +216,6 @@ function tasDurumu(p) {
 parcaTanimla('tas-toplayici', {
   kod: 5, ad: 'Taş toplayıcı', aile: 'toplama', boyut: [2, 2],
   cikislar: [{ x: 1, y: 0, yon: 0 }], guc: TAS_TOPLAYICI.guc, gucsuzOran: 0,
-  maliyet: { kurus: 110 }, kilit: 'D5',
   kur(p) {
     Object.assign(p.ozel, { ilerleme: 0, cikis: [], son: 0 });
   },

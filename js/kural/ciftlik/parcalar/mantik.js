@@ -58,8 +58,7 @@ const ruzgarKosulu = (o, yon, h) => (o.kip === 'dik'
   : h.siddet >= o.esik);
 
 parcaTanimla('ruzgar-gulu', {
-  kod: 27, ad: 'Rüzgâr gülü', aile: 'mantik', boyut: [1, 1], maliyet: { kurus: 40 },
-  kilit: 'D8',
+  kod: 27, ad: 'Rüzgâr gülü', aile: 'mantik', boyut: [1, 1],
   ayarlar: {
     renk: { tur: 'renk' },
     kip: { tur: 'iki', secenekler: ['dik', 'siddet'], degisti: (p) => { p.ozel.dilim = -1; } },
@@ -96,7 +95,7 @@ parcaTanimla('ruzgar-gulu', {
 
 // --- 28 Savak kapağı ---
 parcaTanimla('savak-kapagi', {
-  ...GECIT, kod: 28, ad: 'Savak kapağı', aile: 'mantik', maliyet: { kurus: 25 }, kilit: 'D8',
+  ...GECIT, kod: 28, ad: 'Savak kapağı', aile: 'mantik',
   ayarlar: { renk: { tur: 'renk' }, kip: { tur: 'iki', secenekler: ['kapan', 'acil'] } },
   kur(p) {
     Object.assign(p.ozel, { renk: 0, kip: 'kapan', kapali: 0, tampon: [] });
@@ -137,7 +136,6 @@ function kantarKosulu(o, d) {
 
 parcaTanimla('kantar', {
   kod: 29, ad: 'Kantar', aile: 'mantik', boyut: [1, 1], yonlu: false,
-  maliyet: { kurus: 40 }, kilit: 'D8',
   ayarlar: {
     renk: { tur: 'renk' },
     esik: { tur: 'secim', secenekler: MANTIK.kantarEsik },
@@ -190,7 +188,7 @@ function kileTamam(p, ctx) {
 }
 
 parcaTanimla('kile-sayaci', {
-  ...GECIT, kod: 30, ad: 'Kile sayacı', aile: 'mantik', maliyet: { kurus: 40 }, kilit: 'D8',
+  ...GECIT, kod: 30, ad: 'Kile sayacı', aile: 'mantik',
   ayarlar: {
     renk: { tur: 'renk' },
     sifirRenk: { tur: 'renk', yok: true },

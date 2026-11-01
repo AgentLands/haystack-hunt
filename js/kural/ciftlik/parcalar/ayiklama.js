@@ -31,7 +31,7 @@ const ad = (kod) => esyaTanimi(kod)?.ad ?? `#${kod}`;
 const yuvaSatiri = (o) => ['Yuvada', yuvaDolu(o) ? ad(o.kod) : '(boş)'];
 
 /**
- * Yuvalı ayıklayıcı kurucusu. ayar: { kod, ad, boyut, girisler, cikislar, maliyet, kilit,
+ * Yuvalı ayıklayıcı kurucusu. ayar: { kod, ad, boyut, girisler, cikislar,
  * sure (tik), guc (bg), yol(p, kod, ctx) → çıkış, ozel() → ek alanlar, her(ctx, p) (her tik),
  * alinca(p, kod, ctx), durum(p) → ek rozet ya da null, incele(p) → ek satırlar }.
  */
@@ -40,7 +40,6 @@ function yuvaliTanimla(anahtar, ayar) {
   parcaTanimla(anahtar, {
     kod: ayar.kod, ad: ayar.ad, aile: 'ayiklama', boyut: ayar.boyut,
     girisler: ayar.girisler, cikislar: ayar.cikislar, guc: ayar.guc ?? 0, gucsuzOran: 0,
-    maliyet: ayar.maliyet, kilit: ayar.kilit,
     kur(p) {
       Object.assign(p.ozel, { kod: 0, ilerleme: 0 }, ayar.ozel?.());
     },
@@ -81,7 +80,6 @@ const tutar = (p, kod) => manyetikMi(kod) && p.ozel.tutucu.length < TUTUCU_YUVA;
 parcaTanimla('oluk-miknatisi', {
   kod: 8, ad: 'Oluk mıknatısı', aile: 'ayiklama', boyut: [1, 1],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 0, y: 0, yon: 0 }],
-  maliyet: { kurus: 30 }, kilit: 'D1',
   kur(p) {
     p.ozel.tutucu = [];
   },
@@ -149,7 +147,6 @@ yuvaliTanimla('miknatisli-tambur', {
   kod: 9, ad: 'Mıknatıslı tambur', boyut: [2, 1], sure: TAMBUR_TIK, guc: TAMBUR_GUC,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 1 }],
-  maliyet: { kurus: 120 }, kilit: 'D5',
   yol: (p, kod) => tamburYolu(kod),
 });
 
@@ -158,7 +155,6 @@ yuvaliTanimla('kalbur', {
   kod: 10, ad: 'Kalbur', boyut: [2, 1], sure: KALBUR_TIK,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 1 }],
-  maliyet: { kurus: 50 }, kilit: 'D4',
   ozel: () => ({ siva: 0, sivaSure: 0 }),
   her(ctx, p) {
     const o = p.ozel;
@@ -190,7 +186,6 @@ yuvaliTanimla('tinaz', {
   kod: 11, ad: 'Tınaz', boyut: [3, 3], sure: TINAZ_TIK,
   girisler: [{ x: 0, y: 1, yon: 2 }],
   cikislar: [{ x: 2, y: 1, yon: 0 }, { x: 1, y: 0, yon: 3 }, { x: 1, y: 2, yon: 1 }],
-  maliyet: { kurus: 60 }, kilit: 'D6',
   ozel: () => ({ hava: 'durgun' }),
   her(ctx, p) {
     p.ozel.hava = tinazHali(p.yon, ruzgarOku(ctx)).durum;
@@ -204,6 +199,5 @@ yuvaliTanimla('seytan-yeli', {
   kod: 12, ad: 'Şeytan yeli', boyut: [2, 2], sure: YEL_TIK, guc: YEL_GUC,
   girisler: [{ x: 0, y: 0, yon: 2 }],
   cikislar: [{ x: 1, y: 0, yon: 0 }, { x: 1, y: 0, yon: 3 }, { x: 1, y: 1, yon: 1 }],
-  maliyet: { kurus: 160 }, kilit: 'D5',
   yol: (p, kod) => yelYolu(kod),
 });

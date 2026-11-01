@@ -36,13 +36,12 @@ export const insa = {
 };
 
 /**
- * Ekonomi kaynağı (SAP: kuruş sistemi yokken hiçbir şey "yetmez", hiçbir parça kilitli
- * değil). kurus(durum) → sayı | null, fiyat(tanim) → sayı | null, kilit(tanim, durum) →
- * null | "D4 İlk balyalar'da açılır".
+ * Ekonomi kaynağı (baglar.js G'ye bağlar; bağlanmadan: hiçbir şey "yetmez", kilit yok).
+ * kurus(durum) → sayı | null, fiyat(tanim) → sayı | null, kilit(tanim, durum) → null | metin.
  */
 export const kaynak = {
   kurus: () => null,
-  fiyat: (t) => (typeof t.maliyet === 'number' ? t.maliyet : t.maliyet?.kurus ?? null),
+  fiyat: () => null,
   kilit: () => null,
 };
 

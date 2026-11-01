@@ -3,6 +3,8 @@
  * oluğu (adil, boşu atlar, çıkış dolu), parça kayıtları ve kaydet → yükle gidiş-dönüşü.
  * Menfez: tests/ciftlik-menfez.test.js. Kurgular: tests/ciftlik-tasima-yardim.mjs.
  */
+import { PARCA_MALIYET } from '../js/kural/ciftlik/ekonomi/denge.js';
+import { ACILIS } from '../js/kural/ciftlik/ekonomi/acilis.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tikAt, komutEkle } from '../js/kural/ciftlik/benzetim.js';
@@ -163,7 +165,7 @@ test('taşıma parçaları: kayıtlı, aile taşıma, kodlar sabit, palet verisi
     const t = parcaTanimi(ad);
     assert.ok(t, ad);
     assert.equal(t.aile, 'tasima');
-    assert.ok(t.maliyet.kurus > 0 && t.kilit);
+    assert.ok(PARCA_MALIYET[ad] > 0 && ACILIS[ad].damga, `${ad}: fiyat ve kilit (G tabloları)`);
     kodlar.push(t.kod);
   }
   assert.deepEqual(kodlar, [40, 41, 42]);

@@ -18,7 +18,6 @@ const SAMAN = esyaKodu('saman');
 export const BANT_HIZ = parcaSabiti('bant').hiz;
 parcaTanimla('bant', {
   kod: 1, ad: 'Bant', aile: 'tasima', boyut: [1, 1], yurunur: true, hat: { hiz: BANT_HIZ },
-  maliyet: { tahta: 1 },
 });
 
 /**
@@ -30,7 +29,7 @@ parcaTanimla('bant', {
 export const SANDIK_KAP = parcaSabiti('sandik').kap;
 parcaTanimla('sandik', {
   kod: 3, ad: 'Sandık', aile: 'depo', boyut: [1, 1], yonlu: false,
-  girisler: [0, 1, 2, 3].map((yon) => ({ x: 0, y: 0, yon })), maliyet: { tahta: 4 },
+  girisler: [0, 1, 2, 3].map((yon) => ({ x: 0, y: 0, yon })),
   kur(p) {
     Object.assign(p.ozel, { say: {}, toplam: 0, bulunan: {} });
   },
