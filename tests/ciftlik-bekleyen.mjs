@@ -60,9 +60,11 @@ export const PARCALAR = [
  * Bekleyen test. `is`: bekleyen iş parçası harfleri ("G", "A B"), `parca`: kayıtlı olması
  * gereken parça adları, `esya`: kayıtlı eşya adları, `dosya`: var olması gereken dosyalar
  * (kök göreli).
- * Gövde ön koşul eksikken hiç çalışmaz (modüller gövde içinde `await import` ile yüklenir).
+ * `dogrulandi: true`: gövde gerçek parçalarla en az bir kez geçti; ön koşullar varsa bayraksız
+ * koşar (eksikse yine "BEKLİYOR"). Gövde ön koşul eksikken hiç çalışmaz (modüller gövde
+ * içinde `await import` ile yüklenir).
  */
-export function bekleyen(ad, { is, parca = [], dosya = [], esya = [] }, govde) {
+export function bekleyen(ad, { is, parca = [], dosya = [], esya = [], dogrulandi = false }, govde) {
   for (const p of parca) {
     if (!PARCALAR.includes(p) && p !== HUNI_AD) {
       throw new Error(`bekleyen: bilinmeyen parça "${p}"`);
@@ -72,7 +74,7 @@ export function bekleyen(ad, { is, parca = [], dosya = [], esya = [] }, govde) {
   if (eksik.length) {
     return test(ad, { skip: `BEKLİYOR [${is}]: ${eksik.join(', ')} yok` }, govde);
   }
-  if (!BEKLEYEN_ACIK) {
+  if (!BEKLEYEN_ACIK && !dogrulandi) {
     return test(ad, { skip: `BEKLİYOR [${is}]: ön koşullar var, CIFTLIK_BEKLEYEN=1 ile aç` },
       govde);
   }

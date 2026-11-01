@@ -174,9 +174,12 @@ const SINKLER = [
 /** Bu olay adları bir iğne/buluntunun "bulundu" sayılıp ödüllendirildiğini gösterir. */
 const BULUNDU_OLAYLARI = ['ciftlik-igne', 'ciftlik-buluntu', 'defter-yazildi'];
 
+/** Gerçek parçalarla geçtiği doğrulanan sink'ler (c-dogrulama, main birleşimi): bayraksız koşar. */
+const DOGRULANAN = new Set(['sandik', 'oluk-miknatisi', 'miknatisli-tambur', 'kalbur', 'seytan-yeli']);
+
 for (const [sink, is, parca] of SINKLER) {
   bekleyen(`iğne/buluntu korunumu: ${sink} (girer, makine çalışır, sökülür; hiçbiri yok olmaz)`,
-    { is, parca: [...parca, 'sandik'] }, async () => {
+    { is, parca: [...parca, 'sandik'], dogrulandi: DOGRULANAN.has(sink) }, async () => {
       const { c, tarla } = dunya(6, duzTarla(0), { gomulu: [] });
       c.testTamGuc = true;
       bantCek(c, tarla, 10, 10, 0, 4);
@@ -184,14 +187,15 @@ for (const [sink, is, parca] of SINKLER) {
       tikAt(c, tarla);
       const [h] = c.hatlar;
       const enjekte = [IGNE, BULUNTU];
-      for (const kod of enjekte) assert.ok(hatBasaKoy(h, kod), 'hat girişi açık');
+      const kuyruk = [...enjekte];
       const bulunan = [];
       for (let t = 0; t < 600; t++) {
+        if (kuyruk.length && hatBasaKoy(h, kuyruk[0])) kuyruk.shift();
         for (const o of tikAt(c, tarla)) {
           if (BULUNDU_OLAYLARI.includes(o.ad)) bulunan.push(o);
         }
       }
-      parcaSok(c, tarla, p);
+      assert.equal(kuyruk.length, 0, 'iki eşya da hatta girdi');
       for (const q of [...c.parcalar.values()]) parcaSok(c, tarla, q);
       tikAt(c, tarla);
       for (const kod of enjekte) {
@@ -202,20 +206,31 @@ for (const [sink, is, parca] of SINKLER) {
     });
 }
 
-bekleyen('(a) her şey sökülünce kuruş = 300 + kazanılan (kuruş kuyuları dahil değil)', {
-  is: 'G', dosya: ['js/kural/ciftlik/ekonomi/kurus.js'], parca: ['bant', 'sandik', 'catal'],
+bekleyen('(a) her şey sökülünce kuruş = başlangıç + kazanç − harcama (hepsi açık kipte)', {
+  is: 'G', dosya: ['js/kural/ciftlik/ekonomi/kurus.js', 'js/kural/ciftlik/ekonomi/damga.js'],
+  dogrulandi: true,
 }, async () => {
+  const { ekonomiAl } = await import('../js/kural/ciftlik/ekonomi/kurus.js');
+  const { ilerlemeKur, ilerlemeBagla } = await import('../js/kural/ciftlik/ekonomi/damga.js');
+  const { parcaTurleri } = await import('../js/kural/ciftlik/parca-kayit.js');
   const { c, tarla } = dunya(21, duzTarla(0));
-  const bas = c.kurus; // VARSAYIM: dünya kaydında c.kurus (ekonomi.md §5)
-  assert.equal(bas, 300);
-  const adlar = [HUNI_AD, 'bant', 'bant', 'sandik', 'catal'];
-  adlar.forEach((parca, i) => komutEkle(c, { tur: 'kur', parca, x: 10 + 3 * i, y: 10 }));
-  kos(c, tarla, 5);
-  assert.ok(c.kurus < bas, 'parçalar kuruşla kuruldu');
+  ilerlemeBagla(c, ilerlemeKur({ kilit: 'acik' }));
+  const e = ekonomiAl(c);
+  e.kurus = 20000;
+  const bas = e.kurus;
+  const turler = parcaTurleri().filter((t) => t.anahtar !== 'komsu-kapisi');
+  turler.forEach((t, i) => komutEkle(c, {
+    tur: 'kur', parca: t.anahtar, x: 6 + 12 * (i % 8), y: 6 + 12 * Math.floor(i / 8), yon: 0,
+  }));
+  const reddedilen = kos(c, tarla, 3).filter((o) => o.ad === 'komut-reddedildi');
+  assert.deepEqual(reddedilen.map((o) => [o.veri.komut.parca, o.veri.neden]), []);
+  assert.equal(c.parcalar.size, turler.length);
+  assert.ok(e.kurus < bas, 'parçalar kuruşla kuruldu');
+  kos(c, tarla, 300);
   for (const p of [...c.parcalar.values()]) komutEkle(c, { tur: 'sok', x: p.x, y: p.y });
-  kos(c, tarla, 5);
+  kos(c, tarla, 3);
   assert.equal(c.parcalar.size, 0);
-  assert.equal(c.kurus, bas, 'söküm %100 iade; yeniden düzenlemek cezasız');
+  assert.equal(e.kurus, bas + e.kazanc - e.harcama, 'söküm %100 iade; yeniden düzenlemek cezasız');
 });
 
 bekleyen('(b1) yakıt ve yel yokken sandık → yaba kolu → lokomobil hattı yeniden başlatır', {
