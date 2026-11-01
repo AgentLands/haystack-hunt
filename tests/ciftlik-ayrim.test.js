@@ -102,7 +102,7 @@ test('çiftlik kaydı mod üstünden geri gelir (parçalar, tik, gömülü bağl
   const y = durumAl();
   assert.notEqual(y, d);
   assert.equal(y.ciftlik.tik, d.ciftlik.tik);
-  assert.equal(y.ciftlik.parcalar.size, 1);
+  assert.equal(y.ciftlik.parcalar.size, 2, 'sandık + Komşu kapısı (dünya kurar)');
   assert.deepEqual(y.tarla.h, d.tarla.h);
   assert.equal(y.tarla.civiler.length, d.tarla.civiler.length);
   assert.ok(y.tarla.civiler.every((cv) => y.ciftlik.gomulu.includes(cv)));

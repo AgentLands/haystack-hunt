@@ -59,7 +59,8 @@ export function durumAl() {
 /**
  * Yeni tarlanın durumu (olay yaymaz). zorluk verilmezse önceki oyunun (yoksa varsayılanın)
  * zorluğu sürer (önceki durum `tarlaZorlugu` taşıyorsa o: çiftlik girişteki zorluğu saklar).
- * secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine geçer. Başka modlar (çiftlik) kendi durumlarını bunun üstüne kurar (mod alanı değişir);
+ * secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine geçer. Başka modlar
+ * (çiftlik) kendi durumlarını bunun üstüne kurar (mod alanı değişir);
  * secenek.tarlaKur(tohum, zorluk) verilirse tarla onunla kurulur (çiftlik arazisi).
  */
 export function durumKur(etiket, zorluk, secenek = {}) {
