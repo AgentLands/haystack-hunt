@@ -40,7 +40,7 @@ async function rahatOyun(tarayici, kok, sc) {
   const temiz = await sayfa.textContent('.meydan-etiket.temiz');
   sc.dogrula('temizlik-etiketi', /^Tarla %\d+(,\d)? temiz$/.test(temiz), `etiket: ${temiz}`);
   sc.dogrula('rahat-dugme', await sayfa.locator(
-    'button[aria-pressed="true"]:text-is("Rahat mod: açık")').count() === 1,
+    'button.rahat-damga[aria-pressed="true"]').count() === 1,
   'Rahat mod düğmesi açık görünmüyor');
   const civi = await civiAl(sayfa);
   sc.dogrula('civi-alindi', civi.alindi, 'çivi alınamadı');

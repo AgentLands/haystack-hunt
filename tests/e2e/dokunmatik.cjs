@@ -97,13 +97,17 @@ o.calistir(async () => {
   sc.bitir();
 });
 
-/** Dünya noktasının (x, y) ekran pikseli: kamera (js/gorunum.js) yakınlaşmış olabilir. */
+/**
+ * Dünya noktasının (x, y) ekran pikseli. Kamera yakınlaşmış ve tuvalin en/boy oranı serbest
+ * (dikey telefonda 3:2 değil) olabilir; eşleme oyunun kendi işleviyle (kural/gorunum.js) yapılır.
+ */
 function ekranYeri(sayfa, x, y) {
   return sayfa.evaluate(async (n) => {
     const { gorunum: g } = await import('./js/gorunum.js');
+    const { dunyadanEkrana } = await import('./js/kural/gorunum.js');
     const t = document.getElementById('tarla').getBoundingClientRect();
-    return { px: t.left + ((n.x - g.gx) * g.z / 240) * t.width,
-      py: t.top + ((n.y - g.gy) * g.z / 160) * t.height };
+    const e = dunyadanEkrana(g, n.x, n.y);
+    return { px: t.left + e.fx * t.width, py: t.top + e.fy * t.height };
   }, { x, y });
 }
 

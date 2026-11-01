@@ -1,7 +1,8 @@
 /**
  * Senaryo (a): tohumsuz açılış. Menü açık gelir; zorluk damgası (Zor) tarlayı Zor'a çevirir ve
  * menüyü açık bırakır; "Günün tarlası" günün etiketiyle (zorluk korunur) oyunu açar ve menüyü
- * kapatır; ilk açılış rehberi görünür, İleri ile 8 adımda ilerler, Atla ve Başla kapatır,
+ * kapatır; ilk açılış rehberi görünür, İleri ile adım adım ilerler (adım sayısı sayaçtan
+ * okunur), Atla ve Başla kapatır,
  * "görüldü" localStorage'a yazılır, yeniden açılışta rehber gelmez, "?" düğmesi geri açar.
  *   node tests/e2e/acilis.cjs [--yavas N]
  */
@@ -12,6 +13,11 @@ const rehberMetni = (s) => s.evaluate(() => {
   return r ? { sayac: r.querySelector('.rehber-sayac').textContent,
     baslik: r.querySelector('h2').textContent } : null;
 });
+/** "3 / 11" sayacını { adim, toplam } olarak ayrıştırır (biçim bozuksa null). */
+function sayacAyir(sayac) {
+  const m = /^(\d+) \/ (\d+)$/.exec(sayac || '');
+  return m ? { adim: Number(m[1]), toplam: Number(m[2]) } : null;
+}
 const GORULDU = 'haystack-hunt:rehber-goruldu';
 
 async function zorlukVeGun(sayfa, sc) {
@@ -48,10 +54,13 @@ async function zorlukVeGun(sayfa, sc) {
 
 async function rehberAdimlari(sayfa, sc) {
   const ilk = await rehberMetni(sayfa);
-  sc.dogrula('rehber-acik', ilk && ilk.sayac === '1 / 8', `rehber: ${JSON.stringify(ilk)}`);
+  const a0 = sayacAyir(ilk && ilk.sayac);
+  sc.dogrula('rehber-acik', a0 && a0.adim === 1 && a0.toplam >= 3,
+    `rehber: ${JSON.stringify(ilk)}`);
   await sayfa.click('.rehber .rehber-ileri');
   const ikinci = await rehberMetni(sayfa);
-  sc.dogrula('rehber-ilerler', ikinci && ikinci.sayac === '2 / 8',
+  const a1 = sayacAyir(ikinci && ikinci.sayac);
+  sc.dogrula('rehber-ilerler', a1 && a1.adim === 2 && a1.toplam === a0.toplam,
     `rehber: ${JSON.stringify(ikinci)}`);
   sc.dogrula('rehber-vurgu', await sayfa.locator('[data-arac="el"].rehber-vurgu').count() === 1,
     '2. adımda El kartı vurgulanmadı');
@@ -68,9 +77,12 @@ async function rehberTamami(sayfa, baglamAdres, sc) {
   sc.dogrula('rehber-tekrar-yok', await sayfa.locator('.rehber').count() === 0,
     'görüldükten sonra yeniden açılışta rehber geldi');
   await sayfa.click('button[aria-label="Nasıl oynanır? Rehberi aç"]');
-  for (let i = 1; i < 8; i++) await sayfa.click('.rehber .rehber-ileri');
+  const toplam = sayacAyir((await rehberMetni(sayfa)).sayac).toplam;
+  for (let i = 1; i < toplam; i++) await sayfa.click('.rehber .rehber-ileri');
   const son = await rehberMetni(sayfa);
-  sc.dogrula('rehber-son-adim', son && son.sayac === '8 / 8', `rehber: ${JSON.stringify(son)}`);
+  const aSon = sayacAyir(son && son.sayac);
+  sc.dogrula('rehber-son-adim', aSon && aSon.adim === toplam && aSon.toplam === toplam,
+    `rehber: ${JSON.stringify(son)}`);
   sc.dogrula('rehber-basla', (await sayfa.textContent('.rehber .rehber-ileri')) === 'Başla',
     'son adımda düğme "Başla" değil');
   await sayfa.click('.rehber .rehber-ileri');
