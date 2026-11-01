@@ -65,7 +65,7 @@ export function yerlestirmeEngeli(c, tarla, tanim, x, y, yon, haric = -1) {
   }
   for (let hy = y * KARO; hy < (y + boy) * KARO; hy++) {
     for (let hx = x * KARO; hx < (x + en) * KARO; hx++) {
-      if (dolu[karoIndeks(hx >> 1, hy >> 1)] - 1 === haric && haric >= 0) continue;
+      if (haric >= 0 && dolu[karoIndeks((hx / KARO) | 0, (hy / KARO) | 0)] - 1 === haric) continue;
       if (tarla.h[hy * GENISLIK + hx] > KURMA_ESIK) return 'saman';
     }
   }

@@ -62,8 +62,7 @@ test('normal tarla izi çiftlik açılıp kapatıldıktan sonra değişmez', asy
 });
 
 test('çiftlikte elle alınan iğne envantere girer, oyun bitmez, aranan iğne değişir', async () => {
-  const { IGNE_YOK } = await import('../js/oyun-ciftlik.js');
-  const { esyaKodu } = await import('../js/kural/ciftlik/esya.js');
+    const { esyaKodu } = await import('../js/kural/ciftlik/esya.js');
   modAc('ciftlik', { etiket: 'igne-testi' });
   const d = durumAl();
   const igne = d.tarla.igne;
@@ -82,7 +81,7 @@ test('çiftlikte elle alınan iğne envantere girer, oyun bitmez, aranan iğne d
   assert.equal(igne.alindi, true);
   assert.deepEqual(yayilan, ['el']);
   assert.equal(d.ciftlik.envanter[esyaKodu('igne')], 1);
-  assert.equal(d.tarla.igne, IGNE_YOK);
+  assert.equal(d.tarla.igne.yok, true, 'aranacak iğne kalmadı');
   assert.equal(d.bitti, false);
 });
 

@@ -6,7 +6,7 @@
  * (durum.bitti hep false, baslangic null). Kare başına: karakter/makine (oyun.js), sonra
  * birikmiş süre kadar 20 Hz tik (en çok TIK_EN_COK), olaylar burada yayılır.
  * İğneler: c.gomulu'daki ilk alınmamış iğne `tarla.igne` olur (parıltı, dedektör, kepçe kodu
- * değişmez); alınınca sıradakine geçer, kalmazsa IGNE_YOK (tarlada değil, çizilmez).
+ * değişmez); alınınca sıradakine geçer, kalmazsa igneYok() (tarlada değil, çizilmez).
  */
 import { durumKur, modTanimla } from './oyun.js';
 import { metindenTohum } from './kural/rastgele.js';
@@ -20,8 +20,11 @@ import './kural/ciftlik/parcalar/hepsi.js';
 import { yay } from './olaylar.js';
 
 export const CIFTLIK_ZORLUK = 'normal';
-/** Aranacak iğne kalmayınca tarla.igne: tarlada değil (derinlik ∞), çizilmez, parlamaz. */
-export const IGNE_YOK = Object.freeze({ x: -99, y: -99, z: 0, aci: 0, kepcede: true, yok: true });
+/**
+ * Aranacak iğne kalmayınca tarla.igne: tarlada değil (derinlik ∞), çizilmez, parlamaz. Her
+ * seferinde yeni nesne (makine kodu iğne nesnesine yazabilir; donmuş nesne hata verirdi).
+ */
+export const igneYok = () => ({ x: -99, y: -99, z: 0, aci: 0, kepcede: true, yok: true });
 const IGNE = esyaKodu('igne');
 const CIVI = esyaKodu('civi');
 /** Karakter ve makine çevresinde parça engeli aranan yarıçap (hücre). */
@@ -48,7 +51,7 @@ function gomuluBagla(durum, c) {
 /** Aranan iğneyi c.gomulu'daki ilk alınmamış iğneye ayarlar. */
 export function igneGuncelle(durum) {
   const sonraki = durum.ciftlik.gomulu.find((g) => g.esya === IGNE && !g.alindi);
-  durum.tarla.igne = sonraki ?? IGNE_YOK;
+  durum.tarla.igne = sonraki ?? igneYok();
   durum.gorundu = false;
 }
 
