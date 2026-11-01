@@ -59,13 +59,14 @@ export function durumAl() {
 /**
  * Yeni tarlanın durumu (olay yaymaz). zorluk verilmezse önceki oyunun (yoksa varsayılanın)
  * zorluğu sürer. secenek.rahat verilirse (ör. yarışta false) genel rahat ayarının yerine
- * geçer. Başka modlar (çiftlik) kendi durumlarını bunun üstüne kurar (mod alanı değişir).
+ * geçer. Başka modlar (çiftlik) kendi durumlarını bunun üstüne kurar (mod alanı değişir);
+ * secenek.tarlaKur(tohum, zorluk) verilirse tarla onunla kurulur (çiftlik arazisi).
  */
 export function durumKur(etiket, zorluk, secenek = {}) {
   const arac = durum ? durum.arac : 'el';
   const ad = zorlukAdi(zorluk ?? (durum ? durum.zorluk : varsayilanZorluk));
   const ayar = zorlukAl(ad);
-  const tarla = tarlaKur(zorlukTohumu(etiket, ad), ad);
+  const tarla = (secenek.tarlaKur ?? tarlaKur)(zorlukTohumu(etiket, ad), ad);
   const { garaj, makineler } = garajKur(tarla, ad);
   const karakter = karakterKur(tarla, garaj, makineler.map(makineEngeli));
   return {

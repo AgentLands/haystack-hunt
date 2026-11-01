@@ -205,3 +205,59 @@ export function gomuluCikar(tarla, c, cx, cy, r) {
   }
   return cikan;
 }
+
+// --- Toplama ağzı (D · dunya; docs/ciftlik/esyalar.md §4 "Toplama kuralı") ---
+
+/** Karo listesinin ([[kx, ky]...]) tarladaki, parça tabanı olmayan hücreleri (tarama sırası). */
+export function karoHucreleri(c, karolar) {
+  const liste = [];
+  for (const [kx, ky] of karolar) {
+    for (let y = ky * 2; y < ky * 2 + 2; y++) {
+      for (let x = kx * 2; x < kx * 2 + 2; x++) {
+        if (x < 0 || y < 0 || x >= GENISLIK || y >= YUKSEKLIK) continue;
+        if (!c.izgara.taban[y * GENISLIK + x]) liste.push(y * GENISLIK + x);
+      }
+    }
+  }
+  return liste;
+}
+
+/**
+ * Ağızdan en çok `miktar` kat alır (her kat en yüksek hücreden). cayirMi(i) true olan
+ * hücreden alınanlar `cayir`da sayılır; harmandan alınanlar c.tuketilenKat'a eklenir
+ * (harman arabası tetiği). Dönüş { alinan, cayir }.
+ */
+export function agizdanAl(tarla, c, hucreler, miktar, cayirMi) {
+  const { h } = tarla;
+  let alinan = 0;
+  let cayir = 0;
+  while (alinan < miktar) {
+    let en = -1;
+    for (const i of hucreler) if (en < 0 || h[i] > h[en]) en = i;
+    if (en < 0 || h[en] === 0) break;
+    h[en] -= 1;
+    alinan += 1;
+    if (cayirMi(en)) cayir += 1;
+    kirliIsaretle(c, en % GENISLIK, (en / GENISLIK) | 0);
+  }
+  c.tuketilenKat = (c.tuketilenKat ?? 0) + alinan - cayir;
+  return { alinan, cayir };
+}
+
+/** Gömülü nesne tarlada mı (alınmamış, kepçede/balyada değil)? */
+export const tarladaMi = (g) => !g.alindi && !g.kepcede && !g.balyada;
+
+/**
+ * Hücre kümesinde (Set) açıkta (h ≤ z) duran İLK gömülü nesneyi alır (alindi = true) ve
+ * döndürür; yoksa null. Bir tikte bir nesne: fazlası sonraki tike kalır.
+ */
+export function gomuluBirAl(tarla, c, kume) {
+  for (const g of c.gomulu) {
+    if (!tarladaMi(g)) continue;
+    const i = (g.y | 0) * GENISLIK + (g.x | 0);
+    if (!kume.has(i) || tarla.h[i] > g.z) continue;
+    g.alindi = true;
+    return g;
+  }
+  return null;
+}

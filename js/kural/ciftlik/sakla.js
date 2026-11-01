@@ -2,7 +2,8 @@
  * Çiftlik kaydı (saf; depolama ozellik/ciftlik/depo.js'te). Dünya JSON'a çevrilir:
  *   { surum, tohum, tik, zar, kaymaAdim, sonrakiId, yasak, kaldirilan, h: 'KODLU', kirli,
  *     gomulu: [[esya, x, y, z, aci, alindi, ek]], parcalar: [[id, kod, x, y, yon, etkin,
- *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...], ek }
+ *     tikali, ozel]], hatEsya: [[karo, ic, tur]], envanter: [[kod, n]], kuyruk: [...], ek,
+ *     alanlar: { ad: deger } (kayitAlaniTanimla) }
  * Parça ve eşya türleri KOD ile yazılır. ozel genel kodlanır (sayı, dize, dizi, düz nesne;
  * tipli dizi { $t, n, s: [[i, v]] } seyrek). h: eğim tahmininden fark → zigzag → sıfır koşusu →
  * değişken uzunluk bayt → base64 (ham 77 KB, tipik 5-25 KB).
@@ -20,6 +21,17 @@ import { hatEsyalari, eskiyiYerlestir } from './tasima/hat.js';
 export const SURUM = 1;
 /** Göç tablosu: surum → (veri) → bir sonraki sürümün verisi. */
 export const GOCLER = {};
+const alanlar = new Map();
+
+/**
+ * Faz 1 dünya alanı (arazi, araba, öğretici...): kayıtta `alanlar[ad]`. kodla(c) → JSON'lanabilir
+ * değer; coz(c, deger) yüklemede (parçalardan ve hatlardan önce) çağrılır. Alanı olmayan
+ * eski kayıtta deger undefined gelir: coz varsayılanı kurar (bu yüzden SURUM artmaz).
+ */
+export function kayitAlaniTanimla(ad, { kodla, coz }) {
+  if (alanlar.has(ad)) throw new Error(`kayitAlaniTanimla: "${ad}" zaten var`);
+  alanlar.set(ad, { kodla, coz });
+}
 const TIPLER = { Uint8Array, Uint16Array, Uint32Array, Int32Array, Int16Array, Float64Array };
 
 /** Değişken uzunluklu işaretsiz tam sayı baytları. */
@@ -151,6 +163,7 @@ export function dunyaKodla(c, tarla, ek = {}) {
       gomuluEk(g)]),
     parcalar, hatEsya: hatEsyalari(c), envanter,
     kuyruk: c.kuyruk.map((k) => ({ ...k })), ek,
+    alanlar: Object.fromEntries([...alanlar].map(([ad, a]) => [ad, a.kodla(c)])),
   };
 }
 
@@ -185,6 +198,7 @@ export function dunyaCoz(veri, tarla) {
   Object.assign(c, { tik: v.tik, kaymaAdim: v.kaymaAdim, sonrakiId: v.sonrakiId });
   c.zar.a = v.zar >>> 0;
   c.kirli.set(v.kirli);
+  for (const [ad, a] of alanlar) a.coz(c, v.alanlar?.[ad]);
   for (const [id, kod, x, y, yon, etkin, tikali, ozel] of v.parcalar) {
     const tanim = parcaTanimi(kod);
     if (!tanim) throw new Error(`kayıt: bilinmeyen parça kodu ${kod}`);
