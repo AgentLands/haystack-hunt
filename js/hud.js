@@ -108,7 +108,8 @@ export function hudKur() {
   const makine = makineKartiKur();
 
   dinle('oyun-basladi', ({ durum }) => {
-    const { on, govde } = etiketParcalari(durum.etiket, durum.zorluk);
+    const { on, govde } = durum.mod === 'ciftlik' ? { on: '', govde: 'Çiftlik' }
+      : etiketParcalari(durum.etiket, durum.zorluk);
     const parca = (sinif, metin) => Object.assign(document.createElement('span'),
       { className: sinif, textContent: metin });
     $('etiket').replaceChildren(parca('etiket-on', on), parca('etiket-govde', govde));

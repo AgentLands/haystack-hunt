@@ -9,7 +9,7 @@ const { spawn } = require('node:child_process');
 const path = require('node:path');
 
 const SENARYOLAR = ['acilis', 'buluntu', 'meydan', 'rahat', 'dokunmatik', 'ikmal', 'pes',
-  'cevrimdisi', 'ekranlar'];
+  'cevrimdisi', 'ekranlar', 'ciftlik'];
 
 function bayrakDegeri(ad) {
   const i = process.argv.indexOf(`--${ad}`);

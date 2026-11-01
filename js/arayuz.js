@@ -83,7 +83,12 @@ export function arayuzKur() {
 
   dinle('oyun-basladi', ({ durum }) => {
     const adres = new URL(location.href);
-    adres.searchParams.set('tohum', durum.etiket);
+    if (durum.mod === 'ciftlik') {
+      adres.search = '?mod=ciftlik'; // çiftlik tohumla paylaşılmaz; kayıttan açılır
+    } else {
+      adres.searchParams.delete('mod');
+      adres.searchParams.set('tohum', durum.etiket);
+    }
     history.replaceState(null, '', adres);
     $('bitis').close();
     $('paylas').textContent = 'Sonucu kopyala';

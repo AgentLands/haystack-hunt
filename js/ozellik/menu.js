@@ -22,10 +22,11 @@ import { logo } from './menu-logo.js';
 import { yardimAc } from './yardim.js';
 import { yeniTarlaIzni } from './koruma.js';
 import { radyoKlavyesi } from './radyo-grubu.js';
+import { anaEkler, escOnleyiciler, modSatirlari } from './menu-kanca.js';
 
 const KAPANIS_MS = 200;
 const $ = (id) => document.getElementById(id);
-const tohumVar = new URLSearchParams(location.search).has('tohum');
+const tohumVar = /[?&](tohum|mod)=/.test(location.search); // bağlantıyla gelen: menü açılmaz
 const hareketAz = matchMedia('(prefers-reduced-motion: reduce)');
 
 const stil = document.createElement('link');
@@ -155,7 +156,7 @@ function kartKur() {
   gunun.className = 'dugme-birincil';
   const yeni = $('yeni');
   yeni.className = 'dugme-ikincil';
-  ana.append(gunun, yeni);
+  ana.append(gunun, yeni, ...anaEkler);
 
   const zorlukBaslik = yap('span', 'menu-zorluk-baslik', 'Zorluk');
   zorluk.append(zorlukBaslik, ...zorlukDugmeleri);
@@ -209,11 +210,13 @@ function guncelle() {
   }
   const suruyor = d.baslangic !== null && !d.bitti;
   const yarim = $('menu-yarim');
-  yarim.hidden = !suruyor;
-  if (suruyor) {
-    const gecen = sureMetni(performance.now() - d.baslangic);
-    yarim.textContent = `Bu tarla sürüyor: ${gecen} · ${sayi.format(d.tarla.kaldirilan)} saman. `;
-    const don = yap('button', 'dugme-metin', 'Tarlaya dön');
+  const mod = modSatirlari.map((islev) => islev(d)).find(Boolean);
+  yarim.hidden = !suruyor && !mod;
+  if (suruyor || mod) {
+    const gecen = suruyor && sureMetni(performance.now() - d.baslangic);
+    yarim.textContent = mod ? `${mod.metin} `
+      : `Bu tarla sürüyor: ${gecen} · ${sayi.format(d.tarla.kaldirilan)} saman. `;
+    const don = yap('button', 'dugme-metin', mod?.don ?? 'Tarlaya dön');
     don.addEventListener('click', () => menuKapat());
     yarim.append(don);
   }
@@ -267,7 +270,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape' || e.repeat || hedef.closest('input, textarea, select')) return;
   if (document.querySelector('dialog[open], .rehber')) return;
   e.preventDefault();
-  menuAc();
+  if (!escOnleyiciler.some((islev) => islev())) menuAc();
 }, true);
 
 function acmaDugmesiKur() {
