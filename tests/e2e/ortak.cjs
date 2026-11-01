@@ -15,7 +15,8 @@ const { chromium } = require('playwright');
 const BILINEN = require('./bilinen.cjs');
 
 const KOK = path.resolve(__dirname, '../..');
-const TURLER = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
+const TURLER = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
+  '.css': 'text/css',
   '.json': 'application/json', '.webmanifest': 'application/manifest+json',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon' };
 
@@ -30,8 +31,11 @@ const YAVAS = Number(bayrak('yavas') || process.env.E2E_YAVAS || 1);
 /** Bekleme zaman aşımlarına yavaşlatma payı eklenir. */
 const pay = (ms) => ms * Math.max(1, YAVAS);
 
-/** Kökten statik sunucu (rastgele port). kapat(): bağlantıları da keser (çevrimdışı testi). */
-function sunucuAc() {
+/**
+ * Kökten statik sunucu (varsayılan rastgele port; `--port N` ya da parametre ile sabit port).
+ * kapat(): bağlantıları da keser (çevrimdışı testi).
+ */
+function sunucuAc(port = Number(bayrak('port')) || 0) {
   const sunucu = http.createServer((ist, yan) => {
     const yol = decodeURIComponent(new URL(ist.url, 'http://x').pathname);
     const dosya = path.join(KOK, yol === '/' ? 'index.html' : yol);
@@ -42,7 +46,7 @@ function sunucuAc() {
     yan.writeHead(200, { 'Content-Type': tur });
     fs.createReadStream(dosya).pipe(yan);
   });
-  return new Promise((coz) => sunucu.listen(0, '127.0.0.1', () => coz({
+  return new Promise((coz) => sunucu.listen(port, '127.0.0.1', () => coz({
     sunucu,
     kok: `http://127.0.0.1:${sunucu.address().port}/`,
     kapat: () => new Promise((bit) => { sunucu.closeAllConnections(); sunucu.close(bit); }),
@@ -59,7 +63,16 @@ class Senaryo {
     this.basla = Date.now();
     this.sorunlar = [];
     this.bilinenler = [];
+    this.bekleyenler = [];
     this.gecenler = 0;
+  }
+
+  /**
+   * Henüz birleşmemiş bir işe bağlı denetim: atlanır, "BEKLİYOR" diye yazılır, çıkış kodunu
+   * bozmaz (iş K bekleyen testleri; birleştirme sonrası ana ajan dogrula'ya çevirir).
+   */
+  bekliyor(kimlik, is, neden) {
+    this.bekleyenler.push(`${this.ad}:${kimlik} BEKLİYOR [${is}]: ${neden}`);
   }
 
   dogrula(kimlik, kosul, aciklama) {
@@ -85,6 +98,7 @@ class Senaryo {
   bitir(ek = '') {
     const sure = ((Date.now() - this.basla) / 1000).toFixed(1);
     for (const b of this.bilinenler) console.log(`  ! ${b}`);
+    for (const b of this.bekleyenler) console.log(`  ~ ${b}`);
     if (this.sorunlar.length) {
       console.error(`[${this.ad}] BAŞARISIZ (${sure} sn):\n- ${this.sorunlar.join('\n- ')}`);
       process.exitCode = 1;

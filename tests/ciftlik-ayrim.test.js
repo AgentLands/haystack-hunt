@@ -2,7 +2,11 @@
  * Mod ayrımı: çiftlik modülleri yüklenip bir çiftlik açılıp kapatıldıktan sonra normal
  * tarlanın 900 karelik izi, çiftlik hiç yüklenmeden alınan izle AYNI. Çiftlikte süre
  * başlamaz (ilk-hamle yok), iğne alınınca oyun bitmez, kayıt mod üstünden geri gelir.
+ * Koruma satırları (iş K): istatistik, yarış, meydan, fiş (bulundu/pes/ilk-hamle hiç
+ * yayılmaz), yarış onayı, ön hazırlık kancası, dönünce zorluk. Bilinen çekirdek hatası
+ * `todo` ile koşar (CI'yı kırmaz, raporda: c-dogrulama.md).
  */
+import fs from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { yeniOyun, durumAl, adim, modAc } from '../js/oyun.js';
@@ -104,4 +108,103 @@ test('çiftlik kaydı mod üstünden geri gelir (parçalar, tik, gömülü bağl
   assert.ok(y.tarla.civiler.every((cv) => y.ciftlik.gomulu.includes(cv)));
   assert.equal(y.buluntular.length, d.buluntular.length);
   assert.equal(y.tarla.igne, y.ciftlik.gomulu[0]);
+});
+
+/** Çiftlikte ve sonrasında bu olayların hiçbiri yayılmamalı: istatistik, yarış, meydan, fiş. */
+const YASAK_OLAYLAR = ['ilk-hamle', 'bulundu', 'pes-edildi'];
+
+/** n kare sürer; kareler 20 kare/sn'den hızlı değil, benzetim tikleri ilerler. */
+function surdur(zaman0, n) {
+  let z = zaman0;
+  for (let i = 0; i < n; i++) {
+    z += KARE_MS;
+    adim(z);
+  }
+  return z;
+}
+
+test('çiftlik oturumunda bulundu/pes/ilk-hamle yayılmaz (istatistik, fiş, yarış, meydan)',
+  async () => {
+  const { esyaKodu } = await import('../js/kural/ciftlik/esya.js');
+  const { komutEkle } = await import('../js/kural/ciftlik/benzetim.js');
+  const yayilan = [];
+  const birak = YASAK_OLAYLAR.map((ad) => dinle(ad, () => yayilan.push(ad)));
+  modAc('ciftlik', { etiket: 'koruma-1' });
+  const d = durumAl();
+  komutEkle(d.ciftlik, { tur: 'kur', parca: 'sandik', x: 60, y: 40 });
+  const igne = d.tarla.igne;
+  Object.assign(d.karakter, { x: igne.x + 0.5, y: igne.y + 1.5, yon: -Math.PI / 2 });
+  for (const i of [-1, 0, 1]) {
+    for (const j of [-1, 0, 1]) d.tarla.h[(igne.y + j) * 240 + igne.x + i] = igne.z;
+  }
+  kullanAyarla(true, 'klavye');
+  surdur(60000, 60);
+  kullanAyarla(false, 'klavye');
+  surdur(70000, 200);
+  birak.forEach((b) => b());
+  assert.equal(igne.alindi, true, 'iğne elle alındı (kazma gerçekten çalıştı)');
+  assert.deepEqual(yayilan, [], 'çiftlik yarış/istatistik/fiş olayı yaymaz');
+  assert.equal(d.bitti, false);
+  assert.equal(d.baslangic, null);
+  assert.equal(d.sonuc, null);
+  assert.equal(d.rahat, true, 'çiftlik rahat: meydan hedefi (aktifMi) hiç açılmaz');
+  assert.ok(d.ciftlik.envanter[esyaKodu('igne')] >= 1);
+});
+
+test('çiftlik oturumu (parçalar, kaydet/yükle) sonrası normal tarla izi AYNI', async () => {
+  const { komutEkle } = await import('../js/kural/ciftlik/benzetim.js');
+  const { dunyaKodla } = await import('../js/kural/ciftlik/sakla.js');
+  const once = iz('ayrim-2');
+  modAc('ciftlik', { etiket: 'iz-oturumu' });
+  const d = durumAl();
+  komutEkle(d.ciftlik, { tur: 'kur', parca: 'huni', x: 20, y: 31, yon: 0 });
+  for (let i = 0; i < 5; i++) komutEkle(d.ciftlik, { tur: 'kur', parca: 'bant', x: 22 + i, y: 31 });
+  komutEkle(d.ciftlik, { tur: 'kur', parca: 'sandik', x: 27, y: 31 });
+  surdur(80000, 600);
+  const kayit = JSON.parse(JSON.stringify(dunyaKodla(d.ciftlik, d.tarla, { etiket: d.etiket })));
+  modAc('ciftlik', { kayit });
+  surdur(90000, 300);
+  const sonra = iz('ayrim-2');
+  assert.equal(sonra.mod, 'tarla');
+  assert.equal(sonra.h, once.h);
+  assert.equal(sonra.kayit, once.kayit);
+});
+
+test('yarış sürerken çiftliğe girmek onay ister (koruma.js); menü düğmesi çağırır', async () => {
+  const { korumaKaydet, yeniTarlaIzni } = await import('../js/ozellik/koruma.js');
+  const sorular = [];
+  let ayrildi = 0;
+  globalThis.window = { confirm: (m) => { sorular.push(m); return sorular.length > 1; } };
+  korumaKaydet({ suruyor: () => true, ayril: () => { ayrildi += 1; } });
+  assert.equal(yeniTarlaIzni(), false, 'onay verilmezse çiftlik açılmaz');
+  assert.equal(ayrildi, 0);
+  assert.equal(yeniTarlaIzni(), true, 'onayda yarıştan çıkılır');
+  assert.equal(ayrildi, 1);
+  korumaKaydet({ suruyor: () => false, ayril: () => { ayrildi += 1; } });
+  assert.equal(yeniTarlaIzni(), true, 'yarış yoksa soru yok');
+  delete globalThis.window;
+  const yol = new URL('../js/ozellik/ciftlik/ciftlik.js', import.meta.url);
+  const kaynak = fs.readFileSync(yol, 'utf8');
+  assert.match(kaynak, /else if \(yeniTarlaIzni\(\)\) ciftlikAc\(\)/, 'düğme izin ister');
+});
+
+test('açılış/kapanış olayları: oyun-basladi (mod ciftlik), mod-kapaniyor bir kez', async () => {
+  const olaylar = [];
+  const birak = [
+    dinle('oyun-basladi', ({ durum }) => olaylar.push(`basladi:${durum.mod}`)),
+    dinle('mod-kapaniyor', ({ durum }) => olaylar.push(`kapaniyor:${durum.mod}`)),
+  ];
+  modAc('ciftlik', { etiket: 'olay-1' });
+  yeniOyun('olay-donus', 'normal');
+  birak.forEach((b) => b());
+  assert.deepEqual(olaylar, ['basladi:ciftlik', 'kapaniyor:ciftlik', 'basladi:tarla']);
+});
+
+test('çiftlikten normal moda dönünce seçilen zorluk korunur', { todo: 'ÇEKİRDEK HATASI '
+  + '(c-dogrulama bulgu 2): çiftlik durumu zorluk "normal" kurar, yeniOyun zorluğu durumdan '
+  + 'miras alır; zor/kolay seçen oyuncu çiftlikten dönünce "normal"e düşer' }, () => {
+  yeniOyun('zorluk-1', 'zor');
+  modAc('ciftlik', { etiket: 'zorluk-2' });
+  yeniOyun('zorluk-3');
+  assert.equal(durumAl().zorluk, 'zor');
 });
