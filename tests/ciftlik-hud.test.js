@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { kurusMetni, tikSuresi, dakikaMetni, havaSatiri, havaMetni, DILIM_TIK, fisSatirlari }
   from '../js/ozellik/ciftlik/hud-veri.js';
-import { havaAl } from '../js/ozellik/ciftlik/sap.js';
+import { hava } from '../js/kural/ciftlik/dunya/hava.js';
 import {
   sorunlariTopla, darbogazGuncelle, enCokDuran, ESIK, sorunMu,
 } from '../js/ozellik/ciftlik/sorun-veri.js';
@@ -22,7 +22,7 @@ import {
 import { CIFTLIK_SEKMESI } from '../js/ozellik/yardim-ciftlik.js';
 import { esyaKodu } from '../js/kural/ciftlik/esya.js';
 import { komutEkle } from '../js/kural/ciftlik/benzetim.js';
-import { duzTarla, dunya, kur, bantCek, kos } from './ciftlik-yardim.mjs';
+import { duzTarla, dunya, kur, bantCek, kos, havaSabitle } from './ciftlik-yardim.mjs';
 
 const SAMAN = esyaKodu('saman');
 const CIVI = esyaKodu('civi');
@@ -38,25 +38,28 @@ test('metinler: kuruş, süre, dakika', () => {
   assert.equal(dakikaMetni(120), '2 sa');
 });
 
-test('hava satırı: şimdi + 3 dilim, dilim = 1200 tik, sap havası deterministik', () => {
+test('hava satırı: şimdi + 3 dilim, dilim = 1200 tik, D havası (benzetimle aynı)', () => {
   assert.equal(DILIM_TIK, 1200);
+  havaSabitle('gercek');
   const c = { tik: 2500, tohum: 77 };
-  const a = havaSatiri(c, havaAl);
+  const a = havaSatiri(c);
   assert.equal(a.length, 4);
   assert.deepEqual(a.map((h) => h.dilim), [2, 3, 4, 5]);
-  assert.deepEqual(havaSatiri(c, havaAl), a);
+  assert.deepEqual(havaSatiri(c), a);
+  assert.equal(a[1].gok, hava(77, 3).gok);
+  havaSabitle();
   assert.match(a[0].metin, /^Şimdi: /);
   assert.match(a[3].metin, /^3 dk sonra: /);
-  assert.equal(havaMetni({ yon: 2, siddet: 0, gok: 'gunesli' }), 'durgun, güneşli');
+  assert.equal(havaMetni({ yon: 2, siddet: 0, gok: 'gunes' }), 'durgun, güneşli');
   assert.equal(havaMetni({ yon: 2, siddet: 3, gok: 'yagmur' }), 'sert rüzgâr batıya, yağmurlu');
 });
 
-test('sap havası: şiddet dağılımı ≈ %15/35/35/15 ve yağmurda şiddet ≥ 1', () => {
+test('hava (dunya/hava.js): şiddet dağılımı ≈ %15/35/35/15 ve yağmurda şiddet ≥ 1', () => {
   const say = [0, 0, 0, 0];
   let yagmur = 0;
   const N = 10000;
   for (let d = 0; d < N; d++) {
-    const h = havaAl(123, d);
+    const h = hava(123, d);
     say[h.siddet] += 1;
     if (h.gok === 'yagmur') {
       yagmur += 1;
@@ -229,4 +232,29 @@ test('benzetime komut eklemek HUD için güvenli: red nedeni olayla döner', () 
   const red = kos(c, tarla, 2).filter((o) => o.ad === 'komut-reddedildi');
   assert.deepEqual(red.map((o) => o.veri.neden), ['bilinmeyen', 'yer-yok'],
     'sentetik dünyada döküm yeri yok');
+});
+
+test('eko-veri: G panosu → HUD kartları, damga defteri ve kapı bilgisi', async () => {
+  const { ekonomiOzeti, kapiBilgisi } = await import('../js/ozellik/ciftlik/eko-veri.js');
+  const { teslimEt } = await import('../js/kural/ciftlik/ekonomi/siparis.js');
+  const { c, tarla } = dunya(5, duzTarla(0));
+  kos(c, tarla, 1);
+  let eko = ekonomiOzeti(c);
+  assert.equal(eko.kurus, 300);
+  assert.equal(eko.siradaki, 'D1');
+  const d1 = eko.kartlar.find((k) => k.damga === 'D1');
+  assert.deepEqual([d1.yuva, d1.metin, d1.hedef, d1.geriCevir], [0, '30 saman tutamı', 30, false]);
+  assert.equal(eko.kartlar.length, 3);
+  assert.ok(eko.kartlar.slice(1).every((k) => k.geriCevir && Number.isInteger(k.yuva)));
+  assert.equal(eko.damgalar.length, 14);
+  assert.ok(eko.damgalar[0].acar.includes('Çatal'));
+  for (let i = 0; i < 30; i++) teslimEt(c, SAMAN);
+  kos(c, tarla, 1);
+  eko = ekonomiOzeti(c);
+  assert.equal(eko.siradaki, 'D2');
+  assert.ok(eko.damgalar[0].basildi);
+  const kapi = kapiBilgisi(c);
+  assert.equal(kapi.araba.uygun, false, 'sentetik dünyada döküm yeri yok');
+  assert.match(kapi.araba.neden, /boş yer/);
+  assert.equal(kapi.cayir.neden, 'Bu çiftlikte çayır yok.');
 });

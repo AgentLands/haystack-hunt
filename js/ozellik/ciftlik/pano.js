@@ -73,7 +73,7 @@ function kartKur(k) {
   const sure = yap('span', 'cf-sure');
   sure.append(simge('kumsaati', 15), yap('b', 'sayi'));
   const cevir = dugme('cf-cevir dugme-metin', 'Geri çevir', `${k.baslik} siparişini geri çevir`,
-    () => komutEkle(durumAl().ciftlik, { tur: 'siparisCevir', kart: k.kimlik }));
+    () => komutEkle(durumAl().ciftlik, { tur: 'siparisCevir', yuva: k.yuva }));
   const orta = yap('div', 'cf-kart-orta');
   orta.append(metin, sure, cevir);
   const cubuk = yap('div', 'cf-ilerleme');

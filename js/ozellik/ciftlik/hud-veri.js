@@ -1,17 +1,17 @@
 /**
  * HUD'un saf yardımcıları (DOM yok, Node'da test edilir): kuruş ve süre metinleri, hava
- * tahmini satırı (şimdi + sonraki 3 dilim) ve metinleri. Hava işlevi dışarıdan verilir
- * (sap.js ya da D'nin kural modülü), sayılar kural modüllerinden okunur (TIK_MS).
+ * tahmini satırı (şimdi + sonraki 3 dilim) ve metinleri. Hava dunya/hava.js'ten (benzetimin
+ * okuduğu havanın aynısı), sayılar kural modüllerinden okunur (TIK_MS, DILIM_TIK).
  */
 import { TIK_MS } from '../../kural/ciftlik/olcu.js';
 import { esyaTanimi } from '../../kural/ciftlik/esya.js';
+import { DILIM_TIK, GOK, havaTahmini } from '../../kural/ciftlik/dunya/hava.js';
 
-/** Hava dilimi (tik): 1 dk = 1200 tik (sistemler.md §3). */
-export const DILIM_TIK = 60000 / TIK_MS;
+export { DILIM_TIK };
 export const TAHMIN_DILIM = 3;
 export const YON_AD = ['doğuya', 'güneye', 'batıya', 'kuzeye'];
 export const SIDDET_AD = ['durgun', 'esinti', 'rüzgâr', 'sert rüzgâr'];
-export const GOK_AD = { gunesli: 'güneşli', bulutlu: 'bulutlu', yagmur: 'yağmurlu' };
+export const GOK_AD = { [GOK.GUNES]: 'güneşli', [GOK.BULUT]: 'bulutlu', [GOK.YAGMUR]: 'yağmurlu' };
 const SAYI = new Intl.NumberFormat('tr-TR');
 
 /** 1240 → "1.240". */
@@ -38,18 +38,14 @@ export function havaMetni(h) {
 }
 
 /**
- * Tahmin satırı: şimdiki dilim ve sonraki TAHMIN_DILIM dilim. hava(tohum, dilim) → { yon,
- * siddet, gok }. Her öğe { dilim, kaç (kaç dilim sonra), ...hava, metin }.
+ * Tahmin satırı: şimdiki dilim ve sonraki TAHMIN_DILIM dilim (dunya/hava.js havaTahmini).
+ * Her öğe { dilim, kac (kaç dilim sonra), yon, siddet, gok, metin }.
  */
-export function havaSatiri(c, hava) {
-  const simdi = Math.floor(c.tik / DILIM_TIK);
-  const satir = [];
-  for (let k = 0; k <= TAHMIN_DILIM; k++) {
-    const h = hava(c.tohum, simdi + k);
+export function havaSatiri(c) {
+  return havaTahmini(c, TAHMIN_DILIM).map((h, k) => {
     const ne = k === 0 ? 'Şimdi' : `${k} dk sonra`;
-    satir.push({ dilim: simdi + k, kac: k, ...h, metin: `${ne}: ${havaMetni(h)}` });
-  }
-  return satir;
+    return { ...h, kac: k, metin: `${ne}: ${havaMetni(h)}` };
+  });
 }
 
 /** Hava satırlarının değişip değişmediğini anlamak için kısa anahtar. */

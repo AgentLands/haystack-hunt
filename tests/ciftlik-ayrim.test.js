@@ -200,9 +200,7 @@ test('açılış/kapanış olayları: oyun-basladi (mod ciftlik), mod-kapaniyor 
   assert.deepEqual(olaylar, ['basladi:ciftlik', 'kapaniyor:ciftlik', 'basladi:tarla']);
 });
 
-test('çiftlikten normal moda dönünce seçilen zorluk korunur', { todo: 'ÇEKİRDEK HATASI '
-  + '(c-dogrulama bulgu 2): çiftlik durumu zorluk "normal" kurar, yeniOyun zorluğu durumdan '
-  + 'miras alır; zor/kolay seçen oyuncu çiftlikten dönünce "normal"e düşer' }, () => {
+test('çiftlikten normal moda dönünce seçilen zorluk korunur', () => {
   yeniOyun('zorluk-1', 'zor');
   modAc('ciftlik', { etiket: 'zorluk-2' });
   yeniOyun('zorluk-3');

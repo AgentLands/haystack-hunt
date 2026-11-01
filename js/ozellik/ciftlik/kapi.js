@@ -1,7 +1,7 @@
 /**
  * Komşu kapısı paneli (kâğıt pencere): "Fazlasını sat" anahtarı, "Araba çağır" ve "Çayır
  * genişlet" düğmeleri (kuruşun geç oyundaki kuyuları, ekonomi.md §2). Bedeller ve haklar
- * kapiBilgisi'nden gelir (sap.js → G ve D); işlemler komutla yapılır (kapiSat, arabaCagir,
+ * eko-veri.js kapiBilgisi'nden gelir (G ve D); işlemler komutla yapılır (kapiSat, arabaCagir,
  * cayirGenislet), sonuç sonraki tikte olay olarak döner. Komut reddedilirse ('komut-
  * reddedildi') nedeni tuvalde bildirilir. 'ciftlik-ekran-ac' { ad: 'kapi' } açar; inceleme
  * paneli de Komşu kapısına dokununca aynı olayı yayabilir.
@@ -10,7 +10,7 @@ import { dinle } from '../../olaylar.js';
 import { durumAl } from '../../oyun.js';
 import { bildir } from '../../arayuz.js';
 import { komutEkle } from '../../kural/ciftlik/benzetim.js';
-import { kapiBilgisi } from './sap.js';
+import { kapiBilgisi, NEDEN_METNI } from './eko-veri.js';
 import { kurusMetni } from './hud-veri.js';
 import { simge } from './simge.js';
 import { yap, dugme } from './yap.js';
@@ -19,12 +19,6 @@ import { pencereHazirla, stilYukle } from '../pencere.js';
 stilYukle('./ciftlik/pano.css');
 
 const KOMUTLAR = new Set(['kapiSat', 'arabaCagir', 'cayirGenislet', 'siparisCevir']);
-const NEDENLER = {
-  bilinmeyen: 'Bu işlem henüz hazır değil.',
-  kurus: 'Kuruş yetmiyor.',
-  bekleme: 'Biraz bekle, yeni işlem için süre dolmadı.',
-  limit: 'Bu işlemin hakkı bitti.',
-};
 
 let pencere = null;
 let ogeler = null;
@@ -69,7 +63,7 @@ function bedelYaz(d, bilgi, ek = '') {
 }
 
 function guncelle() {
-  const b = kapiBilgisi(durumAl());
+  const b = kapiBilgisi(durumAl().ciftlik);
   ogeler.sat.setAttribute('aria-pressed', String(b.fazlasiniSat));
   bedelYaz(ogeler.araba.d, b.araba);
   bedelYaz(ogeler.cayir.d, b.cayir, ` · ${b.cayir.adim}/${b.cayir.toplam}`);
@@ -89,5 +83,5 @@ dinle('ciftlik-hud', () => {
   if (pencere?.open) guncelle();
 });
 dinle('komut-reddedildi', ({ komut, neden }) => {
-  if (KOMUTLAR.has(komut.tur)) bildir(NEDENLER[neden] ?? `İşlem olmadı (${neden}).`, 2600);
+  if (KOMUTLAR.has(komut.tur)) bildir(NEDEN_METNI[neden] ?? `İşlem olmadı (${neden}).`, 2600);
 });

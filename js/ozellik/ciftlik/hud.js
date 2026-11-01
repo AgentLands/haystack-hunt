@@ -4,10 +4,10 @@
  * açar), sorun sayısı (listeyi açar) ve Pano düğmesi. Normal moddaki süre ve saman etiketi
  * çiftlikte gizlidir (hud.css). Bu modül çiftlik durumunu saniyede dört kez yoklar ve
  * 'ciftlik-hud' olayıyla yayar; pano, sorun listesi ve defter o olayı dinler (birbirini
- * içe aktarmaz). Düğmeler 'ciftlik-ekran-ac' yayar. Veri: sap.js (G ve D gelince gerçek).
+ * içe aktarmaz). Düğmeler 'ciftlik-ekran-ac' yayar. Veri: eko-veri.js (G) ve dunya/hava.js (D).
  */
 import { dinle, yay } from '../../olaylar.js';
-import { ekonomiAl, havaAl } from './sap.js';
+import { ekonomiOzeti } from './eko-veri.js';
 import { havaSatiri, havaAnahtari, kurusMetni, TAHMIN_DILIM } from './hud-veri.js';
 import { sorunlariTopla } from './sorun-veri.js';
 import { simge, GOK_SIMGE } from './simge.js';
@@ -137,12 +137,12 @@ function kurusFarki(kurus) {
 
 /** Çiftliği bir kez okur, şeridi günceller ve 'ciftlik-hud' olayını yayar. */
 export function hudYokla(durum) {
-  const eko = ekonomiAl(durum);
+  const eko = ekonomiOzeti(durum.ciftlik);
   const sira = eko.damgalar.find((d) => d.kod === eko.siradaki);
   kurusYaz(kurusMetni(eko.kurus));
   kurusFarki(eko.kurus);
   damgaYaz(sira ? `${sira.kod}|${sira.ad}` : '|');
-  const satir = havaSatiri(durum.ciftlik, havaAl);
+  const satir = havaSatiri(durum.ciftlik);
   const anahtar = havaAnahtari(satir) + satir[0].dilim;
   if (anahtar !== sonHava) {
     sonHava = anahtar;

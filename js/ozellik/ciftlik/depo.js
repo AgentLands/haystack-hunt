@@ -1,15 +1,19 @@
 /**
- * Çiftlik kaydının tarayıcı depolaması (localStorage; erişim hep try/catch). İki anahtar:
- * ANAHTAR (son kayıt) ve YEDEK (bir önceki kayıt). Yazarken eski kayıt yedeğe geçer; bozuk
- * son kayıtta yedek denenir. Kota hatası yutulmaz: console.error + oyuncuya bildirim.
- * Kalıcı ilerleme (Faz 1) ayrı anahtarda tutulacak: ILERLEME_ANAHTAR (dünya bozulsa da
- * ilerleme silinmez).
+ * Çiftlik kaydının tarayıcı depolaması (localStorage; erişim hep try/catch). Üç anahtar:
+ * ANAHTAR (son kayıt), YEDEK (bir önceki kayıt) ve ILERLEME_ANAHTAR (kalıcı ilerleme:
+ * damgalar, toplamlar, çiftlik defteri; ekonomi/damga.js biçimi; dünya bozulsa da silinmez,
+ * "yeni çiftlik"te de kalır). Yazarken eski kayıt yedeğe geçer; bozuk son kayıtta yedek
+ * denenir. Ayrıştırılamayan (bozuk JSON) kayıt `<anahtar>-bozuk`a bir kez kopyalanır ki
+ * sonraki kayıt onu ezmeden önce veri kurtarılabilsin; okuyan oyuncuya bildirir
+ * (kayitlariOku().bozuk). Kota hatası yutulmaz: console.error + oyuncuya bildirim.
  */
 import { bildir } from '../../arayuz.js';
+import { ilerlemeKodla, ilerlemeCoz } from '../../kural/ciftlik/ekonomi/damga.js';
 
 export const ANAHTAR = 'haystack-hunt:ciftlik';
 export const YEDEK = 'haystack-hunt:ciftlik-yedek';
 export const ILERLEME_ANAHTAR = 'haystack-hunt:ciftlik-ilerleme';
+export const BOZUK_EK = '-bozuk';
 
 function depo() {
   try {
@@ -20,23 +24,42 @@ function depo() {
   }
 }
 
-/** Okunabilen kayıtlar, önce son kayıt sonra yedek: [{ kaynak, veri }] (JSON çözülmüş). */
+function oku(d, anahtar) {
+  try {
+    return d.getItem(anahtar);
+  } catch (hata) {
+    console.error(`Çiftlik kaydı okunamadı (${anahtar}):`, hata);
+    return null;
+  }
+}
+
+/** Bozuk metni bir kez kenara kopyalar (üzerine yazılmadan önce kurtarılabilsin). */
+function bozuguSakla(d, anahtar, metin) {
+  try {
+    if (d.getItem(anahtar + BOZUK_EK) !== metin) d.setItem(anahtar + BOZUK_EK, metin);
+  } catch (hata) {
+    console.error(`Bozuk çiftlik kaydı kenara alınamadı (${anahtar}):`, hata);
+  }
+}
+
+/**
+ * Okunabilen kayıtlar, önce son kayıt sonra yedek: [{ kaynak, veri }] (JSON çözülmüş).
+ * Dizinin `bozuk` alanı: ayrıştırılamayan anahtarlar (oyuncuya bildirmek için).
+ */
 export function kayitlariOku() {
-  const d = depo();
-  if (!d) return [];
   const liste = [];
+  liste.bozuk = [];
+  const d = depo();
+  if (!d) return liste;
   for (const kaynak of [ANAHTAR, YEDEK]) {
-    let metin = null;
-    try {
-      metin = d.getItem(kaynak);
-    } catch (hata) {
-      console.error(`Çiftlik kaydı okunamadı (${kaynak}):`, hata);
-    }
+    const metin = oku(d, kaynak);
     if (!metin) continue;
     try {
       liste.push({ kaynak, veri: JSON.parse(metin) });
     } catch (hata) {
       console.error(`Çiftlik kaydı bozuk (${kaynak}):`, hata);
+      liste.bozuk.push(kaynak);
+      bozuguSakla(d, kaynak, metin);
     }
   }
   return liste;
@@ -68,5 +91,36 @@ export function kayitSil() {
     d?.removeItem(ANAHTAR);
   } catch (hata) {
     console.error('Çiftlik kaydı silinemedi:', hata);
+  }
+}
+
+/**
+ * Kalıcı ilerleme ya da null (yok). Bozuksa kenara kopyalanır, oyuncuya bildirilir ve null
+ * döner (çağıran yenisini kurar).
+ */
+export function ilerlemeOku() {
+  const d = depo();
+  const metin = d && oku(d, ILERLEME_ANAHTAR);
+  if (!metin) return null;
+  try {
+    return ilerlemeCoz(JSON.parse(metin));
+  } catch (hata) {
+    console.error('Çiftlik ilerlemesi okunamadı:', hata);
+    bozuguSakla(d, ILERLEME_ANAHTAR, metin);
+    bildir('Çiftlik ilerlemesi (damgalar) okunamadı; yeniden başlıyor.', 4000);
+    return null;
+  }
+}
+
+/** Kalıcı ilerlemeyi yazar; başarıyı döndürür. */
+export function ilerlemeYaz(ilerleme) {
+  const d = depo();
+  if (!d) return false;
+  try {
+    d.setItem(ILERLEME_ANAHTAR, JSON.stringify(ilerlemeKodla(ilerleme)));
+    return true;
+  } catch (hata) {
+    console.error('Çiftlik ilerlemesi kaydedilemedi:', hata);
+    return false;
   }
 }

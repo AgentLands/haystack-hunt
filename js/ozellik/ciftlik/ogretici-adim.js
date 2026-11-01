@@ -7,14 +7,15 @@
  */
 import { TIK_MS } from '../../kural/ciftlik/olcu.js';
 import { esyaKodu } from '../../kural/ciftlik/esya.js';
+import { ENERJI } from '../../kural/ciftlik/ag/enerji.js';
 
 const CIVI = esyaKodu('civi');
 const IGNE = esyaKodu('igne');
 /** Öğreticinin tanıdığı parça anahtarları (parcalar.md "kod-adı"). */
 export const PARCA = { huni: 'huni', bant: 'bant', sandik: 'sandik',
   miknatis: 'oluk-miknatisi', kol: 'yaba-kolu' };
-/** El krankının tek dokunuşta döndüğü süre (tik; sistemler.md §1: 600 tik). SAP: B'den gelir. */
-export const KRANK_TIK = 600;
+/** El krankının tek dokunuşta döndüğü süre (tik; ag/enerji.js ENERJI). */
+export const KRANK_TIK = ENERJI.KRANK_TIK;
 const KRANK_SN = (KRANK_TIK * TIK_MS) / 1000;
 /** "Bant çekti" saymak için en az bant sayısı. */
 export const BANT_ESIK = 4;

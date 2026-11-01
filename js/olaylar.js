@@ -139,11 +139,14 @@
  *   siparis-sifirlandi { yuva, neden }             D2 Çivisiz: kapıya çivi geldi ('civi')
  *   siparis-cevrildi { yuva }                      "Geri çevir" (yenisi 1200 tik sonra)
  *   damga-basildi    { damga, ad, odul, acilanlar } damga basıldı; acilanlar: parça anahtarları
- *   ciftlik-bulundu  { kod, kip, kurus }           iğne/buluntu bulundu sayıldı; kip: 'tam' |
- *                                                  'yari' (sandık/ambar) | 'kurussuz' (iade)
+ *   (ciftlik-bulundu: [F]'deki zengin biçim; kural kaynakları isleme/bulundu.js'ten yayar,
+ *    oyun elle alınan iğne/buluntu için kaynak 'el')
  *   kuyu-kullanildi  { tur, bedel }                kuruş kuyusu: 'araba' | 'cayir'
- *   ciftlik-cevrimdisi { dk, esya, kurus, doldu }  (oyun yayar) çevrimdışı kazanç uygulandı
- *   (komut-reddedildi nedenleri: 'kilitli', 'kurus', 'taban', 'bekle', 'tavan', 'damga';
+ *   ciftlik-cevrimdisi { dk, kazanc }              (ozellik/ciftlik/ciftlik.js yayar) açılışta
+ *                                                  çevrimdışı kazanç uygulandı: kazanc { esya:
+ *                                                  { kod: adet }, kurus, dolu: [ad] } (fiş)
+ *   (komut-reddedildi nedenleri: 'kilitli', 'kurus', 'taban', 'tavan', 'damga'; kuyular
+ *    için dünyanın 'yolda', 'erken', 'yer-yok', 'cayir-yok', 'en-cok';
  *    parca-sokuldu iade'sinde ek alan kurus: iade edilen parça bedeli)
  *
  *   [I inşa] ('ayar' komutu tek tanım: isleme/komutlar.js; olayı parca-ayarlandi [F])
@@ -155,7 +158,7 @@
  *   ayar-tasindi     { parca }                     'ayarTasi' (pipet ortak ayarı) yazıldı
  *   komut-reddedildi neden: 'yapistir-engelli' (+ engelliKaro, eksik) | 'bos' | 'bilinmeyen'
  *
- *   [J hud] (ozellik/ciftlik/hud.js, ogretici.js, sorun.js; sap.js geçici ekonomi/hava)
+ *   [J hud] (ozellik/ciftlik/hud.js, ogretici.js, sorun.js; veri eko-veri.js + dunya/hava.js)
  *   ciftlik-hud      { eko, hava, sorunlar, bekleyenler }   çiftlikte saniyede 4 kez: ekonomi
  *                                                  özeti (kuruş, 3 kart, damgalar), hava satırı
  *                                                  (şimdi + 3 dilim), tıkanan ve bekleyen parçalar
@@ -166,9 +169,8 @@
  *   ciftlik-sorun-secildi { parca, kx, ky }        sorun listesinden parça seçildi, kamera gitti
  *   ogretici-adim    { kimlik, sira }              öğreticinin yeni adımı gösterildi
  *   ogretici-bitti   { atlandi }                   öğretici bitti ya da atlandı
- *   J'nin G/D'den beklediği (sap.js şimdilik yayar; gerçek sahibi G/D): damga-basildi {damga,
- *   ad, odul, acilanlar}, siparis-teslim {baslik, odul}, harman-arabasi {asama, x, y},
- *   ciftlik-cevrimdisi {dk, kazanc: {esya: {kod: adet}, kurus, dolu: [ad]}}.
+ *   J'nin dinlediği G/D olayları: damga-basildi, siparis-tamam, harman-arabasi,
+ *   ciftlik-cevrimdisi, hava-degisti (açılışta da bir kez: ozellik/ciftlik/ciftlik.js).
  */
 const dinleyiciler = new Map();
 

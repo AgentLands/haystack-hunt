@@ -56,7 +56,7 @@ dinle('damga-basildi', cal(() => {
   hisirti({ sure: 0.1, duzey: 0.18, f0: 700, f1: 260, q: 0.9, kat: 'makine' });
   zil([880, 1175, 1568, 2093], { duzey: 0.2, aralik: 0.09, sure: 0.5 });
 }));
-dinle('siparis-teslim', cal(() => zil([1319, 1760], { duzey: 0.17, aralik: 0.1, sure: 0.4 })));
+dinle('siparis-tamam', cal(() => zil([1319, 1760], { duzey: 0.17, aralik: 0.1, sure: 0.4 })));
 dinle('harman-arabasi', cal(({ asama }) => {
   if (asama === 'duyuru') {
     nota({ frekans: 196, sure: 0.35, duzey: 0.13, dalga: 'sawtooth', kat: 'ortam' });
