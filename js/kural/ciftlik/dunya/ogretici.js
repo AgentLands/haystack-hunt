@@ -23,8 +23,28 @@ import { gomuluEkle } from './gomulu.js';
 /** Çizelge (tik, huni kurulumundan): ilkCivi + k × civiAralik (k < civi); igne. */
 export const OGRETICI = Object.freeze({
   civi: 8, ilkCivi: 2600, civiAralik: 600, igne: 5400, ortu: 0, enAzH: 12, yeniden: 20,
-  kapiPay: 2,
+  kapiPay: 2, onDerin: 16, onYan: 6, enAzHacim: 8000,
 });
+
+/**
+ * Ağzın önündeki yığın hacmi (kat): ağız yönünde onDerin hücre derinlik, ağız genişliği ±
+ * onYan hücre. Öğretici huni yığının ince kuyruğuna değil gövdesine baksın (tek huni ilk
+ * damgalar boyunca aç kalmasın).
+ */
+function onHacim(tarla, p) {
+  const d = tersYon(p.yon);
+  const [x0, y0, x1, y1] = [p.x * KARO, p.y * KARO, (p.x + p.en) * KARO, (p.y + p.boy) * KARO];
+  const { onDerin: D, onYan: Y } = OGRETICI;
+  const kutu = [[x1, y0 - Y, x1 + D, y1 + Y], [x0 - Y, y1, x1 + Y, y1 + D],
+    [x0 - D, y0 - Y, x0, y1 + Y], [x0 - Y, y0 - D, x1 + Y, y0]][d];
+  let n = 0;
+  for (let y = Math.max(0, kutu[1]); y < Math.min(160, kutu[3]); y++) {
+    for (let x = Math.max(0, kutu[0]); x < Math.min(GENISLIK, kutu[2]); x++) {
+      n += tarla.h[y * GENISLIK + x];
+    }
+  }
+  return n;
+}
 
 /** Huni ağzı: çıkışın (p.yon) karşı kenarına bitişik karolar ([[kx, ky]...]; parça dışı). */
 export function agizKarolari(p) {
@@ -52,11 +72,15 @@ export function agizYeri(c, tarla, p, cayirOlmaz) {
 
 /**
  * Öğretici huni hayaletinin yeri (J · öğretici gösterir): kurulabilir, harmanda, ağzında
- * saman (en yüksek ağız hücresi ≥ enAzH), çıkışının önüne bant kurulabilen ve Komşu
- * kapısına (kapiPay karo dışında) en yakın { x, y, yon }; kapı yoksa ızgara ortasına en
- * yakın. Yoksa null.
+ * saman (en yüksek ağız hücresi ≥ enAzH), ağzının önünde yığın gövdesi (onHacim ≥ enAzHacim;
+ * böyle yer yoksa bu koşulsuz), çıkışının önüne bant kurulabilen ve Komşu kapısına (kapiPay
+ * karo dışında) en yakın { x, y, yon }; kapı yoksa ızgara ortasına en yakın. Yoksa null.
  */
 export function ogreticiHuniYeri(c, tarla) {
+  return huniYeriAra(c, tarla, OGRETICI.enAzHacim) ?? huniYeriAra(c, tarla, 0);
+}
+
+function huniYeriAra(c, tarla, enAzHacim) {
   const tanim = parcaTanimi('huni');
   const bant = parcaTanimi('bant');
   const kapi = c.arazi?.kapi ?? { x: KARO_EN / 2 - 1, y: KARO_BOY / 2 - 1, en: 0, boy: 0 };
@@ -73,6 +97,7 @@ export function ogreticiHuniYeri(c, tarla) {
         let tepe = 0;
         for (const i of karoHucreleri(c, agizKarolari(p))) tepe = Math.max(tepe, tarla.h[i]);
         if (tepe < OGRETICI.enAzH || yerlestirmeEngeli(c, tarla, tanim, x, y, yon)) continue;
+        if (enAzHacim && onHacim(tarla, p) < enAzHacim) continue;
         const { hx, hy } = p.cikis[0];
         if (yerlestirmeEngeli(c, tarla, bant, hx, hy, yon)) continue;
         en = { x, y, yon, d };

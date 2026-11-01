@@ -3,15 +3,15 @@
  * 6000 tik koşturup hızları belgedeki sayılarla ±%10 kıyaslar. Kurulum `ciftlik-hatlar.mjs`
  * ile port bilgisinden yapılır; parçalar henüz birleşmediği için bu dosya BİRLEŞMEDE
  * doğrulanacak varsayımlar içerir (sağdaki "VARSAYIM" notları). Hava: rüzgâr sabit şiddet 3,
- * güneşli (`c.havaSabit` test kancası; D yazmadıysa uyarlanır). Güç: `c.testTamGuc`.
+ * güneşli (`c.havaSabit` test kancası, dunya/hava.js). Güç: `c.testTamGuc`.
  */
 import { esyaKodu } from '../js/kural/ciftlik/esya.js';
-import { KARO_EN, DX, DY } from '../js/kural/ciftlik/olcu.js';
+import { KARO_EN, DX, DY, tersYon } from '../js/kural/ciftlik/olcu.js';
 import { GENISLIK } from '../js/kural/boyut.js';
 import { dunya, duzTarla, kur } from './ciftlik-yardim.mjs';
 import { HUNI_AD } from './ciftlik-bekleyen.mjs';
 import {
-  girisineKur, kolKur, sonraki, zincir, bantlar, cikisImleci, platoYap,
+  girisineKur, kolKur, sonraki, zincir, bantlar, cikisImleci, platoYap, yolCek,
 } from './ciftlik-hatlar.mjs';
 
 /** Referans hatların belgedeki hedefleri: eşya/dk ve taban kuruş/dk (`ekonomi.md` §8). */
@@ -22,7 +22,7 @@ export const HEDEF = {
 };
 export const TOLERANS = 0.10;
 
-const SABIT_HAVA = { yon: 0, siddet: 3, gok: 'gunesli' };
+const SABIT_HAVA = { yon: 0, siddet: 3, gok: 'gunes' };
 
 /** Boş dünya: düz tarla, tam güç ve sabit hava kancaları açık. */
 function bosDunya(tohum) {
@@ -66,13 +66,6 @@ export function hatC(tohum = 13) {
   return { c, tarla, ana: kiyim, sinkler: [kiyim, toz, agir], parcalar: [], hedef: HEDEF.C };
 }
 
-/** Bant yolu: imleçten başlayıp [yon, n] parçalarını sırayla çeker, son imleci döndürür. */
-function rota(c, tarla, im, parcalar) {
-  let s = im;
-  for (const [yon, n] of parcalar) s = bantlar(c, tarla, { ...s, yon }, n);
-  return s;
-}
-
 /** Tırmığı, huninin ağzındaki karoya yığacak biçimde huninin önüne koyar (VARSAYIM: ağız =
  *  gövdenin önündeki karo; tırmığın yığma noktası = tırmığın önündeki karo). */
 function tirmikBagla(c, tarla, huni) {
@@ -84,12 +77,13 @@ function tirmikBagla(c, tarla, huni) {
   return kur(c, tarla, 'tirmik-kolu', agiz.kx + DX[f], agiz.ky + DY[f], (f + 2) & 3);
 }
 
-/** Çayır tabakası (VARSAYIM: D `c.zemin[karo] = CAYIR`; çayır hücreleri 12 kat). */
+/** Çayır tabakası (D: `c.arazi.zemin[karo] = ZEMIN.CAYIR`; çayır hücreleri 12 kat). */
 async function cayirYap(c, tarla, { kx0, ky0, kx1, ky1 }) {
-  const { CAYIR } = await import('../js/kural/ciftlik/dunya/arazi.js');
+  const { ZEMIN, dunyaHazirla } = await import('../js/kural/ciftlik/dunya/zemin.js');
+  const a = dunyaHazirla(c);
   for (let ky = ky0; ky < ky1; ky++) {
     for (let kx = kx0; kx < kx1; kx++) {
-      c.zemin[ky * KARO_EN + kx] = CAYIR;
+      a.zemin[ky * KARO_EN + kx] = ZEMIN.CAYIR;
       for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
         tarla.h[(ky * 2 + y) * GENISLIK + kx * 2 + x] = 12;
       }
@@ -98,8 +92,10 @@ async function cayirYap(c, tarla, { kx0, ky0, kx1, ky1 }) {
 }
 
 /**
- * Hat B (ot balyası): çayırda 2 tırmık + 2 huni → oluk → ot savurucu → çatal (taşma): ön →
- * oluk2; yan: kurutma ambarı → U dönüşü → oluk2 yan → pres → sandık.
+ * Hat B (ot balyası, ekonomi.md §8): çayırda 2 tırmık + 2 huni → oluk → çatal (sırayla) → iki
+ * ot savurucu (güneşte 2 × 54 ≥ ≈ 84 yaş ot/dk): ön kol doğrudan, yan kol kuzeye dönüp U ile
+ * oluk2'nin yanına → pres → sandık. Taşma kurutma ambarı sabit güneşte hiç dolmadığından
+ * ölçüme katılmaz (bulutlu havada fazlası oraya; belge §8).
  */
 export async function hatB(tohum = 12) {
   const { c, tarla } = bosDunya(tohum);
@@ -109,16 +105,17 @@ export async function hatB(tohum = 12) {
     const huni = kolKur(c, tarla, oluk.giris[g], 4, HUNI_AD);
     tirmikBagla(c, tarla, huni);
   }
-  const [, , catal] = zincir(c, tarla, oluk, [[2, 'ot-savurucu'], [1, 'catal']]);
-  catal.ozel.ayar = 'tasma'; // VARSAYIM: B/A `ayar` alanı; çatal 'taşma' kipi
-  const on = cikisImleci(catal, 0);
-  const oluk2 = girisineKur(c, tarla, 'birlestirme-olugu', bantlar(c, tarla, on, 2), 0, 0);
-  const ambar = sonraki(c, tarla, catal, 1, 1, 'kurutma-ambari');
-  const o = cikisImleci(ambar, 0);
-  const git = rota(c, tarla, o, [[o.yon, 1], [0, oluk2.x - o.kx], [1, oluk2.y - 1 - o.ky]]);
-  if (git.yon !== 1) throw new Error('Hat B: U dönüşü yönü beklenmedik');
+  const [, catal] = zincir(c, tarla, oluk, [[2, 'catal']]);
+  catal.tanim.ayarla(catal, 'kip', 'sirayla');
+  const savA = sonraki(c, tarla, catal, 0, 1, 'ot-savurucu');
+  const oluk2 = girisineKur(c, tarla, 'birlestirme-olugu', bantlar(c, tarla,
+    cikisImleci(savA, 0), 1), 0, 0);
   const pres = sonraki(c, tarla, oluk2, 0, 2, 'balya-presi');
   const balya = sonraki(c, tarla, pres, 0, 2, 'sandik');
+  const savB = sonraki(c, tarla, catal, 1, 1, 'ot-savurucu');
+  const o = cikisImleci(savB, 0);
+  const yan = oluk2.giris.find((g) => g.hy < oluk2.y); // kuzeyden giren yan giriş
+  yolCek(c, tarla, o, { kx: yan.hx, ky: yan.hy }, tersYon(yan.yon));
   return { c, tarla, ana: balya, sinkler: [balya], parcalar: [], hedef: HEDEF.B };
 }
 

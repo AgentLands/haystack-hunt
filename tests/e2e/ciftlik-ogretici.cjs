@@ -5,15 +5,19 @@
  * birleştirme oluğu, oluk mıknatısı açılır); öğretici çivisi gelince "Çivi geldi!" notu;
  * mıknatıs doyar, "Boşalt"; D2; kol; ilk iğne tutucuda parlar → D3 (pres, krank, yel açılır).
  * Pano/öğretici (J) yoksa "BEKLİYOR" yazılıp çıkılır; varsa CIFTLIK_BEKLEYEN=1 ile koşar.
- * UYARLA: aşağıdaki seçiciler J'nin gerçek sınıflarına göre birleştirmede güncellenir.
+ * Hâlâ BEKLEYEN (birleştirme notu): (1) palet ilk damgaya dek 3 parça değil, bütün parçaları
+ * (kilitliler gri) gösteriyor (I1/J kararı: README'deki "palet yalnız üç parça" uygulanmadı),
+ * (2) huni/bant/teslim adımlarını arayüzden süren kısım yazılmadı (ciftlik-hud.cjs öğretici
+ * akışını G ekonomisiyle zaten koşuyor).
  *   CIFTLIK_BEKLEYEN=1 node tests/e2e/ciftlik-ogretici.cjs [--yavas N]
  */
 const o = require('./ortak.cjs');
 const { bekleyenAcik, menudenAc } = require('./ciftlik-ortak.cjs');
 
+/** J'nin gerçek seçicileri (birleştirmede uyarlandı). */
 const SEC = {
-  pano: '.ciftlik-pano', kart: '.ciftlik-pano .ciftlik-kart', ogretici: '.ciftlik-ogretici',
-  kurus: '.ciftlik-kurus', damga: '.ciftlik-damga', palet: '.ciftlik-palet',
+  pano: '[data-ciftlik-pano]', kart: '[data-ciftlik-pano] .cf-kart', ogretici: '.cf-ogretici',
+  kurus: '.cf-kurus strong', damga: '.cf-damga-kod', palet: '.ciftlik-palet',
 };
 const DAKIKA = 1200;
 

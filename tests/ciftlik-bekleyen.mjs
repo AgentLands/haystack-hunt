@@ -5,21 +5,16 @@
  * Birleştirme sonrası ana ajan:  CIFTLIK_BEKLEYEN=1 npm test  → kırılanları düzeltir, sonra
  * aşağıdaki `BEKLEYEN_ACIK` varsayılanını true yapar (tek satır) ve bu sarmalayıcıyı kaldırır.
  *
- * Durum (K doğrulama, main + F birleşimiyle denendi; `dogrulandi` = bayraksız koşar):
- *   ciftlik-denge     Hat C kıyım 120/dk ±%10 ............ dogrulandi (F gelince)
- *                     Hat A saman balyası 11/dk .......... BEKLİYOR D (toz 1/8 ve pasif huni
- *                       50/dk yok: şimdi 12,5/dk = pres tavanı), + test kancası `havaSabit`
- *                     Hat B ot balyası 10,5/dk ........... BEKLİYOR D (çayır, tırmık, hava), F
- *                     rüzgârlı beklenen değer (%76) ...... BEKLİYOR D (`dunya/hava.js`)
- *   ciftlik-senaryo   D1-D5 ≤ 30 dk (iki test) ........... BEKLİYOR D (arazi, öğretici hayalet
- *                       `c.ogretici.huni`), F (parçalar), J (UYARLAYICI.damgalar → G ilerleme)
- *   ciftlik-yumusak   (a) kuruş iadesi ................... dogrulandi (G)
- *                     (b1) sandık→kol→lokomobil, (b2) krank dogrulandi (B, F)
- *                     (c) 12 sink/makine iğne korunumu ... dogrulandi (F: bulundu olayı)
- *                     (d) öğretici çivi D2 ≤ 10 dk ....... BEKLİYOR D G J
- *   ciftlik-sozlesme  parça çizimi (yedek kutu yok) ...... dogrulandi (H2)
- *   e2e ciftlik-ogretici  ilk 10 dakika tablosu .......... BEKLİYOR J (pano/öğretici), D, G
- *   e2e ciftlik-telefon   perf hedefi (katman ≤ 4 ms) .... BEKLİYOR H1 (şimdi ≈ 8-9 ms yakın)
+ * Durum (Faz 1 birleştirmesi, c-entegre3; hepsi bayraksız koşar):
+ *   ciftlik-denge     Hat A, B (iki savurucu, ekonomi.md §8), C, rüzgârlı verim ..... AÇIK
+ *   ciftlik-senaryo   D1-D5 ≤ 30 dk (≈ 12 dk), determinizm ............................ AÇIK
+ *   ciftlik-yumusak   (a) (b1) (b2) (c), (d) öğretici çivi D2 ≤ 10 dk .................. AÇIK
+ *                     dik yığında söküm sonrası geri kurma ........ todo (bilinen sınır)
+ *   ciftlik-sozlesme  v1 eşya kodu göçü, parça çizimi ............................... AÇIK
+ *   e2e ciftlik-ogretici  ilk 10 dakika tablosu ...... BEKLİYOR (CIFTLIK_BEKLEYEN=1)
+ *   e2e ciftlik-telefon   perf hedefi (katman ≤ 4 ms) ... BEKLİYOR H1 (CIFTLIK_BEKLEYEN=1)
+ * Birim testlerinde varsayılan açık (CIFTLIK_BEKLEYEN=0 kapatır); eksik parça/dosya varsa test
+ * yine "BEKLİYOR" diye atlanır.
  * Yazım hatası "bekliyor" gibi görünmesin diye `bekleyen` bilinmeyen parça adında hemen hata
  * verir; `PARCALAR` listesi `docs/ciftlik/parcalar.md` ile `ciftlik-sozlesme.test.js`'te
  * karşılaştırılır.
@@ -32,8 +27,8 @@ import '../js/kural/ciftlik/parcalar/hepsi.js';
 
 const KOK = new URL('../', import.meta.url);
 
-/** true: parçalar gelmiş bekleyen testler de koşar. Birleştirme sonrası ana ajan açar. */
-export const BEKLEYEN_ACIK = process.env.CIFTLIK_BEKLEYEN === '1';
+/** true: parçalar gelmiş bekleyen testler de koşar (birleştirmede açıldı; '0' kapatır). */
+export const BEKLEYEN_ACIK = process.env.CIFTLIK_BEKLEYEN !== '0';
 
 /** Çekirdekte `huni`, tasarım belgesinde `emici-huni`: hangisi kayıtlıysa o. */
 export const HUNI_AD = parcaTanimi('emici-huni') ? 'emici-huni' : 'huni';

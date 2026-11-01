@@ -277,8 +277,9 @@ bekleyen('(d) öğretici çiviler ≈ 30 sn arayla açığa çıkar ve D2 ≤ 10
   is: 'D G J', dosya: ['js/kural/ciftlik/ekonomi/damga.js', 'js/kural/ciftlik/dunya/arazi.js'],
 }, async () => {
   const { senaryoKos } = await import('./ciftlik-senaryo.mjs');
-  const s = await senaryoKos({ hedef: 'D2', tikTavan: 10 * 1200 });
-  assert.ok(s.basildi, `D2 ${s.tik} tikte basılmadı`);
-  assert.ok(s.civiAraliklari.length >= 3, 'öğretici çiviler geldi');
+  // D3'e dek koşulur: çivi çizelgesi (2600 + k × 600 tik) D2'den sonra da sürer
+  const s = await senaryoKos({ hedef: 'D3', tikTavan: 10 * 1200 });
+  assert.ok(s.damgaTik.D2 <= 10 * 1200, `D2 ${s.damgaTik.D2} tikte basılmadı`);
+  assert.ok(s.civiAraliklari.length >= 3, `öğretici çiviler geldi: ${s.civiAraliklari}`);
   for (const a of s.civiAraliklari) assert.ok(a >= 400 && a <= 800, `çivi aralığı ${a} tik`);
 });

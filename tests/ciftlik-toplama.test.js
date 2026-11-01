@@ -13,7 +13,8 @@ import { karoIndeks } from '../js/kural/ciftlik/olcu.js';
 import { HUNI, TIRMIK, TAS_TOPLAYICI } from '../js/kural/ciftlik/parcalar/toplama.js';
 import { agizKarolari } from '../js/kural/ciftlik/dunya/ogretici.js';
 import { dunyaHazirla, ZEMIN } from '../js/kural/ciftlik/dunya/zemin.js';
-import { dunya, duzTarla, kur } from './ciftlik-yardim.mjs';
+import { dunya, duzTarla, kur, kos } from './ciftlik-yardim.mjs';
+import { ciftlikSamani } from '../js/kural/ciftlik/benzetim.js';
 import { elleCtx, elleSur } from './ciftlik-dunya-yardim.mjs';
 
 const W = 240;
@@ -193,4 +194,18 @@ test('taş toplayıcı: 60 tikte bir, menzildeki en yakın AÇIK nesne; örtül�
   assert.equal(ortulu.alindi || uzak.alindi, false);
   assert.equal(p.tanim.durum(p), 'girdi-yok');
   assert.equal(ctx.olaylar.filter((o) => o.ad === 'gomulu-cikti').length, 2);
+});
+
+test('huni çekimi: doğal eğimdeki yığının eteğinde huni aç kalmaz (8 dk sürekli ≈ 50/dk)', () => {
+  const tarla = duzTarla(0, [{ x: 80, y: 80, r: 30, t: 90 }]);
+  const { c } = dunya(3, tarla);
+  const huni = kur(c, tarla, 'huni', 22, 39, 2); // ağız doğuda, yığına bakar
+  const s = kur(c, tarla, 'sandik', huni.cikis[0].hx, huni.cikis[0].hy);
+  const once = ciftlikSamani(c, tarla);
+  kos(c, tarla, 4800);
+  s.tanim.kur(s);
+  kos(c, tarla, 4800);
+  assert.ok(s.ozel.toplam >= 4 * 45, `son 4 dk ${s.ozel.toplam} tutam (çekimsiz koni tükenirdi)`);
+  assert.equal(huni.tanim.durum(huni), 'calisiyor');
+  assert.ok(ciftlikSamani(c, tarla) <= once, 'çekim samanı yalnız taşır');
 });

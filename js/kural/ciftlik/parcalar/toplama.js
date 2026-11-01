@@ -18,6 +18,7 @@ import '../dunya/hava.js';
 import { enYakinAcik } from '../dunya/gomulu.js';
 import '../dunya/araba.js';
 import { gucRozeti } from '../ag/enerji.js';
+import { cekimAdim } from '../dunya/cekim.js';
 
 const SAMAN = esyaKodu('saman');
 const YAS_OT = esyaKodu('yas-ot');
@@ -60,6 +61,7 @@ parcaTanimla('huni', {
     o.son = 0;
     if (o.cikis.length < HUNI.tampon) {
       const hucreler = karoHucreleri(c, agizKarolari(p));
+      cekimAdim(tarla, c, p, hucreler); // ağız boşken önündeki yığını yatık eğimle çeker
       o.ilerleme += ctx.oran(p);
       const n = o.ilerleme >> 10;
       o.ilerleme &= 1023;
