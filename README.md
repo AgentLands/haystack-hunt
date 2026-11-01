@@ -41,6 +41,10 @@ sunucusu hem oyunu sunar hem de odaları yürütür (`npm install` gerekmez):
 node sunucu/sunucu.js --port 8080          # sonra http://localhost:8080 (LAN'da IP ile)
 ```
 
+Ters vekil (nginx, Caddy...) arkasında `--vekil` ekle (yoksa herkes tek adres sayılır ve adres
+başına 8 bağlantı / 3 oda sınırı herkese birlikte uygulanır); sınırlar `--ip-baglanti N` ve
+`--ip-oda N` ile ayarlanır.
+
 - **Yarış** düğmesi → adını yaz, **Oda kur** (4 harfli kod çıkar) ya da kodla **Katıl**;
   odada en çok 8 kişi. Kurucu **Başlat** deyince 3-2-1 geri sayımla herkese aynı tarla açılır.
 - Yarışta diğer oyuncuların çiftçileri (bindikleri makineyle birlikte) oyuncu renginde halka

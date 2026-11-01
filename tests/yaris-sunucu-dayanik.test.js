@@ -6,7 +6,8 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import net from 'node:net';
 import { EventEmitter } from 'node:events';
-import { sunucuAc } from '../sunucu/sunucu.js';
+import { sunucuAc, argumanlar } from '../sunucu/sunucu.js';
+import { Odalar } from '../sunucu/odalar.js';
 import { HizSiniri, ASIM_AZALMA } from '../sunucu/dogrulama.js';
 import { Baglanti } from '../sunucu/websocket.js';
 
@@ -143,4 +144,30 @@ test('statik: yalnız oyun dosyaları sunulur (beyaz liste)', async () => {
     '/sunucu/sunucu.js', '/.git/HEAD', '/font/OFL-alfaslabone.txt.bak.yok']) {
     assert.equal(await durum(yol), 404, yol);
   }
+});
+
+test('argumanlar: --vekil, --ip-baglanti ve --ip-oda bayrakları okunur', () => {
+  assert.deepEqual(argumanlar([]), { port: 8080, host: undefined });
+  const a = argumanlar(['--port', '9000', '--vekil', '--ip-baglanti', '40', '--ip-oda', '12']);
+  assert.deepEqual(a, { port: 9000, host: undefined, vekil: true, ipBaglanti: 40, ipOda: 12 });
+  assert.throws(() => argumanlar(['--ip-oda', '0']), /--ip-oda/);
+  assert.throws(() => argumanlar(['--ip-baglanti', 'x']), /--ip-baglanti/);
+});
+
+test('kurucu değişince oda kotası yeni kurucunun IP adresine geçer', () => {
+  const odalar = new Odalar({ ipOda: 1 });
+  const sahte = (id, ip) => ({ id, ip, gonder() {} });
+  const a = sahte(1, '10.0.0.1');
+  const b = sahte(2, '10.0.0.2');
+  odalar.isle(a, { t: 'kur', ad: 'A' });
+  const kod = [...odalar.odalar.keys()][0];
+  odalar.isle(b, { t: 'katil', oda: kod, ad: 'B' });
+  odalar.isle(a, { t: 'ayril' });
+  assert.equal(odalar.odalar.get(kod).ip, '10.0.0.2');
+  // Eski kurucu yeniden oda kurabilir; yeni kurucu kotasını doldurmuştur.
+  odalar.isle(a, { t: 'kur', ad: 'A' });
+  assert.equal(odalar.odalar.size, 2);
+  const c = sahte(3, '10.0.0.2');
+  odalar.isle(c, { t: 'kur', ad: 'C' });
+  assert.equal(odalar.odalar.size, 2, 'b adresi zaten bir oda sayılıyor');
 });

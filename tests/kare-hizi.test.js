@@ -9,7 +9,7 @@ import { kaymaAdimi, kaymaKos, KAYMA_HIZI } from '../js/kural/kayma.js';
 import '../js/kural/makineler/hepsi.js';
 import { makineTanimi } from '../js/kural/makineler/kayit.js';
 import { yeniMakine } from '../js/kural/makineler/garaj.js';
-import { yeniOyun, durumAl, adim, bas } from '../js/oyun.js';
+import { yeniOyun, durumAl, adim, bas, birak } from '../js/oyun.js';
 import { kontrol, yonAyarla } from '../js/kontrol.js';
 
 const HIZLAR = [30, 60, 144, 240];
@@ -40,6 +40,35 @@ test('kaymaAdimi: saniyede KAYMA_HIZI geçiş, kare hızından bağımsız', () 
     }
     assert.ok(Math.abs(toplam - KAYMA_HIZI) <= 1, `${hz} Hz: ${toplam}`);
   }
+});
+
+test('kaymaKos: tarla kayarken saniyede KAYMA_HIZI geçiş, 30-240 Hz aynı', () => {
+  for (const hz of [20, ...HIZLAR, 120]) {
+    let b = 0;
+    let n = 0;
+    for (let i = 0; i < hz * 2; i++) b = kaymaKos(() => { n += 1; return true; }, b, 1 / hz);
+    assert.ok(Math.abs(n / 2 - KAYMA_HIZI) <= 2, `${hz} Hz: saniyede ${n / 2}`);
+    assert.ok(b >= -1 && b < 1, `birikim sınırlı: ${b}`);
+  }
+});
+
+test('kaymaKos: aynı kare dizisi aynı sonucu verir', () => {
+  const kos = () => {
+    let b = 0;
+    const iz = [];
+    for (let i = 0; i < 200; i++) {
+      b = kaymaKos(() => { iz.push(i); return i % 7 !== 0; }, b, 1 / 144);
+    }
+    return [b, iz.join()];
+  };
+  assert.deepEqual(kos(), kos());
+});
+
+test('kaymaKos: yerleşmiş tarlada karede tek yoklama', () => {
+  let cagri = 0;
+  const b = kaymaKos(() => { cagri += 1; return false; }, 0, 1 / 240);
+  assert.equal(cagri, 1);
+  assert.equal(b, 0);
 });
 
 test('kaymaKos: kaymayan tarlada ilk boş geçişte durur, birikim sıfırlanır', () => {
@@ -91,6 +120,36 @@ test('el: basış anında 1 kat hemen alınır (yüksek tazelemede de)', () => {
   adim(1000 + 1000 / 240);
   kontrol.kullan = false;
   assert.ok(d.tarla.kaldirilan > 0);
+});
+
+/** 1 sn el ile kazar; fareVar ise fare yakın ama başka bir hücrede basılıdır. */
+function kazFareIle(spaceVar, fareVar) {
+  yeniOyun('iki-nokta', 'normal');
+  const d = durumAl();
+  d.karakter.x = 100.5;
+  d.karakter.y = 80.5;
+  d.karakter.yon = 0;
+  d.tarla.h.fill(120); // iki nokta da kaynağı tüketmesin
+  adim(1000);
+  if (spaceVar) kontrol.kullan = true;
+  if (fareVar) bas({ x: d.karakter.x, y: d.karakter.y + 2 }, 1000);
+  let t = 1000;
+  const bas0 = d.tarla.kaldirilan;
+  for (let i = 0; i < 60; i++) {
+    t += 1000 / 60;
+    adim(t);
+  }
+  kontrol.kullan = false;
+  birak();
+  return d.tarla.kaldirilan - bas0;
+}
+
+test('el: Boşluk + fare birlikte iki noktada kazıp hızı ikiye katlamaz (fare öncelikli)', () => {
+  const yalnizFare = kazFareIle(false, true);
+  const ikisi = kazFareIle(true, true);
+  const yalnizSpace = kazFareIle(true, false);
+  assert.ok(yalnizFare > 0 && yalnizSpace > 0);
+  assert.ok(ikisi <= yalnizFare * 1.05, `ikisi ${ikisi} / yalnız fare ${yalnizFare}`);
 });
 
 test('üfleyici 48 Hz altında (20 Hz) da saniyede aynı kat savurur', () => {

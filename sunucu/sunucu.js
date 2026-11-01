@@ -170,16 +170,29 @@ export function sunucuAc({
   });
 }
 
-function argumanlar(argv) {
+/**
+ * Komut satırı bayrakları: --port, --host, --vekil (güvenilir ters vekil arkasında
+ * X-Forwarded-For'un son değerini adres say), --ip-baglanti N, --ip-oda N.
+ */
+export function argumanlar(argv) {
   const deger = (ad) => {
     const i = argv.indexOf(ad);
     return i >= 0 ? argv[i + 1] : undefined;
   };
-  const port = Number(deger('--port') ?? 8080);
-  if (!Number.isInteger(port) || port < 0 || port > 65535) {
-    throw new Error(`Geçersiz port: ${deger('--port')}`);
+  const sayiAl = (ad, enAz, enCok, varsayilan) => {
+    const ham = deger(ad);
+    if (ham === undefined) return varsayilan;
+    const n = Number(ham);
+    if (!Number.isInteger(n) || n < enAz || n > enCok) throw new Error(`Geçersiz ${ad}: ${ham}`);
+    return n;
+  };
+  const secenek = { port: sayiAl('--port', 0, 65535, 8080), host: deger('--host') };
+  if (argv.includes('--vekil')) secenek.vekil = true;
+  if (deger('--ip-baglanti') !== undefined) {
+    secenek.ipBaglanti = sayiAl('--ip-baglanti', 1, 10000);
   }
-  return { port, host: deger('--host') };
+  if (deger('--ip-oda') !== undefined) secenek.ipOda = sayiAl('--ip-oda', 1, 10000);
+  return secenek;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

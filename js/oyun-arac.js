@@ -110,7 +110,8 @@ export function sonucHesapla(durum, zaman) {
     sureMs: zaman - durum.baslangic,
     cezaMs: durum.ceza,
     kaldirilan: durum.tarla.kaldirilan,
-    dedektorKullanilan: durum.dedektorHakki - durum.dedektor,
+    // Telafi hakkı bedavadır: verilmesi de kullanılması da sayıyı/puanı değiştirmez.
+    dedektorKullanilan: Math.min(durum.halkalar.length, durum.dedektorHakki),
     dedektorHakki: durum.dedektorHakki,
     miknatisKullanilan: durum.miknatisHakki - durum.miknatis,
     miknatisHakki: durum.miknatisHakki,

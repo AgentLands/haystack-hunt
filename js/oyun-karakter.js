@@ -85,7 +85,9 @@ function aracKaresi(durum, dt, zaman) {
   if (durum.arac === 'el') {
     if (kullan && balyaAcKaresi(durum, dt)) return false;
     const kat = elKati(durum, dt);
-    return (kullan && elKullan(durum, nokta, kat)) || (fare !== null && elKullan(durum, fare, kat));
+    // Aynı karede tek kazı noktası (Boşluk + fare birlikte 2x hız vermesin): fare öncelikli.
+    const hedef = fare ?? (kullan ? nokta : null);
+    return hedef !== null && elKullan(durum, hedef, kat);
   }
   if (durum.arac === 'tirmik') {
     if (!kullan) return false; // fareyle tırmık sürüklemede (fareSurukle)
