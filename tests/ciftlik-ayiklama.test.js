@@ -15,6 +15,7 @@ import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { ruzgarAyarla, TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
 import { dunya, kur, bantCek, duzTarla, gucVer } from './ciftlik-yardim.mjs';
+import { toplamaBulunan } from './ciftlik-isleme-yardim.mjs';
 
 const K = (ad) => esyaKodu(ad);
 const BULUNTULAR = KATALOG.map((b) => K(`buluntu:${b.tur}`));

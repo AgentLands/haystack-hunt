@@ -362,8 +362,9 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   `{ tur: 'onar', x, y }` → `tanim.onar` (50 kuruş + 200 tik), ve **genel** `{ tur: 'ayar', x, y,
   ad, deger }` → `tanim.ayarla(p, ad, deger) → bool` varsa o, yoksa `ag/ayar.js ayarUygula`.
 - **İğne/buluntu hiçbir yolla yok olmaz** (`isleme/bulundu.js`): `bulundu(ortam, kod, kaynak,
-  kip, p)` kuruş + olay `ciftlik-bulundu`; `oyuncuyaVer` envantere koyar + bulundu. Sandık ve
-  ambar 'yari' (depoda tutmaz, doluyken de alır), defter masası 'tam', kapı ve gübre çukuru
+  kip, p)` = G'nin `ekonomi/kurus.js bulundu` (kuruş, toplamlar, defterCiftlik) + zengin olay
+  `ciftlik-bulundu`; `oyuncuyaVer` envantere koyar + bulundu. Sandık ve ambar 'yari' (depoda
+  tutmaz, doluyken de alır; `ozel.bulunan` tür sayacı), defter masası 'tam', kapı ve gübre çukuru
   'kurussuz' + envanter, Temizle 'tam' + envanter. **Söküm kancası** (`komut.js
   sokumKancasiEkle`): sökülen parçanın içeriğindeki ve sökülen bant karosundaki iğne/buluntu için
   'sokum' 'tam' (envantere çekirdek koyar). `tanim.sokulmez` (kapı) sökülmez/döndürülmez.
@@ -372,12 +373,11 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   16 tik salınır, öndeki karoya bırakır: kola bakan giriş portu (kabulEder/al) ya da hat
   karosu (aralık kuralıyla araya). Filtre `{ tur: 'hepsi' | 'esya', kod | 'sinif', sinif |
   'manyetik' }` (ag/ayar.js biçimi + manyetik); seçimsiz → rozet 'ayar'.
-- **Komşu kapısı** (2×2, girişler arka kenarın iki karosu; `paletDisi`, kurulumu D/G yapar):
-  her şeyi alır, tıkanmaz; `kapiTeslimKur(islev(ctx, kod, p) → { sonuc: 'siparis' | 'iade' |
-  'satildi' | 'atildi', kurus? })` G'nin `teslimEt`'i için; SAP: sipariş yok, `p.ozel.sat` açıksa
-  değeri olan satılır. 'iade'de eşya envantere girer.
-- **SAP'lar**: kuruş `c.kurus` (`kurusEkle/kurusHarca`; G'nin ekonomi/kurus.js'ine devredilecek),
-  dünyadan çıkan saman `c.cikanKat` (satılan, atılan, gübrelenen; korunum: `ciftlikSamani +
+- **Komşu kapısı** (2×2, girişler arka kenarın iki karosu; `paletDisi`: palet bunu atlamalı,
+  kurulumu D yapar): her şeyi alır, tıkanmaz; her eşya G'nin `ekonomi/siparis.js teslimEt`'ine
+  gider ('siparis' | 'iade' | 'satildi' | 'atildi'); 'iade'de eşya envantere girer.
+- `doluluk(p) → { n, kap }` (kantar): ambar, kurutma ambarı (yuva + hazır), gübre çukuru (puan).
+- **SAP'lar**: dünyadan çıkan saman `c.cikanKat` (satılan, atılan, gübrelenen; korunum: `ciftlikSamani +
   kaldirilan + cikanKat` sabit; kayda G/D göçüyle girmeli), gübre → çayır
   `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo)` (D: dunya/arazi.js gubrele).
 - Testler: `tests/ciftlik-isleme.test.js`, `tests/ciftlik-depo.test.js` (yardımcı parçalar
