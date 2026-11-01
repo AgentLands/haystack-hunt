@@ -11,6 +11,7 @@ import { KULAK_MENZIL } from '../kural/sinyal.js';
 import { IKMAL_HAKKI } from '../kural/makineler/garaj.js';
 import { KATALOG } from '../kural/buluntu.js';
 import { DONDURMA_ARALIK_GUN } from '../kural/istatistik.js';
+import { CIFTLIK_SEKMESI } from './yardim-ciftlik.js';
 
 const { kolay, normal, zor } = ZORLUKLAR;
 const yuzde = (oran) => `%${Math.round(oran * 100)}`;
@@ -154,5 +155,6 @@ export const SEKMELER = [
         + `${DONDURMA_ARALIK_GUN} günde bir).`],
     ],
   },
+  CIFTLIK_SEKMESI,
   { ad: 'Puan', maddeler: [], tablo: true },
 ];

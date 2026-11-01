@@ -6,17 +6,25 @@
  * Çiz katmanları gorsel/katman.js, inşa girdisi insa.js, palet palet.js.
  */
 import { dinle, yay } from '../../olaylar.js';
-import { durumAl, modAc } from '../../oyun.js';
+import { durumAl, modAc, rastgeleEtiket } from '../../oyun.js';
 import '../../oyun-ciftlik.js';
 import { dunyaKodla } from '../../kural/ciftlik/sakla.js';
 import { bildir } from '../../arayuz.js';
-import { menuAnaEkle, menuModSatiriEkle } from '../menu-kanca.js';
-import { menuKapat } from '../menu.js';
-import { yeniTarlaIzni } from '../koruma.js';
 import { kayitlariOku, kayitYaz } from './depo.js';
 import { paletGoster } from './palet.js';
 import { paletAc } from './insa.js';
 import './gorsel/katman.js';
+import './hud.js';
+import './pano.js';
+import './kapi.js';
+import './damga-defter.js';
+import './sorun.js';
+import './istatistik.js';
+import './ogretici.js';
+import './fis.js';
+import './menu-bag.js';
+import './ses-bag.js';
+import './efekt-bag.js';
 
 const OTO_KAYIT_MS = 30000;
 const INSA_SONRASI_MS = 2000;
@@ -41,6 +49,24 @@ export function ciftlikAc() {
   if (kayitlar.length) bildir('Çiftlik kaydı okunamadı; yeni bir çiftlik kuruldu.', 4000);
 }
 
+/** Yeni bir çiftlik kurar (şimdiki kayıt Yedek yuvasına geçer); menü onayından sonra. */
+export function yeniCiftlik() {
+  modAc('ciftlik', { etiket: rastgeleEtiket() });
+  ciftlikKaydet();
+}
+
+/** Kayıt nesnesinden çiftlik açar (yuva ya da dosya). Bozuksa false; süren çiftlik değişmez. */
+export function ciftlikYukle(veri) {
+  try {
+    modAc('ciftlik', { kayit: veri });
+  } catch (hata) {
+    console.error('Çiftlik kaydı yüklenemedi:', hata);
+    return false;
+  }
+  ciftlikKaydet();
+  return true;
+}
+
 /** Süren çiftliği hemen kaydeder (çiftlikte değilse bir şey yapmaz). */
 export function ciftlikKaydet(durum = durumAl()) {
   if (!durum || durum.mod !== 'ciftlik') return 0;
@@ -48,21 +74,6 @@ export function ciftlikKaydet(durum = durumAl()) {
   if (boyut) yay('ciftlik-kaydedildi', { boyut });
   return boyut;
 }
-
-// --- Menü girişi ---
-const giris = document.createElement('button');
-giris.type = 'button';
-giris.className = 'dugme-ikincil menu-ciftlik';
-giris.textContent = 'Çiftlik';
-giris.title = 'Kendi çiftliğini kur: huni, bant, sandık';
-giris.addEventListener('click', () => {
-  if (durumAl()?.mod === 'ciftlik') menuKapat();
-  else if (yeniTarlaIzni()) ciftlikAc();
-});
-menuAnaEkle(giris);
-menuModSatiriEkle((d) => (d.mod === 'ciftlik'
-  ? { metin: 'Çiftliğin açık. Menü açıkken bantlar durur.', don: 'Çiftliğe dön' }
-  : null));
 
 // --- Mod geçişleri ---
 dinle('oyun-basladi', ({ durum }) => {

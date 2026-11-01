@@ -1,0 +1,56 @@
+/*
+ * Menüdeki Çiftlik bölümü (menu-bag.js): devam / yeni çiftlik, onay ve kayıt yuvaları.
+ * Menü kartının çuval etiketi dilinde; renkler belirteç.css'ten.
+ */
+.menu-ciftlik-blok {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 10px 8px;
+  border: 2px dashed var(--kraft-koyu);
+  border-radius: var(--yaricap);
+}
+.menu-ciftlik-baslik {
+  padding: 0 8px;
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--murekkep-soluk);
+}
+.menu-ciftlik-satir { display: grid; grid-template-columns: 1.15fr 1fr; gap: 8px; }
+.menu-ciftlik-satir [hidden] { display: none; }
+.menu-ciftlik-satir:has([hidden]) { grid-template-columns: 1fr; }
+.menu-ciftlik-blok .dugme-ikincil { padding: 0.5em 0.5em; font-size: 0.95rem; }
+.menu-ciftlik-onay {
+  padding: 8px 10px;
+  text-align: left;
+  background: var(--kraft);
+  border: 2px dashed var(--damga);
+  border-radius: var(--yaricap);
+}
+.menu-ciftlik-onay[hidden] { display: none; }
+.menu-ciftlik-onay p { margin: 0 0 8px; font-size: 0.92rem; }
+.menu-ciftlik-onay-dugmeler { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+.menu-ciftlik-kayit summary {
+  cursor: pointer;
+  color: var(--civit);
+  font-size: 0.95rem;
+  text-decoration: underline dashed 1px;
+  text-underline-offset: 3px;
+}
+.menu-ciftlik-yuvalar { display: grid; gap: 4px; margin: 8px 0 4px; padding: 0; list-style: none; }
+.menu-ciftlik-yuvalar li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.menu-yuva-ad { font-family: var(--yazi-baslik); font-size: 0.9rem; }
+.menu-yuva-bilgi { font-size: 0.78rem; color: var(--murekkep-soluk); }
+.menu-yuva-bos { color: var(--murekkep-soluk); font-size: 0.9rem; }
+.menu-ciftlik-araclar { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
+.menu-ciftlik-araclar [hidden] { display: none; }
