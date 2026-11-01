@@ -4,7 +4,8 @@
  * saman olur. Kayıt (inşadan 2 sn sonra) yazılır; sayfa yenilenince (?mod=ciftlik) parçalar ve
  * sandık geri gelir. Menüden "Günün tarlası"na dönülür: normal mod açılır, istatistikteki
  * "oynanan" çiftlik yüzünden artmaz. Telefonda (390×844, dokunma): yatay taşma yok, palete
- * dokun + tuvale dokun kurar, tek parmak sürükleme bant çeker, iki parmak bir şey kurmaz.
+ * dokun + tuvale dokun + ✓ kurar, tek parmak sürükleme bant çeker, iki parmak bir şey kurmaz.
+ * (İnşa arayüzünün ayrıntılı senaryoları: ciftlik-insa.cjs, ciftlik-insa-tel.cjs.)
  *   node tests/e2e/ciftlik.cjs [--yavas N]
  */
 const o = require('./ortak.cjs');
@@ -145,7 +146,7 @@ async function telefon(tarayici, kok, sc) {
   const y = await o.yerlesim(s);
   sc.dogrula('tel-tasma-yok', !y.tasma, `scrollWidth ${y.scrollWidth} > ${y.innerWidth}`);
   const yer = await yerBul(s);
-  await odakla(s, yer.kx + 3, yer.ky, 4);
+  await odakla(s, yer.kx + 3, yer.ky, 6); // kur kipi en yakına (z 6) yaklaşır: baştan orada
   const dokun = await o.dokunmaKur(s);
   const tap = async (p) => { await dokun.bas(1, p.x, p.y); await dokun.birak(1); };
   await tap(await o.kutu(s, '.ciftlik-insa-ac'));
@@ -153,7 +154,9 @@ async function telefon(tarayici, kok, sc) {
   const y2 = await o.yerlesim(s);
   sc.dogrula('tel-palet-tasma-yok', !y2.tasma, `palette taşma ${y2.scrollWidth}`);
   await tap(await o.kutu(s, '.ciftlik-parca[data-parca="sandik"]'));
-  await tap(await ekran(s, yer.kx + 6, yer.ky));
+  await tap(await ekran(s, yer.kx + 6, yer.ky)); // tek dokunuş: hayalet + ✓ baloncuğu
+  await o.bekle(s, () => !document.querySelector('.ciftlik-baloncuk').hidden);
+  await tap(await o.kutu(s, '.ciftlik-onay'));
   sc.dogrula('tel-dokun-kur', await o.bekle(s, () => window.__e2e.durumAl().ciftlik.parcalar
     .size === 1), 'dokununca sandık kurulmadı');
   await tap(await o.kutu(s, '.ciftlik-parca[data-parca="bant"]'));

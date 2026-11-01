@@ -31,8 +31,8 @@ js/oyun-ciftlik.js            modTanimla('ciftlik'): durum kurulumu, tik, iğnel
 js/ozellik/ciftlik/           tarayıcı tarafı
   ciftlik.js      giriş: menü düğmesi, ciftlikAc, ciftlikKaydet, otomatik kayıt, ciftlik-mod
   depo.js         localStorage (son kayıt + yedek), kota hatası bildirimi
-  insa.js         inşa kipi durumu ve girdisi (işaretçi önleyici, klavye, Esc)
-  palet.js        geçici palet (DOM)
+  insa.js         inşa kipi durumu, kip kaydı, işaretçi dağıtımı, geri al (ayrıntı §13)
+  palet.js        inşa paleti (aile sekmeleri, kartlar, hızlı çubuk)
   ciftlik.css     palet ve mod sınıfı
   gorsel/kayit.js     parcaCizimiTanimla, esyaCizimiTanimla, KARO_PX
   gorsel/temel.js     bant, huni, sandık ve eşya çizimleri
@@ -222,18 +222,38 @@ dolu karoların `{ x, y, r: 1 }` daireleri (karakterde yürünür parçalar hari
 `ciftlik-ozet {tik, uretilen, depolanan}` (saniyede bir; eşya başına olay YOK).
 Çiftlik `bulundu`, `pes-edildi`, `ilk-hamle` yaymaz.
 
-## 13. Arayüz (temel; arayüz ajanı genişletir)
+## 13. Arayüz: inşa (I1; davranış `arayuz.md` §1-§6, §10)
 - Menü: ana satırda "Çiftlik" (`menuAnaEkle`); çiftlikteyken zorluk, rahat ve pes gizli,
   "süren" satırında "Çiftliğe dön" (`menuModSatiriEkle`). Çıkış: "Günün tarlası"/"Yeni tarla".
-- Kip (`insa.js`, durum `insa = { acik, secili, yon, hayalet, yol, basili }`, `insaDinle`):
-  B palet, R/Shift+R döndür, X sök, Delete imleçtekini sök, sağ tık sök, Esc önce seçimi sonra
-  paleti kapatır (`escOnleyiciEkle`; menü açılmaz). Sol tık kurar; bantta basılı sürükleme L
-  yol (eksen ilk harekette seçilir), mevcut bandı yeniden yönlendirir. Çok karolu parça
-  imleçte ortalanır (`yerlesimKonumu`).
-- Dokunmatik: palete dokun, tuvale dokun → kurulur (8 px'ten az kaydıysa); bantta tek parmak
-  sürükleme yol çeker; ikinci parmak bekleyen eylemi iptal eder (iki parmak kamera.js'te).
-- Palet (`palet.js`) `parcaTurleri()`'nden kendiliğinden düğme üretir: yeni parça tanımlanınca
-  palette görünür.
+- Dosyalar (`ozellik/ciftlik/`): `insa.js` durum + kip kaydı + işaretçi dağıtımı + geri al;
+  `kisayol.js` tuşlar; `yerlestir.js` kur kipi (giriş; `ana.js` içe aktarır); `gez-sil.js`;
+  `hat-cek.js`; `panel.js` (+ `panel-metin.js`); `palet.js` (+ `palet-ayrinti.js`, `simge.js`);
+  `baloncuk.js` (✓ baloncuğu, neden etiketi, ↶ ↷, ⌖, söküm onayı); `insa-kamera.js`;
+  `insa-katman.js`; `krank.js`. Saf: `kural/ciftlik/insa/{hat-yolu,yerlesim,gecmis,ayar}.js`.
+- Durum `insa = { acik, kip: 'gez'|'kur'|'sil'|kayıtlı, secili (kur: anahtar, sil: 'sok'),
+  yon, hayalet {kx,ky}, yol [{kx,ky,yon,durum,neden?}], yolDenetim, onizleme {x,y,en,boy,
+  durum: 'gecerli'|'uyari'|'gecersiz', neden, baglar}, bekleyen, etiket, imlec, incelenen,
+  silinecek, hizli }` (`gorsel/onizleme.js` okur; `yerlesimKonumu` yeniden dışa aktarılır).
+- **Kip kancası** (I2): `kipTanimla(ad, { bas, tasi, bitir (e, karo) → bool, iptal, gir, cik,
+  dondu, tus(e) → bool, dugme: { metin, baslik, tus: 'KeyV' } })`; `kipAc(ad)`. Düğmesi olan
+  kip palette eylem şeridine ve tuşuna kendiliğinden bağlanır. Toplu eylem tek geri alma
+  adımı olur: `insaEylem(ad, [{ yap: [komut], geri: [komut] }])` (`kurCifti`, `sokCifti`,
+  `dondurCifti`: `kural/ciftlik/insa/gecmis.js`). Yığın 100 adım, oturumluk; reddedilen
+  komutun çifti son adımdan düşer.
+- **Ekonomi kancası** (G): `insaKaynagiKur({ kurus(durum) → n|null, fiyat(tanim) → n|null,
+  kilit(tanim, durum) → null|"D4 İlk balyalar'da açılır" })`. SAP: kuruş yok, kilit yok,
+  fiyat `maliyet.kurus` ya da sayı `maliyet`.
+- **Menfez kancası** (A): `menfezOnerisiKur(({ c, tarla, anahtar, yol, denetim }) →
+  { metin, ciftler } | null)`; yoksa dik kesişme engeldir (önek kurulur).
+- **Ayar** (parçalar): `tanim.ayarlar = [{ ad, tur: 'iki'|'secim'|'filtre'|'renk', etiket,
+  secenekler: [{ deger, metin, renk? }] | (tanim) → [...], varsayilan }]`, isteğe bağlı
+  `ayarOku(p, ad)`, `ayarla(p, ad, deger, { c, tarla })`; yoksa değer `p.ozel[ad]`.
+  Komut `{ tur: 'ayar', x, y, ad, deger }` → `parca-ayarlandi`. Panel, pipet ve geri al
+  bunu kullanır. Palet kartının ayrıntı kâğıdı `tanim.aciklama` ve `tanim.soru` okur.
+- **Krank** (B): Kullan / Boşluk bir dokunuşta çiftçinin 3 karo yakınındaki `el-kranki`
+  parçasına `{ tur: 'krank', x, y }` verir; süre ve menzil denetimi kuralda.
+- Panel eylemleri `{ tur: 'temizle'|'onar'|'bosalt', x, y }` komutlarını verir (durum
+  `tikali`/`sikisti`, `kirik`, depo dolu); komutu ilgili iş tanımlar.
 
 ## 14. Yeni parça nasıl eklenir
 1. Aile dosyası seç ya da aç: `js/kural/ciftlik/parcalar/<aile>.js` (≤ 250 satır); yeni dosya

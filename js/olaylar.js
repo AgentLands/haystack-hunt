@@ -93,7 +93,8 @@
  *
  *   [G ekonomi] (bu ailenin/işin olayları buraya)
  *
- *   [I inşa] (bu ailenin/işin olayları buraya)
+ *   [I inşa]
+ *   parca-ayarlandi  { parca, ad, deger }          `ayar` komutu uyguladı (panel, pipet, geri al)
  *
  *   [J hud] (bu ailenin/işin olayları buraya)
  */

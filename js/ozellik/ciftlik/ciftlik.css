@@ -1,60 +1,457 @@
-/* Çiftlik modu: geçici inşa paleti (kâğıt şerit, tuvalin alt ortası) ve mod sınıfı.
-   Arayüz ajanı paleti ahşap tablaya taşıyıp aile sekmeleriyle genişletecek. */
+/* Çiftlik modu: mod sınıfı, inşa paleti (kâğıt tabla), tuval üstü inşa öğeleri (onay
+   baloncuğu, neden etiketi, geri al / yinele, çiftçiye dön, söküm onayı) ve inceleme
+   paneli. Masaüstünde palet tuvalin altına (alet rafının yerine) oturur; dikey telefonda
+   alet rafının satırına (kumanda tablasının üstüne). Açıkken gövdede `ciftlik-insa`. */
 body.ciftlik-mod #sure,
 body.ciftlik-mod [data-rahat-gizle] { display: none; }
 body.ciftlik-mod .menu-zorluk,
 body.ciftlik-mod .menu-ayarlar,
 body.ciftlik-mod #pes-ac,
 body.ciftlik-mod .meydan-etiket.temiz { display: none; }
+body.ciftlik-insa .araclar { visibility: hidden; }
+body.ciftlik-insa .tarla-kap { --hud-alt: 104px; }
+canvas#tarla.ciftlik-parca-ustu { cursor: pointer; }
 
-.ciftlik-insa-ac,
-.ciftlik-palet {
+/* --- İnşa düğmesi (palet kapalıyken) --- */
+.ciftlik-insa-ac {
   position: absolute;
   left: 50%;
   bottom: calc(var(--hud-alt, 0px) + 10px);
   transform: translateX(-50%);
   z-index: 3;
+  min-height: 44px;
+  padding: 6px 18px;
 }
-.ciftlik-insa-ac { min-height: 44px; padding: 6px 18px; }
 .ciftlik-insa-ac[hidden],
 .ciftlik-palet[hidden] { display: none; }
 
+/* --- Palet --- */
 .ciftlik-palet {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  max-width: calc(100% - 16px);
-  padding: 6px;
+  grid-area: sahne;
+  align-self: end;
+  justify-self: center;
+  z-index: 3;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'sekme ust' 'serit serit';
+  gap: 6px 10px;
+  width: min(980px, calc(100% - 24px));
+  margin-bottom: -34px;
+  padding: 6px 8px 8px;
   box-sizing: border-box;
-}
-.ciftlik-palet-serit {
-  display: flex;
-  gap: 6px;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
 }
 .ciftlik-palet button {
-  flex: none;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 4px 10px;
   font-family: var(--yazi-baslik);
-  background: var(--kagit);
+  color: var(--murekkep);
+  background: var(--kraft);
   border: var(--kenar);
   border-radius: var(--yaricap);
-  color: var(--murekkep);
   touch-action: manipulation;
+  cursor: pointer;
 }
+.ciftlik-palet button:disabled { opacity: 0.45; cursor: default; }
 .ciftlik-palet button[aria-pressed='true'] {
   background: var(--saman);
   box-shadow: inset 0 0 0 2px var(--murekkep);
 }
+.ciftlik-palet-ust {
+  grid-area: ust;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ciftlik-secili {
+  font-family: var(--yazi-baslik);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 11em;
+}
+.ciftlik-kipler { display: contents; }
+.ciftlik-arac {
+  flex: none;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 2px 8px;
+  font-size: 0.9rem;
+}
+.ciftlik-don { font-size: 1.15rem; }
 .ciftlik-palet .ciftlik-sok[aria-pressed='true'] { background: var(--damga); color: var(--kagit); }
-.ciftlik-palet .ciftlik-arac { padding: 4px; font-size: 1.2rem; }
+.ciftlik-palet-sekmeler {
+  grid-area: sekme;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ciftlik-hizli,
+.ciftlik-sekmeler { display: flex; gap: 4px; flex: none; }
+.ciftlik-hizli:empty { display: none; }
+.ciftlik-hizli { padding-right: 8px; border-right: 2px dashed var(--murekkep-soluk); }
+.ciftlik-hizli-parca {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  display: grid;
+  place-items: center;
+}
+.ciftlik-hizli-parca canvas { width: 28px; height: 28px; }
+.ciftlik-hizli-parca kbd {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  font: 700 0.62rem/1 var(--yazi-sayi);
+  background: var(--murekkep);
+  color: var(--kagit);
+  border-radius: 2px;
+  padding: 1px 3px;
+}
+.ciftlik-sekme {
+  min-height: 34px;
+  padding: 2px 10px;
+  font-size: 0.82rem;
+}
+.ciftlik-palet .ciftlik-sekme { background: var(--kagit); }
+.ciftlik-palet .ciftlik-sekme[aria-selected='true'] {
+  background: var(--kraft);
+  box-shadow: inset 0 -3px 0 var(--damga);
+}
+.ciftlik-palet-serit {
+  grid-area: serit;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding: 2px 2px 4px;
+}
+.ciftlik-parca {
+  position: relative;
+  flex: none;
+  width: 76px;
+  height: 64px;
+  padding: 2px 3px;
+  display: grid;
+  grid-template-rows: 30px auto auto;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  scroll-snap-align: start;
+}
+.ciftlik-palet .ciftlik-parca { background: var(--kagit); box-shadow: var(--golge); }
+.ciftlik-parca canvas { width: 30px; height: 30px; }
+.ciftlik-kart-ad {
+  font-family: var(--yazi-govde);
+  font-size: 0.7rem;
+  line-height: 1.05;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ciftlik-kart-fiyat { font: 700 0.68rem/1 var(--yazi-sayi); }
+.ciftlik-kart-fiyat:empty,
+.ciftlik-kart-damga:empty { display: none; }
+.ciftlik-parca.pahali { opacity: 0.6; }
+.ciftlik-parca.pahali .ciftlik-kart-fiyat { color: var(--damga); }
+.ciftlik-parca.kilitli { cursor: not-allowed; }
+.ciftlik-parca.kilitli .ciftlik-kart-ad { color: var(--murekkep-soluk); }
+.ciftlik-kart-damga {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-8deg);
+  padding: 0 4px;
+  font: 0.6rem/1.3 var(--yazi-baslik);
+  text-transform: uppercase;
+  color: var(--damga);
+  border: 1.5px solid var(--damga);
+  border-radius: 2px;
+  background: rgba(234, 215, 176, 0.85);
+}
+.ciftlik-ayrinti {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  width: min(260px, calc(100vw - 32px));
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  z-index: 5;
+}
+.ciftlik-ayrinti p { margin: 3px 0 0; }
 
-@media (max-width: 480px) {
-  .ciftlik-palet { gap: 4px; padding: 4px; }
-  .ciftlik-palet-serit { gap: 4px; }
-  .ciftlik-palet button { padding: 4px 7px; font-size: 0.9rem; }
+/* --- Tuval üstü öğeler --- */
+.ciftlik-baloncuk,
+.ciftlik-etiket {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+}
+.ciftlik-baloncuk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+}
+.ciftlik-baloncuk[hidden],
+.ciftlik-etiket[hidden],
+.ciftlik-gerial[hidden],
+.ciftlik-ciftci[hidden],
+.ciftlik-onay-kagidi[hidden],
+.ciftlik-panel[hidden] { display: none; }
+.ciftlik-baloncuk-metin {
+  max-width: 10em;
+  padding: 0 4px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ciftlik-baloncuk button,
+.ciftlik-gerial button,
+.ciftlik-ciftci {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--murekkep);
+  background: var(--kraft);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.ciftlik-baloncuk .ciftlik-onay { background: var(--cayir); color: var(--kagit); }
+.ciftlik-baloncuk .ciftlik-onay:disabled { background: var(--murekkep-soluk); opacity: 0.6; }
+.ciftlik-baloncuk button[hidden] { display: none; }
+.ciftlik-etiket {
+  padding: 3px 8px;
+  font: 0.8rem/1.2 var(--yazi-govde);
+  white-space: nowrap;
+  color: var(--murekkep);
+  background: var(--kagit);
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+  pointer-events: none;
+}
+.ciftlik-etiket[data-tur='hata'] { background: #f1c7b8; border-color: var(--damga); }
+.ciftlik-etiket[data-tur='uyari'] { background: #f3dc98; }
+.ciftlik-gerial {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--hud-alt) + 104px);
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+}
+.ciftlik-gerial button { width: 40px; height: 40px; }
+.ciftlik-gerial button:disabled { opacity: 0.45; cursor: default; }
+.ciftlik-ciftci {
+  position: absolute;
+  right: 12px;
+  bottom: calc(var(--hud-alt) + 140px);
+  z-index: 3;
+  width: 46px;
+}
+.ciftlik-onay-kagidi {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translateX(-50%);
+  z-index: 6;
+  width: min(320px, calc(100% - 24px));
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ciftlik-onay-kagidi p { flex: 1 0 100%; margin: 0 0 4px; }
+.ciftlik-onay-kagidi button { min-height: 44px; }
+
+/* --- İnceleme paneli (gövde ızgarasında tuvalin sağ üstü; main'in yığınının üstünde) --- */
+.ciftlik-panel {
+  grid-area: sahne;
+  align-self: start;
+  justify-self: end;
+  position: relative;
+  z-index: 4;
+  width: 280px;
+  max-height: calc(100% - 200px);
+  margin: 44px 66px 0 0;
+  overflow-y: auto;
+  padding: 8px 10px 10px;
+  box-sizing: border-box;
+  transform: rotate(0.4deg);
+}
+.ciftlik-panel-baslik {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+.ciftlik-panel-baslik canvas { width: 40px; height: 40px; flex: none; }
+.ciftlik-panel h2 { margin: 0; font-size: 1.05rem; flex: 1; min-width: 0; }
+.ciftlik-panel-kapat {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  background: var(--kraft);
+  color: var(--murekkep);
+  cursor: pointer;
+}
+.ciftlik-rozet {
+  flex: none;
+  padding: 1px 6px;
+  font: 0.72rem/1.4 var(--yazi-baslik);
+  color: var(--kagit);
+  background: var(--damga);
+  border-radius: 2px;
+  transform: rotate(-3deg);
+}
+.ciftlik-rozet[data-durum^='guc'],
+.ciftlik-rozet[data-durum='doymus'],
+.ciftlik-rozet[data-durum='sivali'],
+.ciftlik-rozet[data-durum='hava'],
+.ciftlik-rozet[data-durum='yakit-yok'] { background: var(--saman); color: var(--murekkep); }
+.ciftlik-rozet[data-durum='girdi-yok'],
+.ciftlik-rozet[data-durum='ac'],
+.ciftlik-rozet[data-durum='nemli'],
+.ciftlik-rozet[data-durum='yabanci'] { background: var(--civit); }
+.ciftlik-rozet[data-durum='kapali'],
+.ciftlik-rozet[data-durum='ayar'],
+.ciftlik-rozet[data-durum='essiz'] { background: var(--murekkep-soluk); }
+.ciftlik-panel-neden { margin: 6px 0; font-size: 0.88rem; line-height: 1.3; }
+.ciftlik-panel-satirlar { margin: 0; font-size: 0.8rem; }
+.ciftlik-panel-satirlar div {
+  display: grid;
+  grid-template-columns: 4.6em 1fr;
+  gap: 6px;
+  padding: 2px 0;
+  border-top: 1px dashed rgba(43, 33, 24, 0.3);
+}
+.ciftlik-panel-satirlar dt { font-family: var(--yazi-baslik); font-size: 0.72rem; }
+.ciftlik-panel-satirlar dd { margin: 0; }
+.ciftlik-panel-ayarlar:not(:empty) { margin-top: 6px; }
+.ciftlik-ayar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 0;
+  font-size: 0.8rem;
+}
+.ciftlik-ayar > span { flex: 1 0 100%; font-family: var(--yazi-baslik); font-size: 0.72rem; }
+.ciftlik-ayar-secenek,
+.ciftlik-ayar select {
+  min-height: 36px;
+  padding: 2px 8px;
+  border: var(--kenar);
+  border-radius: var(--yaricap);
+  background: var(--kagit);
+  color: var(--murekkep);
+  font-family: var(--yazi-govde);
+}
+.ciftlik-ayar-secenek[aria-pressed='true'] {
+  background: var(--saman);
+  box-shadow: inset 0 0 0 2px var(--murekkep);
+}
+.ciftlik-ayar-renk .ciftlik-ayar-secenek { width: 36px; padding: 0; }
+.ciftlik-ayar-renk .ciftlik-ayar-secenek[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 3px var(--kagit), inset 0 0 0 5px var(--murekkep);
+}
+.ciftlik-panel-eylemler {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ciftlik-panel-eylemler button { min-height: 36px; padding: 0.3em 0.8em; font-size: 0.85rem; }
+
+/* --- Dokunmatik: 44 px hedefler --- */
+body.dokunmatik .ciftlik-arac,
+body.dokunmatik .ciftlik-sekme,
+body.dokunmatik .ciftlik-hizli-parca,
+body.dokunmatik .ciftlik-panel-kapat,
+body.dokunmatik .ciftlik-gerial button,
+body.dokunmatik .ciftlik-ayar-secenek,
+body.dokunmatik .ciftlik-ayar select,
+body.dokunmatik .ciftlik-panel-eylemler button { min-width: 44px; min-height: 44px; }
+body.dokunmatik .ciftlik-gerial button { width: 44px; height: 44px; }
+body.dokunmatik .ciftlik-hizli-parca kbd { display: none; }
+
+/* --- Dikey telefon: palet alet rafının yerinde, panel alttan yarım sayfa --- */
+@media (orientation: portrait) {
+  body.ciftlik-insa .tarla-kap { --hud-alt: 0px; }
+  .ciftlik-insa-ac { bottom: 70px; }
+  .ciftlik-palet {
+    grid-area: raf;
+    align-self: start;
+    justify-self: stretch;
+    width: auto;
+    margin: 10px 6px 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'ust' 'sekme' 'serit';
+    gap: 6px;
+    padding: 6px;
+  }
+  .ciftlik-palet-ust { justify-content: flex-end; }
+  .ciftlik-secili { margin-right: auto; }
+  .ciftlik-hizli-parca:nth-child(n + 5) { display: none; }
+  .ciftlik-ayrinti { bottom: auto; top: -8px; transform: translateY(-100%); }
+  .ciftlik-gerial { left: 12px; bottom: 82px; }
+  .ciftlik-ciftci { right: 8px; bottom: 64px; }
+  .ciftlik-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    margin: 0;
+    justify-self: stretch;
+    align-self: end;
+    max-height: 46vh;
+    max-height: 46dvh;
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+    transform: none;
+    z-index: 8;
+    padding: 6px 12px 12px;
+  }
+  .ciftlik-panel.kucuk { max-height: 112px; overflow: hidden; }
+  .ciftlik-panel-baslik { cursor: pointer; }
+  .ciftlik-panel-baslik::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 3px;
+    width: 40px;
+    height: 4px;
+    margin-left: -20px;
+    border-radius: 2px;
+    background: var(--murekkep-soluk);
+  }
+}
+@media (orientation: portrait) and (max-height: 700px) {
+  .ciftlik-parca { height: 58px; grid-template-rows: 26px auto auto; }
+  .ciftlik-parca canvas { width: 26px; height: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ciftlik-palet-serit { scroll-behavior: auto; }
 }
