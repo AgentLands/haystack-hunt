@@ -15,14 +15,14 @@ import { DX, DY } from '../olcu.js';
 import { ozellik, degerliMi, esyaAdi as ad } from '../isleme/esya-ozellik.js';
 import { bulundu, samanCikti, girisBekleyen } from '../isleme/bulundu.js';
 import { teslimEt } from '../ekonomi/siparis.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 import { karodanCek, karoyaBirak } from '../isleme/hat-el.js';
 import { depodanCek, sayacArtir, sayacDeposu } from './temel.js';
 
 /** Denge sayıları (parcalar.md; G denge.js'e taşıyabilir). */
-export const DEPO_KOL = {
-  ambar: { kap: 600, curume: 1200, bolen: 4 },
-  kol: { salinim: 16 },
-};
+export const DEPO_KOL = Object.freeze({
+  ambar: parcaSabiti('ambar'), kol: parcaSabiti('yaba-kolu'),
+});
 const YAS = esyaKodu('yas-ot');
 const CURUK = esyaKodu('curuk-ot');
 /** Yaba kolu filtre sınıfları (esyalar.md §1 `sinif`). */

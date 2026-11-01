@@ -19,13 +19,14 @@ import { enYakinAcik } from '../dunya/gomulu.js';
 import '../dunya/araba.js';
 import { gucRozeti } from '../ag/enerji.js';
 import { cekimAdim } from '../dunya/cekim.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
 const SAMAN = esyaKodu('saman');
 const YAS_OT = esyaKodu('yas-ot');
 const TOZ = esyaKodu('toz');
 
 /** Emici huni: tampon 4; tam oranda 1 kat/tik (100 tutam/dk), şebekesiz 512 (50/dk). */
-export const HUNI = Object.freeze({ tampon: 4, gucsuzOran: 512, guc: 4, tozBinde: 125 });
+export const HUNI = parcaSabiti('huni');
 
 const cikanOlay = (ctx, g, p) => ctx.olay('gomulu-cikti', { nesne: g, tur: g.esya, x: g.x,
   y: g.y, parca: p });
@@ -104,7 +105,7 @@ parcaTanimla('huni', {
 });
 
 /** Tırmık kolu: etki dairesinden (yarıçap 1-3 karo) 2 kat/tik yığma noktasına (ön karo). */
-export const TIRMIK = Object.freeze({ hiz: 2, yaricap: 3, tasma: 40, surukle: 20, guc: 8 });
+export const TIRMIK = parcaSabiti('tirmik-kolu');
 
 /** Tırmığın yığma karosu ve etki dairesi hücreleri (taban ve yığma karosu hariç). */
 export function tirmikAlani(c, p) {
@@ -206,7 +207,7 @@ parcaTanimla('tirmik-kolu', {
 });
 
 /** Taş toplayıcı: 60 tikte bir menzildeki (4 karo) en yakın AÇIKTAKİ nesneyi alır. */
-export const TAS_TOPLAYICI = Object.freeze({ aralik: 60, menzil: 4, tampon: 4, guc: 6 });
+export const TAS_TOPLAYICI = parcaSabiti('tas-toplayici');
 const TAS_ISI = TAS_TOPLAYICI.aralik * 1024;
 
 function tasDurumu(p) {

@@ -11,9 +11,10 @@
  */
 import { DX, DY, tersYon, karoIcinde } from '../olcu.js';
 import { parcaAt } from '../izgara.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
-export const MENFEZ_ARA_EN_AZ = 1;
-export const MENFEZ_ARA_EN_COK = 5;
+export const MENFEZ_ARA_EN_AZ = parcaSabiti('menfez').araEnAz;
+export const MENFEZ_ARA_EN_COK = parcaSabiti('menfez').araEnCok;
 
 /** p'den ileri (ileri = true) ya da geri doğrultuda en yakın aynı yönlü menfez. */
 function komsuBul(c, p, ileri) {

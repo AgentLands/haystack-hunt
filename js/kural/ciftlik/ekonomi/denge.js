@@ -144,14 +144,53 @@ export const ONARIM = dondur({ kiyici: 50, degirmen: 80 });
 export const CEVRIMDISI = dondur({ tavanDk: 480, yuzde: 50, pencereDk: 5, dkTik: 1200 });
 
 /**
- * Parça sabitleri: aile → parça anahtarı → { ad: değer } (hız, tampon, güç, kapasite...).
- * Faz 1 aile ajanları sabitlerini kendi dosyalarında dışa aktarılan nesnelerde tanımladı
- * (ör. temel.js HUNI, BANT_HIZ, SANDIK_KAP); birleştirmede buraya taşınır ve aile dosyası
- * `parcaSabiti('huni')` ile okur (tek kaynak). Boş aile = henüz taşınmadı.
+ * Parça sabitleri (TEK KAYNAK; Faz 1 birleştirmesinde aile dosyalarından taşındı): aile →
+ * parça anahtarı → { ad: değer }. Süreler tik (20 Hz), güç bg, kapasiteler eşya/kat. Aile
+ * dosyaları eski adlarını (HUNI, ENERJI, ISLEME, DEPO_KOL, MANTIK, ayirma.js sabitleri...)
+ * bu tablodan türetir: `parcaSabiti('huni').tampon`.
  */
+const sabit = (o) => dondur(Object.fromEntries(Object.entries(o).map(([k, v]) => [k, dondur(v)])));
 export const PARCA_SABIT = dondur({
-  toplama: dondur({}), tasima: dondur({}), ayiklama: dondur({}), isleme: dondur({}),
-  depo: dondur({}), enerji: dondur({}), mantik: dondur({}),
+  toplama: sabit({
+    huni: { tampon: 4, gucsuzOran: 512, guc: 4, tozBinde: 125 },
+    'tirmik-kolu': { hiz: 2, yaricap: 3, tasma: 40, surukle: 20, guc: 8 },
+    'tas-toplayici': { aralik: 60, menzil: 4, tampon: 4, guc: 6 },
+  }),
+  tasima: sabit({
+    bant: { hiz: 18 },
+    menfez: { araEnAz: 1, araEnCok: 5 },
+    catal: { bekleEsik: 20 },
+  }),
+  ayiklama: sabit({
+    'oluk-miknatisi': { yuva: 6 },
+    'miknatisli-tambur': { tik: 5, guc: 4 },
+    kalbur: { tik: 6, sivaEsik: 4, sivaTavan: 8, sivaCozTik: 200 },
+    tinaz: { tik: 4 },
+    'seytan-yeli': { tik: 6, guc: 6 },
+  }),
+  isleme: sabit({
+    'ot-savurucu': { kap: 9, puan: 1200, gunes: 5, gunesRuzgar: 6, bulut: 3, guc: 3 },
+    'kurutma-ambari': { yuva: 24, sure: 600, guc: 8 },
+    'balya-presi': { kalip: 8, dolum: 7, basma: 40, gucDolum: 4, gucBasma: 30, guc: 15 },
+    'cekicli-kiyici': { sure: 10, guc: 12, onarTik: 200 },
+    'gubre-cukuru': { kap: 120, aralik: 2400, esik: 20, menzil: 8, sure: 2400 },
+  }),
+  depo: sabit({
+    sandik: { kap: 400 },
+    ambar: { kap: 600, curume: 1200, bolen: 4 },
+    'yaba-kolu': { salinim: 16 },
+  }),
+  enerji: sabit({
+    'el-kranki': { bg: 6, tik: 600, baslatKaro: 1, surdurKaro: 3 },
+    'yel-degirmeni': { bg: [0, 8, 16, 24], donusTik: 100 },
+    lokomobil: { bg: 40, tampon: 4 },
+    volan: { kap: 2400, sarj: 12, desarj: 30 },
+  }),
+  mantik: sabit({
+    'ruzgar-gulu': { esik: [1, 2, 3], dikSiddet: 2 },
+    kantar: { esik: [25, 50, 75, 100] },
+    'kile-sayaci': { n: [5, 10, 20, 40, 80], darbeTik: 20 },
+  }),
 });
 
 /** Bir parçanın sabitleri (hangi ailede olursa); yoksa hata (yazım hatası sessiz geçmesin). */

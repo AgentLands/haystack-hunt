@@ -1,23 +1,23 @@
 /**
  * İşleme ailesinin ortak sabitleri ve sapları (parcalar/isleme.js ve isleme/kiyici-gubre.js):
- * denge sayıları (ISLEME; G denge.js'e taşıyabilir), eşya kodları, rozet yardımcıları.
+ * denge sayıları (ISLEME: denge.js PARCA_SABIT'ten), eşya kodları, rozet yardımcıları.
  * Hava dunya/hava.js havaAl'dan okunur (testler havaSabitle ile sabitler).
  * Gübre → çayır: dunya/zemin.js gubrele (parça merkezinin karosundan menzil karo).
  */
 import { esyaKodu } from '../esya.js';
 import { havaAl } from '../dunya/hava.js';
 import { gubrele as zeminGubrele } from '../dunya/zemin.js';
-import { ONARIM } from '../ekonomi/denge.js';
+import { ONARIM, parcaSabiti } from '../ekonomi/denge.js';
 import { ozellik } from './esya-ozellik.js';
 
-/** Denge sayıları (parcalar.md; tik ve bg; kuruşlar ekonomi/denge.js'ten). */
-export const ISLEME = {
-  savurucu: { kap: 9, puan: 1200, gunes: 5, gunesRuzgar: 6, bulut: 3, guc: 3 },
-  kurutma: { yuva: 24, sure: 600, guc: 8 },
-  pres: { kalip: 8, dolum: 7, basma: 40, gucDolum: 4, gucBasma: 30 },
-  kiyici: { sure: 10, guc: 12, onarKurus: ONARIM.kiyici, onarTik: 200 },
-  gubre: { kap: 120, aralik: 2400, esik: 20, menzil: 8, sure: 2400 },
-};
+/** Denge sayıları (tek kaynak ekonomi/denge.js PARCA_SABIT; kısa adlarla). */
+export const ISLEME = Object.freeze({
+  savurucu: parcaSabiti('ot-savurucu'),
+  kurutma: parcaSabiti('kurutma-ambari'),
+  pres: parcaSabiti('balya-presi'),
+  kiyici: Object.freeze({ ...parcaSabiti('cekicli-kiyici'), onarKurus: ONARIM.kiyici }),
+  gubre: parcaSabiti('gubre-cukuru'),
+});
 export const YAS = esyaKodu('yas-ot');
 export const KURU = esyaKodu('kuru-ot');
 export const SAMAN = esyaKodu('saman');

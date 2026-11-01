@@ -112,3 +112,18 @@ bekleyen('rüzgârlı verim: 2 yel ≈ %76, 3 yel ≈ %85, 4 yel ≈ %85 (Hat A 
   assert.ok(Math.abs(verim(3) - 0.85) <= 0.04, `3 yel ${verim(3)}`);
   assert.ok(Math.abs(verim(4) - 0.85) <= 0.04, `4 yel ${verim(4)}`);
 });
+
+test('PARCA_SABIT tek kaynak: anahtarlar kayıtlı parçalar, aileler buradan türetir', async () => {
+  const { PARCA_SABIT, parcaSabiti } = await import('../js/kural/ciftlik/ekonomi/denge.js');
+  const { parcaTanimi } = await import('../js/kural/ciftlik/parca-kayit.js');
+  const { ENERJI } = await import('../js/kural/ciftlik/ag/enerji.js');
+  const { HUNI } = await import('../js/kural/ciftlik/parcalar/toplama.js');
+  for (const [aile, parcalar] of Object.entries(PARCA_SABIT)) {
+    for (const anahtar of Object.keys(parcalar)) {
+      assert.ok(parcaTanimi(anahtar), `${aile}/${anahtar} kayıtlı parça değil`);
+    }
+  }
+  assert.equal(ENERJI.KRANK_TIK, parcaSabiti('el-kranki').tik);
+  assert.equal(HUNI, parcaSabiti('huni'));
+  assert.equal(parcaTanimi('balya-presi').guc, parcaSabiti('balya-presi').guc);
+});

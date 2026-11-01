@@ -12,6 +12,7 @@
  * (uzun) karo kurar (tasima/hat.js).
  */
 import { hedefKabul, hedefeVer } from './hat-adim.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
 /**
  * Eşyayı çıkışlardan birine verir: p.ozel.sira'dan başlayarak sırayla, `uygun(port, kod)`
@@ -91,7 +92,7 @@ export function yuvaVer(p, ver) {
  * Bu kadar tik ilerleyemeden bekleyen eşya "çıkış dolu" rozeti verir (kısa beklemeler ve
  * sürekli akıp tek tek sırasını bekleyen yuvalar değil: her geçişte sayaç sıfırlanır).
  */
-export const BEKLE_ESIK = 20;
+export const BEKLE_ESIK = parcaSabiti('catal').bekleEsik;
 const BEKLE_TAVAN = 100000;
 
 /** Tik sonunda: eşya ilerleyemeden bekliyorsa sayaç artar, değilse sıfırlanır. */

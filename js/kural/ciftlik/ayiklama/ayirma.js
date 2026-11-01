@@ -6,27 +6,28 @@
  *   kalbur             0 ön (iri), 1 sağ (ince)
  *   tınaz              0 dip (ağır), 1 sol, 2 sağ (savrulan)
  *   şeytan yeli        0 ön (hafif), 1 sol (çok hafif), 2 sağ (ağır)
- * Süre ve eşik sabitleri bu dosyada (denge tablosu ekonomi/denge.js gelince oraya taşınır).
+ * Süre ve eşik sayıları ekonomi/denge.js PARCA_SABIT'ten (tek kaynak); adlar burada kalır.
  */
 import { esyaTanimi, esyaKodu } from '../esya.js';
 import { yonDondur } from '../olcu.js';
 import { havaAl } from '../dunya/hava.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
 /** Oluk mıknatısı tutucusunun yuva sayısı (dolunca manyetikler geçer). */
-export const TUTUCU_YUVA = 6;
+export const TUTUCU_YUVA = parcaSabiti('oluk-miknatisi').yuva;
 /** Eşya başına iş süreleri (tik; tam güçte): tambur 240/dk, kalbur 200, tınaz 300, yel 200. */
-export const TAMBUR_TIK = 5;
-export const KALBUR_TIK = 6;
-export const TINAZ_TIK = 4;
-export const YEL_TIK = 6;
+export const TAMBUR_TIK = parcaSabiti('miknatisli-tambur').tik;
+export const KALBUR_TIK = parcaSabiti('kalbur').tik;
+export const TINAZ_TIK = parcaSabiti('tinaz').tik;
+export const YEL_TIK = parcaSabiti('seytan-yeli').tik;
 /** Güç talebi (bg); oluk, kalbur ve tınaz güçsüzdür. */
-export const TAMBUR_GUC = 4;
-export const YEL_GUC = 6;
+export const TAMBUR_GUC = parcaSabiti('miknatisli-tambur').guc;
+export const YEL_GUC = parcaSabiti('seytan-yeli').guc;
 /** Kalbur sıvası: her yaş ot +1 (en çok SIVA_TAVAN); SIVA_ESIK ve üstünde delikler kapalı. */
-export const SIVA_ESIK = 4;
-export const SIVA_TAVAN = 8;
+export const SIVA_ESIK = parcaSabiti('kalbur').sivaEsik;
+export const SIVA_TAVAN = parcaSabiti('kalbur').sivaTavan;
 /** Yaş ot gelmeyen bu kadar tikte sıva 1 azalır. */
-export const SIVA_COZ_TIK = 200;
+export const SIVA_COZ_TIK = parcaSabiti('kalbur').sivaCozTik;
 
 /** Eşya tür kodlarının fizik okuması (bilinmeyen kod: ağır, iri, manyetik değil). */
 export const manyetikMi = (kod) => esyaTanimi(kod)?.manyetik === true;

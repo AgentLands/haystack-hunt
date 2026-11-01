@@ -141,7 +141,7 @@ function balyaTuru(kalip) {
 parcaTanimla('balya-presi', {
   kod: 15, ad: 'Balya presi', aile: 'isleme', boyut: [3, 2],
   girisler: [{ x: 0, y: 0, yon: 2 }], cikislar: [{ x: 2, y: 0, yon: 0 }],
-  guc: 15,
+  guc: ISLEME.pres.guc,
   kur(p) {
     Object.assign(p.ozel, { kalip: [], doluyor: 0, basiyor: 0, il: 0, cikis: 0, sikisan: 0,
       bekleyen: 0, dolu: 0 });

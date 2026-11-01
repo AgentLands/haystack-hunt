@@ -10,11 +10,12 @@ import { esyaKodu, SAMAN_TUTAM, esyaTanimi } from '../esya.js';
 import { KARO } from '../olcu.js';
 import { degerliMi } from '../isleme/esya-ozellik.js';
 import { bulundu } from '../isleme/bulundu.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
 const SAMAN = esyaKodu('saman');
 
 /** Bant: 1×1 hat parçası; HIZ birim/tik (18: 1,5 karo/sn, 4,5 eşya/sn). */
-export const BANT_HIZ = 18;
+export const BANT_HIZ = parcaSabiti('bant').hiz;
 parcaTanimla('bant', {
   kod: 1, ad: 'Bant', aile: 'tasima', boyut: [1, 1], yurunur: true, hat: { hiz: BANT_HIZ },
   maliyet: { tahta: 1 },
@@ -26,7 +27,7 @@ parcaTanimla('bant', {
  * (`ozel.bulunan`: bu sandıkta bulunanların tür sayacı).
  * Yaba kolu `cek` ile en küçük kodlu uygun eşyayı çeker.
  */
-export const SANDIK_KAP = 400;
+export const SANDIK_KAP = parcaSabiti('sandik').kap;
 parcaTanimla('sandik', {
   kod: 3, ad: 'Sandık', aile: 'depo', boyut: [1, 1], yonlu: false,
   girisler: [0, 1, 2, 3].map((yon) => ({ x: 0, y: 0, yon })), maliyet: { tahta: 4 },

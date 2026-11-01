@@ -34,13 +34,18 @@ import { komutTanimla } from '../komut.js';
 import { parcaAt } from '../izgara.js';
 import { parcaDurumu } from '../parca-kayit.js';
 import { havaAl } from '../dunya/hava.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
-/** Enerji sayıları (denge.js gelince oraya taşınır). bg = beygir gücü, tik = 50 ms. */
+const KRANK = parcaSabiti('el-kranki');
+const YEL = parcaSabiti('yel-degirmeni');
+const LOKO = parcaSabiti('lokomobil');
+const VOLAN = parcaSabiti('volan');
+/** Enerji sayıları (tek kaynak ekonomi/denge.js PARCA_SABIT). bg = beygir gücü, tik = 50 ms. */
 export const ENERJI = Object.freeze({
-  KRANK_BG: 6, KRANK_TIK: 600, KRANK_BASLAT_KARO: 1, KRANK_SURDUR_KARO: 3,
-  YEL_BG: Object.freeze([0, 8, 16, 24]), YEL_DONUS_TIK: 100,
-  LOKO_BG: 40, LOKO_TAMPON: 4,
-  VOLAN_KAP: 2400, VOLAN_SARJ: 12, VOLAN_DESARJ: 30,
+  KRANK_BG: KRANK.bg, KRANK_TIK: KRANK.tik, KRANK_BASLAT_KARO: KRANK.baslatKaro,
+  KRANK_SURDUR_KARO: KRANK.surdurKaro, YEL_BG: YEL.bg, YEL_DONUS_TIK: YEL.donusTik,
+  LOKO_BG: LOKO.bg, LOKO_TAMPON: LOKO.tampon,
+  VOLAN_KAP: VOLAN.kap, VOLAN_SARJ: VOLAN.sarj, VOLAN_DESARJ: VOLAN.desarj,
 });
 
 /** Bu tikteki hava: dunya/hava.js havaAl (yon: rüzgârın gittiği yön; testler havaSabitle). */

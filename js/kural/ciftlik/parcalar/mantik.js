@@ -12,7 +12,7 @@
  *
  * Hava dunya/hava.js'ten (dilimHavasi; testler havaSabitle). Kantar depo doluluğunu
  * `tanim.doluluk(p)` → { n, kap } ile okur (sandık, ambar, kurutma, gübre, volan, mıknatıs).
- * Sabitler (denge.js'e G taşır): MANTIK.
+ * Sabitler: MANTIK (sayılar denge.js PARCA_SABIT).
  */
 import { parcaTanimla } from '../parca-kayit.js';
 import { esyaTanimi } from '../esya.js';
@@ -20,16 +20,17 @@ import { DX, DY } from '../olcu.js';
 import { parcaAt } from '../izgara.js';
 import { renkAdi } from '../ag/ayar.js';
 import { dilimHavasi, DILIM_TIK } from '../dunya/hava.js';
+import { parcaSabiti } from '../ekonomi/denge.js';
 
-/** Mantık sabitleri (tek kaynak ekonomi/denge.js'e taşınabilir). */
-export const MANTIK = {
-  dilimTik: DILIM_TIK, // hava dilimi (dunya/hava.js)
-  darbeTik: 20, // kile sayacı "darbe" kipinde yazma süresi
-  kileN: [5, 10, 20, 40, 80],
-  kantarEsik: [25, 50, 75, 100],
-  ruzgarEsik: [1, 2, 3],
-  dikSiddet: 2, // "dik esiyor" kipinin en az şiddeti
-};
+/** Mantık sabitleri (sayılar ekonomi/denge.js PARCA_SABIT'ten; hava dilimi dunya/hava.js). */
+export const MANTIK = Object.freeze({
+  dilimTik: DILIM_TIK,
+  darbeTik: parcaSabiti('kile-sayaci').darbeTik, // "darbe" kipinde yazma süresi
+  kileN: parcaSabiti('kile-sayaci').n,
+  kantarEsik: parcaSabiti('kantar').esik,
+  ruzgarEsik: parcaSabiti('ruzgar-gulu').esik,
+  dikSiddet: parcaSabiti('ruzgar-gulu').dikSiddet, // "dik esiyor" kipinin en az şiddeti
+});
 
 /** Deponun { n, kap } doluluğu (tanim.doluluk); depo değilse null. */
 export function dolulukOku(p) {
