@@ -15,6 +15,7 @@ import { hatBasaKoy } from '../js/kural/ciftlik/tasima/hat-adim.js';
 import { dunyaKodla, dunyaCoz, dunyaOzeti } from '../js/kural/ciftlik/sakla.js';
 import { ruzgarAyarla, TUTUCU_YUVA } from '../js/kural/ciftlik/ayiklama/ayirma.js';
 import { dunya, kur, bantCek, duzTarla, gucVer } from './ciftlik-yardim.mjs';
+import { toplamaBulunan } from './ciftlik-isleme-yardim.mjs';
 
 const K = (ad) => esyaKodu(ad);
 const BULUNTULAR = KATALOG.map((b) => K(`buluntu:${b.tur}`));
@@ -38,7 +39,8 @@ function sahne(anahtar, { yon = 0, sandikYok = [], guc = true, oran = 1024 } = {
 }
 
 const girisHat = (d) => d.c.hatlar.find((h) => h.cikis?.parca === d.p);
-const say = (s, kod) => (s ? s.ozel.say[kod] ?? 0 : 0);
+/** Sandığa giren tür sayısı (iğne/buluntu "bulundu" sayılır, ozel.bulunan'da; F kuralı). */
+const say = (s, kod) => (s ? (s.ozel.say[kod] ?? 0) + (s.ozel.bulunan?.[kod] ?? 0) : 0);
 
 /** n tik; her tik kuyruktaki (ya da sonsuz) eşyayı hat başına koymayı dener. */
 function kos(d, n) {
@@ -340,16 +342,20 @@ for (const anahtar of ['oluk-miknatisi', 'miknatisli-tambur', 'kalbur', 'tinaz',
       ruzgarAyarla(1, 2);
       const d = sahne(anahtar);
       d.kuyruk.push(...TUMU, ...TUMU);
+      const olaylar = [];
       for (let i = 0; i < 160; i++) {
         if (sokTik && i === sokTik) komutEkle(d.c, { tur: 'sok', x: d.p.x, y: d.p.y });
-        kos(d, 1);
+        olaylar.push(...kos(d, 1));
       }
-      kos(d, 100);
+      olaylar.push(...kos(d, 100));
       const toplam = envanterToplam(d.c);
+      // Sandık iğne/buluntuyu tutmaz, "bulundu" sayar (F kuralı): onlar da korunmuş sayılır.
+      const sinkte = toplamaBulunan(olaylar);
       const kuyrukta = new Map();
       for (const kod of d.kuyruk) kuyrukta.set(kod, (kuyrukta.get(kod) ?? 0) + 1);
       for (const kod of TUMU) {
-        assert.equal((toplam.get(kod) ?? 0) + (kuyrukta.get(kod) ?? 0), 2,
+        const n = (toplam.get(kod) ?? 0) + (kuyrukta.get(kod) ?? 0) + (sinkte.get(kod) ?? 0);
+        assert.equal(n, 2,
           `${anahtar} sök@${sokTik}: kod ${kod}`);
       }
       assert.equal(ciftlikSamani(d.c, d.tarla) + d.tarla.kaldirilan, [...toplam].reduce(

@@ -345,3 +345,40 @@ Kodu, `ozel` biçimini ya da port düzenini değiştirmek kayıt uyumunu bozar: 
   bitince `ctx.sayac('yakilan', kod)` ve saman sistemden çıkar. Yakıt bitip açık varsa `yakit-bitti`.
 - Ölü döngü: yakıt + yel yoksa krank (bedava) hattı yürütür, sandıktaki balya yaba koluyla
   lokomobile verilir (lokomobil girişi güç istemez). Test: `tests/ciftlik-enerji.test.js`.
+
+## F. İşleme, depo ve kol (F işi: `parcalar/isleme.js`, `parcalar/depo-kol.js`, `isleme/`)
+- Parça kodları: 13 ot-savurucu, 14 kurutma-ambari, 15 balya-presi, 16 cekicli-kiyici,
+  17 gubre-cukuru, 19 ambar, 20 defter-masasi, 21 yaba-kolu, 31 komsu-kapisi (18 boş; sandık 3).
+  Kıyıcı ve gübre çukuru `isleme/kiyici-gubre.js`'te (dosya boyu), sabitler `isleme/sabitler.js`
+  (`ISLEME`, `DEPO_KOL` depo-kol.js'te; G denge.js'e taşıyabilir).
+- **Makineler** `talep(p)` verir (ilerleyemeyen 0; pres dolarken 4, basarken 30), `gucsuzOran`:
+  ot savurucu 341, kurutma 256. İlerleme `isleme/bulundu.js ilerle(o, alan, oran, tik)`: tam güçte
+  tam `tik` sürer. Ot savurucu havayı `ag/enerji.js havaAl` ile okur (gok 'gunes'|'bulut'|'yagmur').
+  Rozet için giriş portunda bekleyen reddedilmiş eşya (`girisBekleyen`, hattın ucundaki)
+  `p.ozel.bekleyen`'e yazılır: 'nemli' (nem 1) | 'yabanci'.
+- **Pres sıkışması** `p.tikali = true` + `parca-tikandi { neden: 'sikisti', kod }`; **kıyıcı
+  kırılması** `p.ozel.kirik` (rozet 'kirik'), sert eşya çıkıştan atılır. Komutlar
+  (`isleme/komutlar.js`): `{ tur: 'temizle', x, y }` → `tanim.temizle(p, k, ortam)`,
+  `{ tur: 'onar', x, y }` → `tanim.onar` (50 kuruş + 200 tik), ve **genel** `{ tur: 'ayar', x, y,
+  ad, deger }` → `tanim.ayarla(p, ad, deger) → bool` varsa o, yoksa `ag/ayar.js ayarUygula`.
+- **İğne/buluntu hiçbir yolla yok olmaz** (`isleme/bulundu.js`): `bulundu(ortam, kod, kaynak,
+  kip, p)` = G'nin `ekonomi/kurus.js bulundu` (kuruş, toplamlar, defterCiftlik) + zengin olay
+  `ciftlik-bulundu`; `oyuncuyaVer` envantere koyar + bulundu. Sandık ve ambar 'yari' (depoda
+  tutmaz, doluyken de alır; `ozel.bulunan` tür sayacı), defter masası 'tam', kapı ve gübre çukuru
+  'kurussuz' + envanter, Temizle 'tam' + envanter. **Söküm kancası** (`komut.js
+  sokumKancasiEkle`): sökülen parçanın içeriğindeki ve sökülen bant karosundaki iğne/buluntu için
+  'sokum' 'tam' (envantere çekirdek koyar). `tanim.sokulmez` (kapı) sökülmez/döndürülmez.
+- **Yaba kolu** (`isleme/hat-el.js`): arkadaki karodan alır: `tanim.cek(q, uygun) → kod | 0`
+  olan parça (sandık, ambar, oluk mıknatısı) ya da hat karosundaki filtreye uyan ilk eşya;
+  16 tik salınır, öndeki karoya bırakır: kola bakan giriş portu (kabulEder/al) ya da hat
+  karosu (aralık kuralıyla araya). Filtre `{ tur: 'hepsi' | 'esya', kod | 'sinif', sinif |
+  'manyetik' }` (ag/ayar.js biçimi + manyetik); seçimsiz → rozet 'ayar'.
+- **Komşu kapısı** (2×2, girişler arka kenarın iki karosu; `paletDisi`: palet bunu atlamalı,
+  kurulumu D yapar): her şeyi alır, tıkanmaz; her eşya G'nin `ekonomi/siparis.js teslimEt`'ine
+  gider ('siparis' | 'iade' | 'satildi' | 'atildi'); 'iade'de eşya envantere girer.
+- `doluluk(p) → { n, kap }` (kantar): ambar, kurutma ambarı (yuva + hazır), gübre çukuru (puan).
+- **SAP'lar**: dünyadan çıkan saman `c.cikanKat` (satılan, atılan, gübrelenen; korunum: `ciftlikSamani +
+  kaldirilan + cikanKat` sabit; kayda G/D göçüyle girmeli), gübre → çayır
+  `gubreKaynagiKur(islev(ctx, p, menzil, sure) → karo)` (D: dunya/arazi.js gubrele).
+- Testler: `tests/ciftlik-isleme.test.js`, `tests/ciftlik-depo.test.js` (yardımcı parçalar
+  `tests/ciftlik-isleme-yardim.mjs`: test-kaynak, test-alici, test-guc).

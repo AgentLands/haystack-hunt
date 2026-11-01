@@ -19,6 +19,10 @@
  *   icerik(p) → { esya: [[kod, adet]...], saman: kat }   söküm iadesi ve saman korunumu
  *   durum(p) → 'calisiyor' | 'bos' | 'girdi-yok' | 'cikis-dolu' | 'guc-yok' | 'tikali'
  *   incele(p) → [[etiket, değer]...]   inceleme paneli satırları (saf)
+ *   ayarla(p, ad, deger) → bool   'ayar' komutu (yoksa `ayarlar` şeması, ag/ayar.js)
+ *   temizle / onar(p, komut, ortam) → null | neden   parça komutları (isleme/komutlar.js)
+ *   cek(p, uygun(kod), ctx) → kod | 0   depodan bir eşya çeker (yaba kolu; sandık, ambar)
+ *   sokulmez   true: sökülmez, döndürülmez (Komşu kapısı); paletDisi: palette gösterilmez
  */
 import { donmusBoyut, yerelDondur, yonDondur, DX, DY } from './olcu.js';
 
@@ -26,7 +30,8 @@ const adla = new Map();
 const kodla = new Map();
 /** Bilinen aileler (palet sırası); listede olmayan aile adı da kabul edilir (sona dizilir). */
 export const AILELER = ['toplama', 'tasima', 'ayiklama', 'isleme', 'depo', 'enerji', 'mantik'];
-const ISLEVLER = ['kur', 'adim', 'kabulEder', 'al', 'icerik', 'durum', 'incele'];
+const ISLEVLER = ['kur', 'adim', 'kabulEder', 'al', 'icerik', 'durum', 'incele', 'ayarla',
+  'temizle', 'onar', 'cek'];
 
 function portDenetle(anahtar, port, [en, boy]) {
   const { x, y, yon } = port;

@@ -108,7 +108,20 @@
  *   kalbur-sivandi   { parca }                     kalbur sıva eşiğine (4) vardı: delikler
  *                                                  kapandı, her şey öne gider
  *
- *   [F işleme-depo] (bu ailenin/işin olayları buraya)
+ *   [F işleme-depo]
+ *   ciftlik-bulundu  { kod, anahtar, buluntu, sinif, kaynak, kip, kurus, parca, x, y }
+ *                                                  iğne/buluntu "bulundu" (defter + kutlama
+ *                                                  dinleyicinin işi): kaynak 'masa' | 'sandik' |
+ *                                                  'ambar' | 'kapi' | 'gubre' | 'temizle' |
+ *                                                  'sokum'; kip 'tam' | 'yari' | 'kurussuz'
+ *                                                  (kurus: ödenen); buluntu: tür adı ya da null
+ *   parca-temizlendi { parca, komut }              sıkışmış pres açıldı (eşya envantere)
+ *   parca-onarildi   { parca, komut }              kıyıcı onarımı başladı (50 kuruş, 200 tik)
+ *   parca-ayarlandi  { parca, komut }              'ayar' komutu uygulandı (komut.ad, deger)
+ *   gubre-serpildi   { parca, karo }               gübre çukuru 20 puanla çayırı gübreledi
+ *                                                  (karo: gübrelenen çayır karosu, -1 bilinmez)
+ *   (parca-tikandi'nin nedenleri: 'sikisti' pres, 'kirik' kıyıcı; veri.kod sert eşya.
+ *    ciftlik-ozet sayaçları: uretilen, depolanan, satilan, bosa, gubre.)
  *
  *   [G ekonomi] (kural/ciftlik/ekonomi/; pano yuva 0 = damga kartı, 1-2 dönen kartlar)
  *   siparis-geldi    { yuva, kart }                yuvaya yeni kart (başlangıç panosu olaysız)

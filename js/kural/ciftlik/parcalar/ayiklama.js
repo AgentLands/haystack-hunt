@@ -112,6 +112,11 @@ parcaTanimla('oluk-miknatisi', {
     p.ozel.tutucu = [];
     return { bulunan, atilan };
   },
+  /** Yaba kolu tutucudan uygun ilk eşyayı çeker (F: isleme/hat-el.js karodanCek). */
+  cek(p, uygun) {
+    const i = p.ozel.tutucu.findIndex(uygun);
+    return i < 0 ? 0 : p.ozel.tutucu.splice(i, 1)[0];
+  },
   icerik: (p) => ({ esya: p.ozel.tutucu.map((kod) => [kod, 1]), saman: 0 }),
   durum: (p) => (p.ozel.tutucu.length >= TUTUCU_YUVA ? 'doymus' : 'calisiyor'),
   incele(p) {

@@ -7,7 +7,9 @@
  * Yeni komut türü: komutTanimla(tur, uygula(c, tarla, komut, olaylar)). Uygulama sonucu
  * olay olarak döner: 'parca-kuruldu' { parca }, 'parca-sokuldu' { parca, iade },
  * 'parca-dondu' { parca }, 'komut-reddedildi' { komut, neden }.
- * Söküm iadesi: parçanın eşyaları envantere, ham saman katı parçanın yerine dökülür.
+ * Söküm iadesi: parçanın eşyaları envantere, ham saman katı parçanın yerine dökülür;
+ * sonra söküm kancaları (sokumKancasiEkle) çalışır. `tanim.sokulmez` parça (Komşu kapısı)
+ * sökülmez ve döndürülmez (neden 'sokulmez').
  * Ekonomi (ekonomi/kurus.js): 'kur' komutu kilidi ve kuruşu denetler (red nedeni 'kilitli'
  * | 'kurus') ve bedeli öder; 'sok' bedeli %100 iade eder (iade.kurus). parcaKur/parcaSok
  * doğrudan çağrılınca (test, dünya kurulumu) kuruş işlemez.
@@ -20,6 +22,12 @@ import { donmusBoyut } from './olcu.js';
 import { kurulumEngeli, kurulumOde, sokumIade } from './ekonomi/kurus.js';
 
 const komutlar = new Map();
+const sokumKancalari = [];
+
+/** Söküm sonrası kanca: islev(c, tarla, p, iade, olaylar) (ör. iğne/buluntu iadesi). */
+export function sokumKancasiEkle(islev) {
+  sokumKancalari.push(islev);
+}
 
 /** Yeni komut türü kaydeder. */
 export function komutTanimla(tur, uygula) {
@@ -104,7 +112,9 @@ komutTanimla('kur', (c, tarla, k, olaylar) => {
 komutTanimla('sok', (c, tarla, k, olaylar) => {
   const p = parcaAt(c, k.x, k.y);
   if (!p) return red(olaylar, k, 'bos');
+  if (p.tanim.sokulmez) return red(olaylar, k, 'sokulmez');
   const iade = { ...parcaSok(c, tarla, p), kurus: sokumIade(c, p) };
+  for (const kanca of sokumKancalari) kanca(c, tarla, p, iade, olaylar);
   olaylar.push({ ad: 'parca-sokuldu', veri: { parca: p, iade } });
   return undefined;
 });
@@ -112,6 +122,7 @@ komutTanimla('sok', (c, tarla, k, olaylar) => {
 komutTanimla('dondur', (c, tarla, k, olaylar) => {
   const p = parcaAt(c, k.x, k.y);
   if (!p) return red(olaylar, k, 'bos');
+  if (p.tanim.sokulmez) return red(olaylar, k, 'sokulmez');
   const neden = parcaDondur(c, tarla, p, k.yon ?? p.yon + 1);
   if (neden) red(olaylar, k, neden);
   else olaylar.push({ ad: 'parca-dondu', veri: { parca: p } });
