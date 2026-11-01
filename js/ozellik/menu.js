@@ -1,22 +1,26 @@
 /**
  * Açılış ve oyun menüsü ("çuval etiketi" kartı, <dialog id="menu">): logo, "Tarla No."
- * damgası, Günün tarlası (#gunun) / Yeni tarla (#yeni), zorluk damgaları, bağlantı satırı
- * (#alt-dugmeler buraya taşınır: Yarış ve dugmeEkle('alt') ile gelenler; Defter, Nasıl
- * oynanır) ve onaylı "Pes et" (#pes onay düğmesidir). Düğmeler DOM'da taşınır; kimlikleri ve
- * arayuz.js / yaris.js'teki tıklama davranışları aynı kalır.
+ * damgası, Günün tarlası (#gunun) / Yeni tarla (#yeni), zorluk damgaları ve ayar satırı
+ * (menuAyarEkle: rahat mod), bağlantı satırı (#alt-dugmeler buraya taşınır: Yarış ve
+ * dugmeEkle('alt') ile gelenler; Defter, Nasıl oynanır) ve onaylı "Pes et" (#pes onay
+ * düğmesidir). Düğmeler DOM'da taşınır; kimlikleri ve arayuz.js / yaris.js'teki tıklama
+ * davranışları aynı kalır. Tarlayı baştan açan ayarlar (zorluk, rahat mod) tarlaBastanAc ile
+ * gelir: süren tarlada önce onay, sonra koruma.js yeniTarlaIzni (yarış).
  * İlk açılışta (URL'de ?tohum= yoksa) kendiliğinden açılır; ≡ düğmesi (#menu-ac) ve Esc
- * yeniden açar. Açıkken klavye oyuna gitmez ve oyun saati durur (kapanınca geri itilir).
- * Yeni tarla açılınca ya da pes edilince kapanır; zorluk değişimi kartı açık bırakır.
+ * yeniden açar. Açıkken oyun durur (sure-duraklat.js 'menu' nedeni; girdiler bırakılır).
+ * Yeni tarla açılınca ya da pes edilince kapanır; ayar değişimi kartı açık bırakır.
  */
 import { dinle } from '../olaylar.js';
-import { durumAl, yeniOyun, zamaniKaydir } from '../oyun.js';
+import { durumAl, yeniOyun } from '../oyun.js';
+import { hepsiniBirak } from '../girdi.js';
+import { duraklat, surdur } from './sure-duraklat.js';
 import { ZORLUKLAR } from '../kural/zorluk.js';
 import { gununEtiketi } from '../kural/rastgele.js';
 import { sayi, sureMetni } from '../arayuz.js';
 import { ikon } from './ikon.js';
 import { logo } from './menu-logo.js';
 import { yardimAc } from './yardim.js';
-import { yarisSuruyor } from './yaris.js';
+import { yeniTarlaIzni } from './koruma.js';
 
 const KAPANIS_MS = 200;
 const $ = (id) => document.getElementById(id);
@@ -39,29 +43,54 @@ function yap(ad, sinif, metin) {
 const kart = yap('dialog', 'kagit-pencere menu-kart');
 kart.id = 'menu';
 kart.setAttribute('aria-labelledby', 'menu-baslik');
-let acildi = null;
-let zorlukDegisiyor = false;
+let ayarDegisiyor = false;
 let ilkOyun = true;
 
-// --- Onay satırı: pes etme ve süren tarlada zorluk değişimi için ---
+// --- Onay satırı: pes etme ve süren tarlayı baştan açan ayarlar (zorluk, rahat) için ---
 const onay = yap('div', 'menu-onay');
 onay.hidden = true;
 const onayMetni = yap('p', 'menu-onay-metin');
-const zorlukEvet = yap('button', 'dugme-birincil', 'Evet, baştan aç');
+const bastanEvet = yap('button', 'dugme-birincil', 'Evet, baştan aç');
 const vazgec = yap('button', 'dugme-metin', 'Vazgeç');
-let zorlukBekleyen = null;
+let bekleyen = null;
 
 function onayGoster(metin, evet) {
   onayMetni.textContent = metin;
   $('pes').hidden = evet !== $('pes');
-  zorlukEvet.hidden = evet !== zorlukEvet;
+  bastanEvet.hidden = evet !== bastanEvet;
   onay.hidden = false;
   evet.focus();
 }
 
 function onayGizle() {
   onay.hidden = true;
-  zorlukBekleyen = null;
+  bekleyen = null;
+}
+
+/** Ayarı uygular ve tarlayı baştan açar; kart açık kalır. Yarış sürüyorsa koruma sorar. */
+function bastanUygula(uygula) {
+  if (!yeniTarlaIzni()) return;
+  ayarDegisiyor = true;
+  try {
+    uygula();
+  } finally {
+    ayarDegisiyor = false;
+  }
+}
+
+/**
+ * Tarlayı baştan açan bir ayar (zorluk, rahat mod): tarla sürüyorsa önce menüde onay
+ * (metin), sonra uygula(); uygula yeniOyun çağırır. Tek giriş noktası; yarış koruması dahil.
+ */
+export function tarlaBastanAc(metin, uygula) {
+  const d = durumAl();
+  if (d.baslangic !== null && !d.bitti) {
+    bekleyen = uygula;
+    onayGoster(metin, bastanEvet);
+  } else {
+    onayGizle();
+    bastanUygula(uygula);
+  }
 }
 
 // --- Zorluk damgaları ---
@@ -78,33 +107,28 @@ const zorlukDugmeleri = Object.entries(ZORLUKLAR).map(([anahtar, ayar]) => {
   return d;
 });
 
-function zorlukUygula(anahtar) {
-  zorlukDegisiyor = true;
-  try {
-    yeniOyun(durumAl().etiket, anahtar);
-  } finally {
-    zorlukDegisiyor = false;
-  }
-}
-
 function zorlukSec(anahtar) {
-  const d = durumAl();
-  if (anahtar === d.zorluk || yarisSuruyor()) return;
-  if (d.baslangic !== null && !d.bitti) {
-    zorlukBekleyen = anahtar;
-    onayGoster(`Bu tarla ${ZORLUKLAR[anahtar].ad} zorlukta baştan açılacak.`, zorlukEvet);
-  } else {
-    onayGizle();
-    zorlukUygula(anahtar);
-  }
+  if (anahtar === durumAl().zorluk) return;
+  tarlaBastanAc(`Bu tarla ${ZORLUKLAR[anahtar].ad} zorlukta baştan açılacak.`,
+    () => yeniOyun(durumAl().etiket, anahtar));
 }
 
-zorlukEvet.addEventListener('click', () => {
-  const anahtar = zorlukBekleyen;
+bastanEvet.addEventListener('click', () => {
+  const uygula = bekleyen;
   onayGizle();
-  if (anahtar) zorlukUygula(anahtar);
+  if (uygula) bastanUygula(uygula);
 });
 vazgec.addEventListener('click', onayGizle);
+
+// --- Ayar satırı: zorluğun altında (rahat mod gibi anahtarlar menuAyarEkle ile gelir) ---
+const ayarlar = yap('div', 'menu-ayarlar');
+ayarlar.hidden = true;
+
+/** Zorluk damgalarının altındaki satıra ayar düğmesi (ve kısa notu) ekler (ör. rahat.js). */
+export function menuAyarEkle(...ogeler) {
+  ayarlar.append(...ogeler);
+  ayarlar.hidden = false;
+}
 
 // --- Kartın içi ---
 function kartKur() {
@@ -137,7 +161,7 @@ function kartKur() {
   pes.className = 'dugme-birincil';
   pes.textContent = 'Evet, iğneyi göster';
   onay.append(onayMetni, yap('div', 'menu-onay-dugmeler'));
-  onay.lastChild.append(vazgec, zorlukEvet, pes);
+  onay.lastChild.append(vazgec, bastanEvet, pes);
 
   const baglantilar = $('alt-dugmeler');
   baglantilar.classList.add('menu-baglantilar');
@@ -164,20 +188,20 @@ function kartKur() {
     'Emin misin? İğnenin yeri gösterilecek.', pes));
   pesSatiri.append(pesAc);
 
-  kart.append(kapat, baslik, altBaslik, damga, yarim, ana, zorluk, onay, baglantilar,
-    pesSatiri);
+  // Tabela bloğu ayrı kutu: alçak yatay ekranda kart iki sütun olur (menu.css).
+  const tabela = yap('div', 'menu-tabela');
+  tabela.append(baslik, altBaslik, damga);
+  kart.append(kapat, tabela, yarim, ana, zorluk, ayarlar, onay, baglantilar, pesSatiri);
   document.body.append(kart);
 }
 
 /** Kartı açılmadan önce durumla eşitler. */
 function guncelle() {
   const d = durumAl();
-  const yaris = yarisSuruyor();
+  $('menu-damga').textContent = `Tarla No. ${gununEtiketi()}`;
   for (const b of zorlukDugmeleri) {
     b.setAttribute('aria-checked', String(b.dataset.zorluk === d.zorluk));
-    b.disabled = yaris;
   }
-  zorluk.title = yaris ? 'Yarış sürerken zorluk değişmez' : '';
   const suruyor = d.baslangic !== null && !d.bitti;
   const yarim = $('menu-yarim');
   yarim.hidden = !suruyor;
@@ -197,7 +221,9 @@ export function menuAc() {
   guncelle();
   kart.classList.remove('kapaniyor');
   kart.showModal();
-  acildi = performance.now();
+  // Oyun durur (sure-duraklat.js) ve basılı tuş, kol, tıkla-yürü hedefi bırakılır.
+  hepsiniBirak();
+  duraklat('menu');
   $('gunun').focus();
 }
 
@@ -214,9 +240,8 @@ export function menuKapat() {
 kart.addEventListener('close', () => {
   kart.classList.remove('kapaniyor');
   onayGizle();
-  // Menüde geçen süre oyun süresine sayılmasın (başlamamış ya da bitmişse bir şey olmaz).
-  if (acildi !== null) zamaniKaydir(performance.now() - acildi);
-  acildi = null;
+  // Menüde geçen süre oyun süresine sayılmaz (sure-duraklat.js tek yerden düşer).
+  surdur('menu');
 });
 // Kartın dışına (arka plana) tıklamak da kapatır.
 kart.addEventListener('click', (e) => {
@@ -258,7 +283,7 @@ dinle('oyun-basladi', () => {
   if (ilkOyun) {
     ilkOyun = false;
     if (!tohumVar) menuAc();
-  } else if (zorlukDegisiyor) {
+  } else if (ayarDegisiyor) {
     guncelle();
   } else {
     menuKapat();

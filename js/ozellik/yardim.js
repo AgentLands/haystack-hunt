@@ -5,7 +5,10 @@
  * Sekmeler ok tuşlarıyla gezilir (WAI-ARIA sekme deseni); Esc ve × kapatır.
  */
 import { ikon } from './ikon.js';
+import { stilYukle } from './pencere.js';
 import { SEKMELER, PUAN_SATIRLARI, CARPANLAR } from './yardim-icerik.js';
+
+stilYukle('./yardim.css');
 
 let pencere = null;
 let secili = 0;

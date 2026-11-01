@@ -6,7 +6,8 @@
  */
 import { GENISLIK, YUKSEKLIK } from './kural/boyut.js';
 import { igneDerinligi } from './kural/igne.js';
-import { gorunum } from './gorunum.js';
+import { gorunum, gorunumOraniAyarla } from './gorunum.js';
+import { gorunurAlan } from './kural/gorunum.js';
 import { sadeHareket, nabizSade } from './ozellik/sade-hareket.js';
 import { boya } from './cizim/tarla-boya.js';
 import { yakinCiz, yakinSifirla, kanal, karolar } from './cizim/yakin.js';
@@ -35,7 +36,9 @@ export function katmanEkle(islev, yer = 'ust') {
 
 /**
  * Ana tuvalin çizicisi. Arka bellek CSS boyutu × devicePixelRatio'dur (cizim/tuval-olcek.js);
- * dünya hep DUNYA_EN×DUNYA_BOY piksel, dönüşüme taban çarpanı eklenir.
+ * dünya hep DUNYA_EN×DUNYA_BOY piksel, dönüşüme taban çarpanı eklenir. Kutunun oranı
+ * görünüme yazılır; görünür alan tarlayı aşıyorsa (dikey kutuda "tüm tarla") dışı boş
+ * bırakılır (arkadaki ahşap görünür) ve tarlanın kenarı çerçevelenir.
  */
 export function cizici(tuval) {
   const ctx = tuval.getContext('2d');
@@ -51,6 +54,7 @@ export function cizici(tuval) {
   return function ciz(durum, zaman) {
     const bas = performance.now();
     olcekDenetle();
+    gorunumOraniAyarla(ekran.oran);
     const degisen = karolar.hDegisti(durum.tarla);
     if (degisen) {
       if (degisen.yeni) yakinSifirla();
@@ -59,9 +63,10 @@ export function cizici(tuval) {
     }
     // Kamera: tüm dünya çizimi (tarla, iğne, halkalar, imleç, katmanlar) tek dönüşümle sarılır.
     const { z, gx, gy } = gorunum;
-    const zx = z * ekran.tabanX;
-    const zy = z * ekran.tabanY;
-    ctx.setTransform(zx, 0, 0, zy, -gx * OLCEK * zx, -gy * OLCEK * zy);
+    const s = z * ekran.tabanX;
+    const tasiyor = alanTasiyor(gorunurAlan(gorunum));
+    if (tasiyor) ctx.clearRect(0, 0, tuval.width, tuval.height);
+    ctx.setTransform(s, 0, 0, s, -gx * OLCEK * s, -gy * OLCEK * s);
     ctx.imageSmoothingEnabled = false;
     // Atlas görünür alanı tam kaplıyorsa kaba taban çizilmez (çift doldurma olmasın).
     cizimOlcum.karo = yakinCiz(ctx, gorunum, OLCEK, tabanCiz);
@@ -71,8 +76,23 @@ export function cizici(tuval) {
     igneyiCiz(ctx, durum, zaman);
     imleciCiz(ctx, durum);
     for (const k of katmanlar.ust) k(ctx, durum, zaman);
+    if (tasiyor) tarlaCercevesi(ctx);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
+}
+
+/** Görünür alan tarlanın dışına taşıyor mu (küçük yuvarlama payıyla). */
+function alanTasiyor(a) {
+  const pay = 1e-6;
+  return a.x < -pay || a.y < -pay || a.x + a.en > GENISLIK + pay || a.y + a.boy > YUKSEKLIK + pay;
+}
+
+/** Tarla kenarı: ekranda 3 px mürekkep çizgi (boşlukla tarlayı ayırır). */
+function tarlaCercevesi(ctx) {
+  const eb = ekranBirim(ctx);
+  ctx.strokeStyle = '#2b2118';
+  ctx.lineWidth = 3 * eb;
+  ctx.strokeRect(-1.5 * eb, -1.5 * eb, DUNYA_EN + 3 * eb, DUNYA_BOY + 3 * eb);
 }
 
 /**

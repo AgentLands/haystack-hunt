@@ -23,7 +23,7 @@ export function paylasimEkiKaydet(islev) {
 export function paylasimMetni(sonuc) {
   const temel = `Haystack Hunt · ${sonuc.etiket}\n🪡 ${sureMetni(sonuc.sureMs)} · `
     + `${sayi.format(sonuc.kaldirilan)} saman · `
-    + `📡 ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
+    + `dedektör ${sonuc.dedektorKullanilan}/${sonuc.dedektorHakki}`;
   return [temel, ...paylasimEkleri.map((ek) => ek(sonuc))].filter(Boolean).join('\n');
 }
 
@@ -40,18 +40,23 @@ export function bildir(metin, sure = 2200) {
 
 /**
  * Üst sıraya (ust-dugmeler: HUD'un sağındaki ikon düğmeleri) ya da alt eylem sırasına
- * (alt-dugmeler) düğme ekler. ikon bir DOM düğümüyse (ör. ikon.js'ten SVG) metnin yerine
- * konur; değilse metin gösterilir. Erişilebilir ad baslik'tir.
+ * (alt-dugmeler: menü kartının bağlantı satırı) düğme ekler. ikon bir DOM düğümüyse (ör.
+ * ikon.js'ten SVG) metnin önüne konur; metin hep <span class="dugme-yazi"> içindedir (ikon
+ * düğmesinde görsel olarak gizli, menüde görünür; metinDegistir onu değiştirir). İkonlu
+ * düğmenin erişilebilir adı baslik'tir; yazılı düğmede baslik yalnız ipucudur (title).
  */
 export function dugmeEkle(yer, { metin, baslik, tikla, ikon }) {
   const dugme = document.createElement('button');
   dugme.type = 'button';
   dugme.className = yer === 'ust' ? 'dugme-ikon' : 'dugme-ikincil';
+  const yazi = document.createElement('span');
+  yazi.className = 'dugme-yazi';
+  yazi.textContent = metin ?? '';
   if (ikon instanceof Node) dugme.append(ikon);
-  else dugme.textContent = metin;
+  dugme.append(yazi);
   if (baslik) {
     dugme.title = baslik;
-    dugme.setAttribute('aria-label', baslik);
+    if (ikon instanceof Node) dugme.setAttribute('aria-label', baslik);
   }
   dugme.addEventListener('click', tikla);
   $(yer === 'ust' ? 'ust-dugmeler' : 'alt-dugmeler').append(dugme);

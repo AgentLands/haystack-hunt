@@ -8,7 +8,7 @@ import { DALIS_SURE, ziplama, uyeKonumu } from '../../kural/hayvan-hareket.js';
 import { TURLER } from '../../kural/hayvan.js';
 import { gorunum } from '../../gorunum.js';
 import { sadeHareket } from '../sade-hareket.js';
-import { GENISLIK, YUKSEKLIK } from '../../kural/boyut.js';
+import { gorunurAlan } from '../../kural/gorunum.js';
 import { donuk, ekranBirim, golge, isikYerel, samanBit, zIsareti, IKI_PI } from './ortak.js';
 import { fareCiz, kurbagaCiz, kirpiCiz } from './kucuk.js';
 import { sercCiz } from './kus.js';
@@ -25,10 +25,9 @@ const KENAR_PAYI = 4;
 
 /** Kameranın göründüğü alanda (kenar payıyla) mı? Dışındakiler hiç çizilmez. */
 function ekrandaMi(x, y) {
-  const en = GENISLIK / gorunum.z;
-  const boy = YUKSEKLIK / gorunum.z;
-  return x > gorunum.gx - KENAR_PAYI && x < gorunum.gx + en + KENAR_PAYI
-    && y > gorunum.gy - KENAR_PAYI && y < gorunum.gy + boy + KENAR_PAYI;
+  const a = gorunurAlan(gorunum);
+  return x > a.x - KENAR_PAYI && x < a.x + a.en + KENAR_PAYI
+    && y > a.y - KENAR_PAYI && y < a.y + a.boy + KENAR_PAYI;
 }
 
 const goruluyor = (h) => h.durum !== 'gizli' && h.durum !== 'kayip' && h.durum !== 'ucus'

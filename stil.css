@@ -1,6 +1,6 @@
 /*
  * Sayfa iskeleti: ambar tahtası zemin, tam ekran ızgara yerleşim (tuval ekrana sığar,
- * sayfa kaydırılmaz), alt eylem sırası, temel düğme, bildirim şeridi, kamera düğmeleri ve
+ * sayfa kaydırılmaz), alt pervaz şeridi, temel düğme, bildirim şeridi, kamera düğmeleri ve
  * mini harita. HUD (başlık, kâğıt etiketler, alet rafı) stil-hud.css'te; renkler
  * belirtec.css'ten.
  *
@@ -9,15 +9,6 @@
  * öğeler dialog ya da position: fixed/absolute olmalı (yoksa ızgarada boş hücreye düşer).
  */
 :root {
-  /* Eski adlar: henüz yeni belirteçlere geçmemiş modüller (rehber.css, yaris.css...) için. */
-  --zemin: var(--ahsap);
-  --kart: var(--ahsap-koyu);
-  --cizgi: var(--murekkep-soluk);
-  --yazi: var(--kagit);
-  --soluk: var(--kraft);
-  --vurgu: var(--saman);
-  --vurgu-yazi: var(--murekkep);
-
   /* Ambar tahtası: yatay tahtalar, ek yerleri ve damar (gradyansız SVG). */
   --ahsap-doku: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='96'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M0 1h240M0 49h240M60 2v46M180 50v46' stroke='rgba(15,9,4,.55)' stroke-width='2'/%3E%3Cpath d='M0 3h240M0 51h240' stroke='rgba(255,230,190,.07)'/%3E%3Cpath d='M0 14c40-3 80 3 120 0s80-2 120 1M0 31c50 3 90-4 140 0s70 2 100-1M0 64c30-2 70 3 110 0s90-3 130 1M0 82c60 2 100-3 150 0s60 1 90-1' stroke='rgba(15,9,4,.25)' stroke-width='1.2'/%3E%3Cpath d='M10 22c40 2 70-2 110 1M130 72c40-2 70 2 100 0' stroke='rgba(255,230,190,.06)' stroke-width='2'/%3E%3Cellipse cx='150' cy='25' rx='7' ry='2.6' stroke='rgba(15,9,4,.35)'/%3E%3C/g%3E%3C/svg%3E");
 
@@ -94,6 +85,8 @@ button {
 }
 button:active { transform: translate(2px, 3px); box-shadow: none; }
 button.ikincil { background: var(--kagit); }
+/* Eylem düğmeleri menü kartına taşınır (ozellik/menu.js); taşınana dek görünmesin. */
+body > nav.alt { display: none; }
 .ekranda-gizli {
   position: absolute;
   width: 1px;
@@ -102,57 +95,6 @@ button.ikincil { background: var(--kagit); }
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-
-/* Alt eylem sırası (alt şeritte ortada). */
-nav.alt {
-  grid-area: serit;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 0 12px;
-  min-width: 0;
-}
-nav.alt button { font-size: 0.95rem; white-space: nowrap; }
-nav.alt #pes { order: 9; color: var(--saman); }
-
-/* "Nasıl oynanır": şeridin sağında; açılınca yukarı doğru kâğıt sayfa. */
-details.nasil {
-  grid-area: serit;
-  z-index: 4;
-  align-self: center;
-  justify-self: end;
-  margin-right: 16px;
-  position: relative;
-}
-details.nasil summary {
-  cursor: pointer;
-  color: var(--kraft);
-  font-family: var(--yazi-govde);
-  text-decoration: underline dashed 1px;
-  text-underline-offset: 3px;
-  list-style: none;
-}
-details.nasil summary::-webkit-details-marker { display: none; }
-details.nasil ul {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 14px);
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100dvh - 120px);
-  overflow: auto;
-  margin: 0;
-  padding: 14px 18px 14px 32px;
-  background-color: var(--kagit);
-  background-image: var(--kagit-doku);
-  background-blend-mode: multiply;
-  color: var(--murekkep);
-  border: var(--kenar);
-  border-radius: var(--yaricap);
-  box-shadow: var(--golge-buyuk);
-}
-details.nasil li { margin: 4px 0; line-height: 1.35; }
 
 /* Pencere tabanı (pencere.css'teki .kagit-pencere bunun üstüne yazar). */
 dialog {
@@ -189,6 +131,7 @@ dialog h2 { margin-top: 0; font-family: var(--yazi-baslik); font-weight: 400; }
   font-size: 0.92rem;
   line-height: 1.25;
   text-align: center;
+  text-wrap: balance;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s, transform 0.15s;

@@ -1,30 +1,25 @@
 /*
- * Telefon yerleşimi. Dikey ekran: üstte ince HUD şeridi (tabela, lot etiketi, ikon
- * düğmeleri), tam genişlik tuval (kâğıt etiketler üst kenarında), altında ahşap kumanda
- * tablası (alet rafı; dokunmatikte kol ve Kullan/Bin, bkz. js/ozellik/dokunmatik.css), en
- * altta eylem şeridi. Alçak yatay ekran: tuval ekran yüksekliğine sığar, eylem şeridi sol
- * boşluğa dikey dizilir, alet rafı tuvalin içinde alta oturur.
+ * Telefon yerleşimi. Dikey ekran: üstte tek satır HUD (≡, kısaltılmış lot etiketi, ikon
+ * düğmeleri), kalan yüksekliği dolduran tuval (en/boy oranı serbest: dünya çarpılmaz,
+ * kamera görünür alanı kutunun oranına göre hesaplar, bkz. kural/gorunum.js tabanAlan),
+ * üst kenarında ince süre/saman şeridi, altında ahşap kumanda tablası (alet rafı;
+ * dokunmatikte kol ve Kullan/Bin, bkz. js/ozellik/dokunmatik.css). Alçak yatay ekran: tuval
+ * 3:2 ekran yüksekliğine sığar, alet rafı tuvalin içinde alta oturur.
  */
 @media (orientation: portrait) {
-  :root {
-    --tuval-en: calc(100vw - 12px);
-  }
   body {
-    height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    grid-template-rows: auto var(--tuval-boy) auto 1fr auto auto;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    grid-template-columns: 6px minmax(0, 1fr) 6px;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
-      '. ust .'
+      'ust ust ust'
       '. sahne .'
       'raf raf raf'
-      'kumanda kumanda kumanda'
-      'serit serit serit'
-      'nasil nasil nasil';
+      'kumanda kumanda kumanda';
   }
-  body::before { grid-area: 5 / 1 / 7 / -1; }
+  body::before { display: none; }
   /* Kumanda tablası: rafla kol/düğmelerin altındaki koyu tahta (fareyle yalnız raf). */
   body::after {
     content: '';
@@ -35,23 +30,45 @@
     border-top: 2px solid var(--murekkep);
     box-shadow: inset 0 2px 0 rgba(255, 230, 190, 0.06);
   }
-  body:not(.dokunmatik)::after { grid-area: 3 / 1 / 4 / -1; }
+  main { min-height: 0; }
+  .tarla-kap { height: 100%; --hud-ust: 18px; --hud-alt: 0px; }
+  /* Kutu kalan alanı doldurur; arka bellek ve kamera bu orana uyar (cizim/tuval-olcek.js). */
+  canvas#tarla { height: 100%; aspect-ratio: auto; }
+
+  /* Üst satır: ≡ + lot etiketi solda, ikon düğmeleri sağda; tabela (logo) menü kartında. */
   .hud-baslik {
     grid-area: ust;
-    align-self: end;
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: 'logo . dugme' 'etiket . dugme';
+    align-self: center;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'menu etiket dugme';
     align-items: center;
+    column-gap: 6px;
     margin: 0;
-    padding: 10px 4px 24px;
+    padding: 6px 0 16px;
   }
-  .logo { font-size: 0.95rem; padding: 7px 18px 6px; }
-  .etiket { margin: 6px 0 0 14px; font-size: 0.68rem; }
-  .dugme-sirasi { gap: 6px; }
+  .hud-baslik .logo { display: none; }
+  .hud-baslik .menu-ac { grid-area: menu; width: 44px; height: 44px; }
+  .etiket {
+    margin: 0 0 0 2px;
+    max-width: 100%;
+    padding: 4px 5px 3px;
+    font-size: 0.66rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .etiket::before { left: 12px; margin-left: 0; }
+  .etiket-on { display: none; }
+  .etiket-govde { display: block; overflow: hidden; text-overflow: ellipsis; }
+  .dugme-sirasi { gap: 4px; margin-top: 0; }
   .dugme-sirasi .dugme-ikon { width: 44px; height: 44px; }
-  .panel { margin-top: -17px; gap: 10px; }
-  .hud-etiket { padding: 5px 10px 4px 8px; }
-  .hud-etiket strong { font-size: 1.05rem; }
+
+  /* Süre ve saman: tuvalin üst kenarına iğnelenmiş ince şerit. */
+  .panel { margin-top: -13px; gap: 8px; }
+  .hud-etiket { padding: 4px 9px 3px 7px; gap: 5px; }
+  .hud-etiket strong { font-size: 0.98rem; }
+  .hud-ikon { width: 17px; height: 17px; }
+  .tarla-kap > .meydan-yigin { top: 20px; left: 8px; }
+
   .araclar {
     grid-area: raf;
     align-self: start;
@@ -59,44 +76,36 @@
     justify-content: center;
     gap: 8px;
     margin: 0;
-    padding: 26px 8px 6px;
+    padding: 16px 8px 6px;
     z-index: 2;
   }
-  .arac-kart { flex: 1 1 0; min-width: 0; max-width: 96px; height: 64px; font-size: 0.8rem; }
-  .araclar .zorluk-secici {
-    flex: none;
-    height: 44px;
-    margin-left: 0;
-    padding: 0 20px 0 6px;
-    font-size: 0.76rem;
-    background-position: right 5px center;
-  }
+  .arac-kart { flex: 1 1 0; min-width: 0; max-width: 96px; height: 58px; font-size: 0.8rem; }
+  .arac-kart .arac-ikon { width: 23px; height: 23px; }
   .makine-karti { width: min(100%, 360px); min-width: 0; }
-  nav.alt {
-    flex-wrap: wrap;
-    gap: 10px 12px;
-    padding: 12px 10px 6px;
-  }
-  nav.alt button { min-height: 44px; }
-  details.nasil {
-    grid-area: nasil;
-    justify-self: center;
-    margin: 0 0 12px;
-    min-height: 32px;
-  }
-  details.nasil ul {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: 56px;
-    width: auto;
-    max-height: 70dvh;
-  }
-  .tarla-kap { --hud-ust: 24px; --hud-alt: 0px; }
   /* Küçük tuvalde kamera düğmeleri yatay şerit, mini harita küçük. */
   .kamera-dugmeleri { flex-direction: row; gap: 3px; padding: 3px; right: 8px; }
   canvas.minik-harita { width: 84px; height: 56px; left: 12px; }
   .bildirim { max-width: calc(100% - 24px); font-size: 0.85rem; }
+}
+/* Kısa dikey ekran: raf ve HUD sıkışır, tuvale yer kalsın. */
+@media (orientation: portrait) and (max-height: 700px) {
+  .hud-baslik { padding: 4px 0 14px; }
+  .araclar { padding: 12px 8px 4px; }
+  .arac-kart { height: 50px; font-size: 0.74rem; gap: 2px; }
+  .arac-kart .arac-ikon { width: 20px; height: 20px; }
+  .arac-kart[aria-pressed='true'] { transform: translateY(-4px) rotate(-1deg); }
+}
+@media (orientation: portrait) and (max-height: 600px) {
+  .hud-baslik { padding: 3px 0 13px; }
+  .arac-kart { height: 46px; }
+  .arac-kart .arac-ikon { width: 18px; height: 18px; }
+}
+@media (orientation: portrait) and (max-width: 340px) {
+  .hud-baslik { column-gap: 4px; }
+  .dugme-sirasi { gap: 3px; }
+  /* Çok dar: lot etiketi iki kısa satır ("1 KASIM ·" / "NORMAL"), yine ikon yüksekliğinde. */
+  .etiket { font-size: 0.58rem; line-height: 1.15; padding: 3px 4px 2px; }
+  .etiket-govde { white-space: normal; }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
@@ -107,9 +116,24 @@
     --kenar-pay: 8px;
   }
   body::before { display: none; }
-  .hud-baslik { margin-top: -16px; padding: 0 6px 0 8px; }
-  .logo { font-size: 0.82rem; padding: 6px 19px 5px; }
-  .etiket { margin: 5px 0 0 10px; font-size: 0.62rem; }
+  /* Üst satır: ≡ ve kısa lot etiketi solda, süre/saman ortada, ikonlar sağda; tabela menüde. */
+  .hud-baslik {
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-areas: 'menu etiket . dugme';
+    column-gap: 6px;
+    margin-top: -16px;
+    padding: 0 6px 0 8px;
+  }
+  .hud-baslik .logo { display: none; }
+  .hud-baslik .menu-ac { grid-area: menu; }
+  /* Ortadaki süre/saman etiketlerine (yaklaşık 170 px) değmesin. */
+  .etiket {
+    margin: 12px 0 0 2px;
+    max-width: max(80px, calc(var(--tuval-en) / 2 - 150px));
+    font-size: 0.62rem;
+    letter-spacing: 0.02em;
+  }
+  .etiket-on { display: none; }
   .dugme-sirasi { gap: 5px; }
   .dugme-sirasi .dugme-ikon { width: 34px; height: 34px; font-size: 0.95rem; }
   .panel { margin-top: -14px; gap: 8px; }
@@ -120,40 +144,12 @@
   .arac-kart { width: 62px; height: 50px; font-size: 0.68rem; gap: 2px; }
   .arac-kart .arac-ikon { width: 20px; height: 20px; }
   .arac-kart[aria-pressed='true'] { transform: translateY(-4px) rotate(-1deg); }
-  .araclar .zorluk-secici {
-    height: 34px;
-    padding: 0 18px 0 5px;
-    font-size: 0.72rem;
-    background-position: right 4px center;
-  }
   .makine-karti { min-width: 220px; padding: 6px 10px 8px; }
   .tarla-kap { --hud-ust: 26px; --hud-alt: 62px; }
-  /* Eylem şeridi sol boşlukta dikey; "Nasıl oynanır" sağ boşlukta. */
-  nav.alt {
-    grid-area: 2 / 1 / 3 / 2;
-    align-self: start;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 0 8px;
-  }
-  nav.alt button { font-size: 0.72rem; white-space: normal; padding: 0.45em 0.5em; }
-  details.nasil {
-    grid-area: 2 / 3 / 3 / 4;
-    align-self: start;
-    justify-self: center;
-    margin: 4px 0 0;
-    font-size: 0.8rem;
-  }
-  details.nasil ul {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    top: 12px;
-    bottom: auto;
-    width: auto;
-    max-height: calc(100dvh - 24px);
-  }
   .bildirim { font-size: 0.78rem; padding: 5px 10px; max-width: calc(100% - 120px); }
+  /* Rehber kısa ve ince: tuvalin üst ya da alt kenarında kalır, ortadaki çiftçiyi örtmez. */
+  .tarla-kap .rehber { bottom: calc(var(--hud-alt) + 6px); padding: 6px 12px 7px; }
+  .tarla-kap .rehber h2 { font-size: 0.92rem; margin-bottom: 1px; }
+  .tarla-kap .rehber p { font-size: 0.8rem; line-height: 1.25; }
+  .tarla-kap .rehber-dugmeler { margin-top: 4px; }
 }

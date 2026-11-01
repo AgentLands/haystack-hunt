@@ -1,0 +1,115 @@
+/*
+ * "Nasıl oynanır" defteri (yardim.js; menüden ve rehberden açılır): sekmeli kâğıt pencere.
+ * Renk ve yazı belirtec.css'ten; yeni sabit renk yok.
+ */
+#yardim.yardim {
+  width: min(520px, calc(100vw - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 20px 20px 18px;
+  transform: rotate(0.4deg);
+}
+#yardim h2 {
+  margin: 0 44px 12px 0;
+  font-size: 1.35rem;
+}
+.yardim-kapat {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+}
+.yardim-kapat svg { width: 18px; height: 18px; }
+.yardim-sekmeler {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  border-bottom: var(--kenar);
+  padding: 0 2px;
+}
+.yardim-sekme {
+  flex: none;
+  font: 0.95rem var(--yazi-govde);
+  color: var(--murekkep);
+  background: var(--kraft);
+  border: var(--kenar);
+  border-bottom: none;
+  border-radius: var(--yaricap) var(--yaricap) 0 0;
+  padding: 0.3em 0.65em 0.2em;
+  margin-top: 4px;
+  cursor: pointer;
+}
+.yardim-sekme[aria-selected='true'] {
+  background: var(--kagit);
+  margin-top: 0;
+  padding-bottom: 0.4em;
+  position: relative;
+  top: 2px;
+}
+.yardim-panel {
+  min-height: 220px;
+  padding: 6px 2px 0;
+}
+.yardim-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.yardim-liste li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--kraft-koyu);
+  line-height: 1.4;
+}
+.yardim-liste li:last-child { border-bottom: none; }
+.yardim-liste svg { color: var(--murekkep); margin-top: 1px; }
+.yardim-puan {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.yardim-puan th,
+.yardim-puan td {
+  padding: 7px 2px;
+  border-bottom: 1px dashed var(--kraft-koyu);
+  text-align: left;
+  font-weight: 400;
+  vertical-align: top;
+}
+.yardim-puan td { text-align: right; }
+.yardim-carpan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 14px 0 0;
+}
+.yardim-carpan-baslik { flex-basis: 100%; }
+.yardim-damga {
+  font-family: var(--yazi-sayi);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--damga);
+  border: 2px solid currentColor;
+  border-radius: var(--yaricap);
+  padding: 3px 8px 2px;
+}
+.yardim-damga:nth-child(odd) { transform: rotate(-3deg); }
+.yardim-damga:nth-child(even) { transform: rotate(2deg); }
+.yardim-not { margin: 10px 0 0; font-size: 0.9rem; color: var(--murekkep-soluk); }
+
+
+@media (pointer: coarse) {
+  .yardim-kapat { width: 44px; height: 44px; }
+}
+@media (max-width: 420px) {
+  #yardim.yardim { padding: 18px 14px 14px; }
+  .yardim-sekmeler { gap: 2px; padding: 0; }
+  .yardim-sekme { font-size: 0.82rem; padding: 0.3em 0.38em 0.2em; }
+}

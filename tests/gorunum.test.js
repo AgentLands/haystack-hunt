@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   varsayilan, sinirla, odakla, kaydir, merkezle, gorunurAlan,
   ekrandanDunyaya, ekrandanHucre, dunyadanEkrana, takipEt, YAKIN_EN_AZ, YAKIN_EN_COK,
-  ekranaGoreYakinlik, TAKIP_REFERANS_EN,
+  ekranaGoreYakinlik, TAKIP_REFERANS_EN, tabanAlan, oranDegistir,
 } from '../js/kural/gorunum.js';
 import { GENISLIK, YUKSEKLIK } from '../js/kural/boyut.js';
 
@@ -119,4 +119,58 @@ test('ekranaGoreYakinlik: dar tuvalde artar (en çok 6), genişte taban kalır',
   assert.equal(ekranaGoreYakinlik(3.5, 358), YAKIN_EN_COK);
   assert.equal(ekranaGoreYakinlik(3.5, 0), 3.5);
   assert.equal(ekranaGoreYakinlik(3.5, NaN), 3.5);
+});
+
+test('tabanAlan: kutu oranına göre tarlayı içine alan alan (3:2 varsayılan)', () => {
+  assert.deepEqual(tabanAlan(varsayilan()), { en: GENISLIK, boy: YUKSEKLIK });
+  assert.deepEqual(tabanAlan({ ...varsayilan(), oran: 0.75 }),
+    { en: GENISLIK, boy: GENISLIK / 0.75 });
+  assert.deepEqual(tabanAlan({ ...varsayilan(), oran: 3 }), { en: YUKSEKLIK * 3, boy: YUKSEKLIK });
+  assert.deepEqual(tabanAlan({ ...varsayilan(), oran: NaN }), { en: GENISLIK, boy: YUKSEKLIK });
+});
+
+test('dikey kutu: z = 1 tarlayı ortalar, yakında görünür alan tarla içinde ve tam dolu', () => {
+  const g = sinirla({ z: 1, gx: 50, gy: 50, oran: 0.75 });
+  assert.equal(g.oran, 0.75);
+  assert.equal(g.gx, 0);
+  yakin(g.gy, (YUKSEKLIK - GENISLIK / 0.75) / 2);
+  const orta = ekrandanDunyaya(g, 0.5, 0.5);
+  yakin(orta.x, GENISLIK / 2);
+  yakin(orta.y, YUKSEKLIK / 2);
+  // Tek ölçek: görünür alanın oranı kutunun oranı (dünya çarpılmaz).
+  const a = gorunurAlan(sinirla({ z: 4, gx: 0, gy: 0, oran: 0.75 }));
+  yakin(a.en / a.boy, 0.75);
+  const kose = takipEt(g, 0, 0, 4, 1);
+  assert.equal(kose.gx, 0);
+  assert.equal(kose.gy, 0);
+  const uc = takipEt(g, GENISLIK, YUKSEKLIK, 4, 1);
+  const b = gorunurAlan(uc);
+  yakin(b.x + b.en, GENISLIK);
+  yakin(b.y + b.boy, YUKSEKLIK);
+});
+
+test('geniş kutu: z = 1 yanlarda boşluk; dönüşümler birbirinin tersi', () => {
+  const g = sinirla({ z: 1, gx: 0, gy: 0, oran: 2.2 });
+  yakin(g.gx, (GENISLIK - YUKSEKLIK * 2.2) / 2);
+  assert.equal(g.gy, 0);
+  const z = odakla(g, 0.3, 0.6, 2.5);
+  assert.equal(z.oran, 2.2);
+  const once = ekrandanDunyaya(g, 0.3, 0.6);
+  const sonra = ekrandanDunyaya(z, 0.3, 0.6);
+  yakin(once.x, sonra.x);
+  yakin(once.y, sonra.y);
+  const e = dunyadanEkrana(z, sonra.x, sonra.y);
+  yakin(e.fx, 0.3);
+  yakin(e.fy, 0.6);
+  assert.equal(kaydir(z, 0.1, 0).oran, 2.2);
+});
+
+test('oranDegistir: görünür alanın merkezi aynı kalır', () => {
+  const g = merkezle({ z: 4, gx: 0, gy: 0 }, 100, 70);
+  const d = oranDegistir(g, 0.7);
+  assert.equal(d.oran, 0.7);
+  const a = gorunurAlan(d);
+  yakin(a.x + a.en / 2, 100);
+  yakin(a.y + a.boy / 2, 70);
+  assert.deepEqual(oranDegistir(d, 1.5).z, 4);
 });

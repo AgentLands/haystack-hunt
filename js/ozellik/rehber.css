@@ -3,7 +3,8 @@
   position: absolute;
   left: 12px;
   right: 12px;
-  bottom: 14px;
+  /* Alet rafı tuvalin alt kenarına biner (stil-hud.css); kart rafın üstünde dursun. */
+  bottom: calc(var(--hud-alt) + 24px);
   max-width: 400px;
   margin: 0 auto;
   padding: 16px 16px 12px;
@@ -32,6 +33,8 @@
   border: 2px solid var(--murekkep);
   box-shadow: var(--golge);
 }
+/* Çiftçi tuvalin alt yarısındayken kart üstte (rehber.js). */
+.tarla-kap .rehber.rehber-ust { top: calc(var(--hud-ust) + 6px); bottom: auto; }
 .rehber h2 { margin: 0 0 4px; font-size: 1.05rem; line-height: 1.2; }
 .rehber p { margin: 0; font-size: 0.95rem; line-height: 1.35; }
 .rehber .rehber-sayac {
@@ -44,6 +47,7 @@
 .rehber-dugmeler { display: flex; gap: 14px; align-items: center; justify-content: flex-end; margin-top: 10px; }
 .rehber-dugmeler button { pointer-events: auto; font-size: 0.9rem; }
 .rehber-dugmeler .dugme-birincil { padding: 0.4em 1em; }
+@media (pointer: coarse) { .rehber-dugmeler button { min-height: 44px; min-width: 44px; } }
 .rehber-vurgu { outline: 3px solid var(--saman); outline-offset: 2px; animation: rehber-nabiz 1.2s ease-in-out infinite; }
 @keyframes rehber-nabiz { 50% { outline-offset: 5px; } }
 @media (prefers-reduced-motion: reduce) { .rehber-vurgu { animation: none; } }

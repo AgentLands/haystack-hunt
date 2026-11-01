@@ -85,6 +85,15 @@
   width: 22px;
   height: 22px;
 }
+/* İkon düğmesinin yazısı (arayuz.js dugmeEkle) görünmez; menü bağlantısında görünür. */
+.dugme-ikon > .dugme-yazi {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .dugme-birincil:active,
 .dugme-ikincil:active,
 .dugme-ikon:active,

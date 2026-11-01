@@ -1,11 +1,12 @@
 /**
  * Temizlik göstergesi ve rahat mod. HUD'da "Tarla %37 temiz" (tarladan çıkan saman /
- * başlangıç saman; yalnız bilgi, puana girmez). Rahat mod (?rahat=1 ya da alt düğme):
+ * başlangıç saman; yalnız bilgi, puana girmez). Rahat mod (?rahat=1 ya da menü kartında
+ * zorluğun altındaki anahtar; tarla baştan açılır, menu.js tarlaBastanAc):
  * süre ve puan gizlenir, paslı çivi cezası 0, fişte yalnız "buldum" ve temizlik yüzdesi.
  * Kural tarafı: oyun.js durum.rahat, kural/civi.js civiAl. Puan hesabına dokunulmaz.
  */
 import { dinle } from '../olaylar.js';
-import { dugmeEkle } from '../arayuz.js';
+import { menuAyarEkle, tarlaBastanAc } from './menu.js';
 import { durumAl, yeniOyun, rahatAyarla, rahatMi } from '../oyun.js';
 import { temizYuzde, yuzdeYaz } from '../kural/ilerleme.js';
 import { meydanAyristir } from '../kural/meydan.js';
@@ -51,21 +52,30 @@ function sureKutusu() {
 }
 sureKutusu().setAttribute('data-rahat-gizle', '');
 
-const dugme = dugmeEkle('alt', {
-  metin: 'Rahat mod', baslik: 'Süre ve puan gizli, çivi cezası yok (tarla yeniden başlar)',
-  tikla: () => {
-    const acik = !rahatMi();
+const dugme = document.createElement('button');
+dugme.type = 'button';
+dugme.className = 'zorluk-damga rahat-damga';
+dugme.textContent = 'Rahat mod';
+dugme.title = 'Süre ve puan gizli, çivi cezası yok (tarla baştan açılır)';
+dugme.addEventListener('click', () => {
+  const acik = !rahatMi();
+  const metin = acik ? 'Bu tarla rahat modda (süresiz, puansız) baştan açılacak.'
+    : 'Bu tarla süreli ve puanlı olarak baştan açılacak.';
+  tarlaBastanAc(metin, () => {
     rahatAyarla(acik);
     kaydet(acik);
     yeniOyun(durumAl().etiket);
-  },
+  });
 });
+const aciklama = document.createElement('span');
+aciklama.className = 'menu-ayar-not';
+aciklama.textContent = 'süre ve puan yok';
+menuAyarEkle(dugme, aciklama);
 
 function arayuzuGuncelle(rahat) {
   document.body.classList.toggle('rahat-mod', rahat);
   $('bitis').classList.toggle('rahat-fis', rahat);
   dugme.setAttribute('aria-pressed', String(rahat));
-  dugme.textContent = rahat ? 'Rahat mod: açık' : 'Rahat mod';
   const bag = new URL(location.href);
   if (rahat) bag.searchParams.set('rahat', '1');
   else bag.searchParams.delete('rahat');

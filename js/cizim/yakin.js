@@ -12,6 +12,7 @@ import { samanDokusu, toprakDokusu } from './doku.js';
 import { bolgeBoya } from './alt-piksel.js';
 import { KARO, karoKaydi, gorunurKarolar, gecisAlfa, halkaHalka } from './karolar.js';
 import { ekran } from './tuval-olcek.js';
+import { gorunurAlan } from '../kural/gorunum.js';
 
 /** Hücre başına alt piksel (atlas çözünürlüğü). */
 export const ALT = 12;
@@ -140,7 +141,7 @@ export function yakinCiz(ctx, gorunum, olcek, tabanCiz) {
     tabanCiz();
     return 0;
   }
-  const alan = { x: gorunum.gx, y: gorunum.gy, en: GENISLIK / z, boy: YUKSEKLIK / z };
+  const alan = gorunurAlan(gorunum);
   const mx = Math.floor((alan.x + alan.en / 2) / KARO);
   const my = Math.floor((alan.y + alan.boy / 2) / KARO);
   const gorunur = gorunurKarolar(alan, 1, GENISLIK, YUKSEKLIK);
