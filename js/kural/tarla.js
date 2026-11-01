@@ -15,7 +15,8 @@ import { zorlukAdi, zorlukAl } from './zorluk.js';
 
 /** Komşuyla yükseklik farkı bundan büyükse saman kayar. */
 export const ESIK = 3;
-const CAPRAZ_ESIK = 4;
+/** Çapraz komşuda eşik (çiftlik cokertKaro da aynı kuralı kullanır). */
+export const CAPRAZ_ESIK = 4;
 
 /**
  * Tohumdan yeni tarla kurar: birkaç saman yığını, serpinti, gizli iğne ve paslı çiviler.
@@ -139,7 +140,8 @@ export function cokert(tarla) {
   return oynadi;
 }
 
-function akit(h, a, b, esik) {
+/** İki hücre arasında tek kayma adımı (yerinde); kaydıysa true. Toplam korunur. */
+export function akit(h, a, b, esik) {
   const fark = h[a] - h[b];
   if (fark > esik) {
     const m = Math.max(1, (fark - esik) >> 2);

@@ -27,6 +27,7 @@ function engeller(durum, haric) {
   liste.push(...balyaEngelleri(durum.balyalar));
   const k = durum.karakter;
   if (!k.makine) liste.push({ x: k.x, y: k.y, r: KARAKTER_YARICAP });
+  if (durum.ekEngeller) liste.push(...durum.ekEngeller(haric.x, haric.y, true)); // çiftlik
   return liste;
 }
 
