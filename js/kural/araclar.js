@@ -18,6 +18,8 @@ export const TIRMIK_YARICAP = 4;
 export const TIRMIK_ADIM = 5;
 export const MIKNATIS_MENZIL = 12;
 export const MIKNATIS_CEKIS = 25;
+/** Boşa giden mıknatısın kaba uzaklığı: menzilin bu katı içi "biraz uzakta", dışı "çok". */
+export const MIKNATIS_KABA_KAT = 2;
 
 /**
  * Dedektör seviyeleri (iğneye uzaklık, hücre). Halkalar geniş tutulur: en dıştaki (Ilık)
@@ -114,4 +116,16 @@ export function miknatisCek(tarla, cx, cy) {
   if (igne.kepcede) return true; // kepçedeki iğne zaten tarlada değil
   igne.z += Math.min(MIKNATIS_CEKIS, igneDerinligi(tarla));
   return true;
+}
+
+/**
+ * Mıknatısın kaba uzaklık bilgisi (iğnenin etkin konumuna): 'menzilde' (≤ MIKNATIS_MENZIL),
+ * 'biraz' (≤ MIKNATIS_KABA_KAT × menzil) ya da 'cok'. Yön ve kesin mesafe vermez; boşa giden
+ * mıknatısın bildirimi için (iki kaba basamak).
+ */
+export function miknatisKabaUzaklik(tarla, cx, cy) {
+  const p = igneKonumu(tarla);
+  const m = Math.hypot(cx - p.x, cy - p.y);
+  if (m <= MIKNATIS_MENZIL) return 'menzilde';
+  return m <= MIKNATIS_MENZIL * MIKNATIS_KABA_KAT ? 'biraz' : 'cok';
 }

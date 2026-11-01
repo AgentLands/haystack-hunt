@@ -1,7 +1,8 @@
 /**
  * Buluntu defteri: bulunan eşyaların kalıcı koleksiyonu (localStorage; erişim yoksa bellekte).
  * "Buluntular" düğmesi kâğıt bir pencere açar: ızgarada bulunanlar çizim, ad, açıklama,
- * adet ve nadirlik damgasıyla; bulunmayanlar "?" silüet. Yeni tür bulununca bildirir.
+ * adet ve nadirlik damgasıyla; bulunmayanlar "?" silüet. Yeni tür bulununca bildirir. Defter
+ * kapalıyken alınan buluntular düğmede küçük bir sayı rozetiyle gösterilir; defter açılınca söner.
  * Saf kısımlar js/kural/buluntu-defter.js'te, çizim buluntu-sekil.js'te.
  */
 import { dinle } from '../olaylar.js';
@@ -109,17 +110,32 @@ function pencereKur() {
   };
 }
 
+const BASLIK = 'Buluntu defteri';
 const pencere = pencereKur();
-dugmeEkle('ust', {
-  metin: 'Buluntular', baslik: 'Buluntu defteri', ikon: ikon('anahtar'),
-  tikla: () => pencere.ac(),
+let okunmamis = 0;
+const dugme = dugmeEkle('ust', {
+  metin: 'Buluntular', baslik: BASLIK, ikon: ikon('anahtar'),
+  tikla: () => {
+    rozetYaz(0);
+    pencere.ac();
+  },
 });
+dugme.classList.add('buluntu-dugme');
+
+/** Düğme rozeti: defter açılmadan alınan buluntu sayısı (0: rozet yok). */
+function rozetYaz(n) {
+  okunmamis = n;
+  if (n > 0) dugme.dataset.rozet = n > 9 ? '9+' : String(n);
+  else delete dugme.dataset.rozet;
+  dugme.setAttribute('aria-label', n > 0 ? `${BASLIK} (${n} yeni buluntu)` : BASLIK);
+}
 
 defterBagla((tur) => !defter.bulunan[tur]);
 dinle('buluntu-alindi', ({ tur }) => {
   const sonuc = buluntuEkle(defter, tur);
   defter = sonuc.defter;
   defterKaydet(depo, defter);
+  rozetYaz(okunmamis + 1);
   if (!sonuc.yeni) return;
   taze.add(tur);
   const ad = KATALOG.find((b) => b.tur === tur).ad;

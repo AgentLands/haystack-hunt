@@ -7,7 +7,7 @@ import { pencereHazirla } from './pencere.js';
 
 const AD_ANAHTARI = 'haystack-hunt.yaris.ad';
 const SABLON = `
-  <h2>Yarış</h2>
+  <h2 id="yaris-baslik">Yarış</h2>
   <form class="yaris-giris" data-gorunum="giris">
     <label>Adın <input name="ad" maxlength="16" autocomplete="nickname"></label>
     <div class="dugmeler">
@@ -62,6 +62,7 @@ export function pencereKur(eylemler) {
   pencere = document.createElement('dialog');
   pencere.id = 'yaris-pencere';
   pencere.className = 'kagit-pencere pencere yaris-pencere';
+  pencere.setAttribute('aria-labelledby', 'yaris-baslik');
   pencere.innerHTML = SABLON;
   pencereHazirla(pencere);
   document.body.append(pencere);

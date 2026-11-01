@@ -193,8 +193,9 @@ yok: ekleme (sade kal).
 
 **Dedektör halkaları, kulak ve kenar işareti** (üst/alt katmanlarda, ekran-sabit dış hat):
 dedektör okuması yerde kalıcı, kesik çizgili, yarı saydam bir halkadır (yarıçap seviyenin gerçek
-uzaklığı; Soğuk mavi ve içi hafif karartılı); kulak ses kapalıyken kazı noktasında ara sıra çok
-hafif metal pırıltı gösterir (iğnenin beyaz, çivinin turuncu pırıltısından ayrı); ekran dışı
+uzaklığı; Soğuk mavi ve içi hafif karartılı); kulak her tıkta kazı noktasında küçük
+soluk bir nabız halkası açar, ses kapalıyken ayrıca ara sıra çok hafif metal pırıltı gösterir
+(iğnenin beyaz, çivinin turuncu pırıltısından ayrı); ekran dışı
 parıltı için ekran kenarında ~3 sn nabız gibi atan küçük ışık oku vardır.
 
 **Buluntular ve hayvanlar**: buluntular (20 tür) de boyalı oyuncak tarzında, koyu kahve dış hatlı

@@ -5,11 +5,11 @@
  * DOM'a dokunmaz; olay yayar (olaylar.js).
  */
 import {
-  elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi, miknatisCek,
+  elIleAl, tirmikla, dedektorOku, igneyiAlabilirMi, miknatisCek, miknatisKabaUzaklik,
 } from './kural/araclar.js';
 import { alinabilirCivi, civiAl, parlayanCiviler } from './kural/civi.js';
 import { igneKonumu, tarlada } from './kural/igne.js';
-import { puanHesapla } from './kural/zorluk.js';
+import { puanHesapla, zorlukAl } from './kural/zorluk.js';
 import { buluntuyuAl } from './oyun-buluntu.js';
 import { telafiHakki } from './kural/dedektor.js';
 import { yay } from './olaylar.js';
@@ -54,8 +54,10 @@ export function dedektorKullan(durum, p, zaman) {
   durum.dedektor -= 1;
   const seviye = dedektorOku(durum.tarla, p.x, p.y);
   durum.halkalar.push({ x: p.x, y: p.y, seviye, zaman });
-  // Şanssız tohum koruması: hepsi Soğuk okunup hak bittiyse bir kez ücretsiz hak.
-  const telafi = telafiHakki(durum.halkalar, durum.dedektor, durum.dedektorTelafi || 0);
+  // Şanssız tohum koruması: hiçbir okuma yön göstermeden (Zor'da Sıcak'a varmadan) hak
+  // bittiyse bir kez ücretsiz hak.
+  const telafi = telafiHakki(durum.halkalar, durum.dedektor, durum.dedektorTelafi || 0,
+    zorlukAl(durum.zorluk).telafiSiniri);
   durum.dedektor += telafi;
   durum.dedektorTelafi = (durum.dedektorTelafi || 0) + telafi;
   yay('dedektor', { x: p.x, y: p.y, seviye, kalan: durum.dedektor, telafi: telafi > 0 });
@@ -67,8 +69,9 @@ export function miknatisKullan(durum, p, zaman) {
     return;
   }
   durum.miknatis -= 1;
+  const uzaklik = miknatisKabaUzaklik(durum.tarla, p.x, p.y);
   const cekti = miknatisCek(durum.tarla, p.x, p.y);
-  yay('miknatis', { x: p.x, y: p.y, cekti, kalan: durum.miknatis });
+  yay('miknatis', { x: p.x, y: p.y, cekti, uzaklik, kalan: durum.miknatis });
   if (cekti && tarlada(durum.tarla.igne)) igneParlat(durum, zaman);
 }
 

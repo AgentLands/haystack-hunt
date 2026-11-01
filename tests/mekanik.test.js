@@ -176,7 +176,8 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   buraya(d, { x: igne.x + 3, y: igne.y });
   bas({ x: igne.x + 3, y: igne.y }, 100);
   birak();
-  assert.deepEqual(olay.gelen, [{ x: igne.x + 3, y: igne.y, cekti: true, kalan: 0 }]);
+  assert.deepEqual(olay.gelen,
+    [{ x: igne.x + 3, y: igne.y, cekti: true, uzaklik: 'menzilde', kalan: 0 }]);
   assert.equal(parilti.gelen.length, 1);
   assert.ok(d.parilti && d.parilti.bitis > 100);
   bas({ x: igne.x + 4, y: igne.y }, 200);
@@ -192,6 +193,7 @@ test('mıknatıs oyunda hak harcar, çekince parıltı tetikler, boşa da gidebi
   birak();
   for (const o of [olay, parilti, bos]) o.birak();
   assert.equal(olay.gelen[1].cekti, false);
+  assert.equal(olay.gelen[1].uzaklik, 'cok');
   assert.equal(k.miknatis, 1);
   assert.equal(k.tarla.igne.z, zOnce);
   assert.equal(parilti.gelen.length, 1);

@@ -2,13 +2,15 @@
  * Parıltı işaretleri: ekran dışında bir parıltı olursa (iğne ya da iğneli balya) ekranın
  * o yöne bakan kenarında birkaç saniye nabız gibi atan küçük bir ışık oku görünür (yer:
  * kural/parilti.js kenarIsareti). Ayrıca iğneyi içeren balya parıltı anında hafifçe parlar
- * (durum.balyaParilti, oyun-arac.js balyaParlat). Yalnız olay dinler ve üst katman çizer.
+ * (durum.balyaParilti, oyun-arac.js balyaParlat). Sade harekette ok atmaz, sabit durur.
+ * Yalnız olay dinler ve üst katman çizer.
  */
 import { dinle } from '../olaylar.js';
 import { katmanEkle, OLCEK } from '../cizim.js';
 import { gorunum } from '../gorunum.js';
 import { gorunurAlan } from '../kural/gorunum.js';
 import { kenarIsareti } from '../kural/parilti.js';
+import { nabizSade } from './sade-hareket.js';
 
 const ISARET_MS = 3200;
 /** Okun ekran kenarından içeri payı (ekran pikseli, z = 1'de). */
@@ -27,7 +29,7 @@ function okCiz(ctx, isaret, alan, k, simdi) {
   const t = (simdi - isaret.bas) / ISARET_MS;
   const yer = kenarIsareti(alan, { x: isaret.x + 0.5, y: isaret.y + 0.5 }, PAY_PX * k / OLCEK);
   if (!yer) return;
-  const nabiz = 0.6 + 0.4 * Math.sin(simdi / 120);
+  const nabiz = 0.6 + 0.4 * nabizSade(Math.sin(simdi / 120), 0.5); // sade: atmaz, sabit
   ctx.save();
   ctx.translate(yer.x * OLCEK, yer.y * OLCEK);
   ctx.scale(k, k);

@@ -9,8 +9,8 @@
  *   (Araç olaylarında x, y hücre birimidir: hücre i'nin merkezi i.)
  *   kazildi        { x, y, miktar }                el bu karede saman aldı (miktar > 0)
  *   tirmiklandi    { x, y, dx, dy, disari }        tırmık bir adım itti
- *   dedektor       { x, y, seviye, kalan, telafi }  dedektör okundu (telafi: hepsi Soğuk
- *                                                  çıkıp hak bitti, bir hak geri verildi)
+ *   dedektor       { x, y, seviye, kalan, telafi }  dedektör okundu (telafi: hiçbir okuma yön
+ *                                                  göstermeden hak bitti, bir hak verildi)
  *   dedektor-bos   { x, y }                        hak kalmadan dedektör denendi
  *   parilti        { x, y }                        iğne güneşte parladı (ya da mıknatıs çekti)
  *   balya-parladi  { x, y }                        iğne bir balyada: balya parıltı anında
@@ -20,7 +20,8 @@
  *   buluntu-gorundu { x, y, tur }                  samandaki buluntunun üstü ilk kez açıldı
  *   buluntu-alindi { x, y, tur, yeni }             el buluntuyu aldı (cezasız); yeni: defterde
  *                                                  bu tür ilk kez mi (defter özelliği bildirir)
- *   miknatis       { x, y, cekti, kalan }          mıknatıs kullanıldı; cekti: iğne menzildeydi
+ *   miknatis       { x, y, cekti, uzaklik, kalan } mıknatıs kullanıldı; cekti: iğne menzildeydi;
+ *                                                  uzaklik: 'menzilde' | 'biraz' | 'cok' (kaba)
  *   miknatis-bos   { x, y }                        hak kalmadan mıknatıs denendi
  *   igne-gorundu   { x, y }                        iğne ilk kez açığa çıktı
  *   bulundu        { sonuc }                       iğne alındı (sonuc: oyun.js sonucOlustur;

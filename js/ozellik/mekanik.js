@@ -22,9 +22,16 @@ dinle('oyun-basladi', ({ durum }) => {
   $('puan').textContent = '';
 });
 
-dinle('miknatis', ({ cekti, kalan }) => {
+/** Boşa giden mıknatısın kaba uzaklık bildirimi (kural: miknatisKabaUzaklik). */
+const BOSA = {
+  menzilde: 'Mıknatıs bir şeye takıldı: iğne yakında ama çekilemedi.',
+  biraz: 'Mıknatıs boşa gitti: iğne biraz uzakta.',
+  cok: 'Mıknatıs boşa gitti: iğne çok uzakta.',
+};
+
+dinle('miknatis', ({ cekti, uzaklik, kalan }) => {
   $('miknatis-hak').textContent = kalan;
-  bildir(cekti ? 'Mıknatıs bir şey çekti!' : 'Mıknatıs boşa gitti.');
+  bildir(cekti ? 'Mıknatıs bir şey çekti!' : (BOSA[uzaklik] || 'Mıknatıs boşa gitti.'), 3200);
 });
 dinle('miknatis-bos', () => bildir('Mıknatıs hakkın kalmadı.'));
 dinle('civi-alindi', ({ ceza }) => bildir(

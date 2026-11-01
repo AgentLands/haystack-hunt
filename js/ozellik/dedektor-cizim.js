@@ -4,15 +4,21 @@
  * daireyle bir alt seviyenin dairesi arasındaki halkada). "Soğuk" okuma en geniş seviye
  * dairesini mavi çizer ve içini hafifçe karartır (iğne burada değil). Okumada daire
  * merkezden büyüyerek açılır; etiket ("Sıcak ≤25") okuma noktasının epey üstünde (karakterin
- * üstüne binmeden) durur: ilk ETIKET_TAM ms belirgin, sonra soluk ama kalıcı.
- * Alt katmanda (iğne ve imleçten önce) çizilir; yalnız durum.halkalar'ı okur. Telafi hakkı
- * verilince (kural/dedektor.js) kısa bir bildirim gösterir.
+ * üstüne binmeden) durur: ilk ETIKET_TAM ms belirgin, sonra soluk ama kalıcı. Etiket koyu
+ * kâğıt zeminde açık renkli yazıdır (kırmızı halkanın üstünde de okunur); seviye rengi
+ * yalnız kenar çizgisinde ve küçük bir noktada. Kesik çizgi yavaşça yürür (sade harekette
+ * durur). Alt katmanda (iğne ve imleçten önce) çizilir; yalnız durum.halkalar'ı okur. Telafi
+ * hakkı verilince (kural/dedektor.js) kısa bir bildirim gösterir.
  */
 import { katmanEkle, OLCEK } from '../cizim.js';
 import { dinle } from '../olaylar.js';
 import { bildir } from '../arayuz.js';
 import { gorunum } from '../gorunum.js';
 import { SEVIYELER } from '../kural/araclar.js';
+import { telafiNedeni } from '../kural/dedektor.js';
+import { zorlukAl } from '../kural/zorluk.js';
+import { durumAl } from '../oyun.js';
+import { sadeHareket } from './sade-hareket.js';
 
 const ACILMA_MS = 650;
 const ETIKET_TAM = 9000;
@@ -61,7 +67,7 @@ function halkaCiz(ctx, halka, zaman, k) {
   ctx.strokeStyle = renk;
   ctx.lineWidth = 2 * k;
   ctx.setLineDash([7 * k, 5 * k]);
-  ctx.lineDashOffset = -zaman / 90 * k;
+  ctx.lineDashOffset = sadeHareket() ? 0 : -zaman / 90 * k;
   daire(ctx, x, y, r);
   ctx.stroke();
   ctx.setLineDash([]);
@@ -82,14 +88,26 @@ function etiketCiz(ctx, halka, x, ustY, gecen, k) {
   ctx.translate(x, ustY);
   ctx.scale(k, k);
   ctx.globalAlpha = gecen < ETIKET_TAM ? 1 : ETIKET_SOLUK;
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.textAlign = 'center';
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  const en = ctx.measureText(metin).width + 10;
-  ctx.fillStyle = 'rgba(20, 14, 8, 0.72)';
-  ctx.fillRect(-en / 2, -18, en, 16);
+  const yaziEn = ctx.measureText(metin).width;
+  const en = yaziEn + 26;
+  const sol = -en / 2;
+  // Koyu kâğıt zemin + seviye renginde ince kenar: kırmızı halkanın üstünde de okunur.
+  ctx.beginPath();
+  ctx.roundRect(sol, -21, en, 20, 4);
+  ctx.fillStyle = 'rgba(38, 27, 16, 0.94)';
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = halka.seviye.renk;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(sol + 10, -11, 4, 0, Math.PI * 2);
   ctx.fillStyle = halka.seviye.renk;
-  ctx.fillText(metin, 0, -10);
+  ctx.fill();
+  ctx.fillStyle = '#fbf1da';
+  ctx.fillText(metin, sol + 18, -10.5);
   ctx.restore();
 }
 
@@ -102,5 +120,7 @@ katmanEkle((ctx, durum, zaman) => {
 }, 'alt');
 
 dinle('dedektor', ({ telafi }) => {
-  if (telafi) bildir('Hepsi Soğuk çıktı: şansına bir dedektör hakkı daha verildi.', 3600);
+  if (!telafi) return;
+  const neden = telafiNedeni(zorlukAl(durumAl().zorluk).telafiSiniri);
+  bildir(`${neden}: şansına bir dedektör hakkı daha verildi.`, 3600);
 });

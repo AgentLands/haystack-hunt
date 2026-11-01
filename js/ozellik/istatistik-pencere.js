@@ -52,16 +52,21 @@ function bosGrafik() {
   return kap;
 }
 
+/** Az kayıt (1-2) varken grafik alçak, çubuklar dar; tek kayıt "en iyi" diye boyanmaz. */
+const AZ_KAYIT = 3;
+
 function grafik(sureler) {
   if (sureler.length === 0) return bosGrafik();
   const en = Math.max(...sureler.map((s) => s.sureMs));
   const enIyi = Math.min(...sureler.map((s) => s.sureMs));
-  const kap = eleman('div', 'defter-grafik');
+  const az = sureler.length < AZ_KAYIT;
+  const kap = eleman('div', az ? 'defter-grafik az' : 'defter-grafik');
   kap.setAttribute('role', 'img');
   kap.setAttribute('aria-label', 'Son oyunların süreleri: '
     + sureler.map((s) => sureMetni(s.sureMs)).join(', '));
   for (const { etiket, sureMs } of sureler) {
-    const sutun = eleman('div', sureMs === enIyi ? 'sutun en-iyi' : 'sutun');
+    const vurgu = sureMs === enIyi && sureler.length > 1;
+    const sutun = eleman('div', vurgu ? 'sutun en-iyi' : 'sutun');
     sutun.title = `${etiket} · ${sureMetni(sureMs)}`;
     const cubuk = eleman('i');
     cubuk.style.setProperty('--boy', `${Math.max(5, Math.round((sureMs / en) * 100))}%`);
@@ -69,6 +74,11 @@ function grafik(sureler) {
     kap.append(sutun);
   }
   return kap;
+}
+
+/** Grafik başlığı: "Son bulma süresi" (tek kayıt) ya da "Son 5 bulma süresi". */
+export function grafikBasligi(n) {
+  return n === 1 ? 'Son bulma süresi' : `Son ${n} bulma süresi`;
 }
 
 function bulmaCumlesi(o) {
@@ -79,11 +89,11 @@ function bulmaCumlesi(o) {
 
 function enIyiSure(o) {
   const kap = eleman('div', 'defter-en-iyi');
-  kap.append(eleman('span', 'etiket', 'En iyi süre'));
+  kap.append(eleman('span', 'defter-etiket', 'En iyi süre'));
   const daire = eleman('strong', 'sayi daire', o.enIyiMs === null ? '–' : sureMetni(o.enIyiMs));
   kap.append(daire);
   if (o.ortalamaMs !== null) {
-    kap.append(eleman('span', 'etiket', `ortalama ${sureMetni(o.ortalamaMs)}`));
+    kap.append(eleman('span', 'defter-etiket', `ortalama ${sureMetni(o.ortalamaMs)}`));
   }
   return kap;
 }
@@ -117,7 +127,7 @@ export function pencereKur(ozetAl) {
 
   function doldur() {
     const o = ozetAl();
-    const etiket = eleman('p', 'etiket', 'Oynanan tarla ');
+    const etiket = eleman('p', 'defter-etiket', 'Oynanan tarla ');
     etiket.append(eleman('b', 'sayi', sayi.format(o.oynanan)));
     const sol = eleman('div', 'defter-sol');
     sol.append(etiket, cetele(o.oynanan));
@@ -130,7 +140,7 @@ export function pencereKur(ozetAl) {
     const saman = o.toplamSaman === 0 ? null : eleman('p', 'defter-saman',
       `Toplam kaldırılan saman: ${sayi.format(o.toplamSaman)}`);
     const altBaslik = o.sonSureler.length
-      ? eleman('p', 'defter-baslik', `Son ${o.sonSureler.length} bulma süresi`) : null;
+      ? eleman('p', 'defter-baslik', grafikBasligi(o.sonSureler.length)) : null;
     govde.replaceChildren(...[satir1, cumle.textContent ? cumle : null, seri, bugunSatiri(o), saman,
       altBaslik,
       grafik(o.sonSureler)].filter(Boolean));

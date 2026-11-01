@@ -9,22 +9,24 @@ import { metindenTohum } from './rastgele.js';
  * yigin: sayı = taban + floor(zar * ek); yarıçap = r[0] + zar * r[1]; tepe = t[0] + zar * t[1].
  * igne: z = yükseklik * (alt + zar * aralik); küçük z = daha derine gömülü.
  * yakit: garajdaki makinelerin başlangıç yakıtı (0..1 depo).
+ * telafiSiniri: dedektör telafisinde "yön gösteren" en geniş bant (hücre; kural/dedektor.js).
+ *   Kolay/Normal 50 (Ilık: hepsi Soğuk ise telafi), Zor 25 (Sıcak: hepsi Soğuk/Ilık ise).
  */
 export const ZORLUKLAR = {
   kolay: {
-    ad: 'Kolay', carpan: 1, dedektor: 5, miknatis: 2, civi: 2, yakit: 1,
+    ad: 'Kolay', carpan: 1, dedektor: 5, miknatis: 2, civi: 2, yakit: 1, telafiSiniri: 50,
     pariltiAralik: 8000, pariltiDerinlik: 30,
     yigin: { taban: 5, ek: 3, r: [12, 16], t: [45, 45] },
     igne: { alt: 0.35, aralik: 0.4 },
   },
   normal: {
-    ad: 'Normal', carpan: 2, dedektor: 4, miknatis: 1, civi: 4, yakit: 0.9,
+    ad: 'Normal', carpan: 2, dedektor: 4, miknatis: 1, civi: 4, yakit: 0.9, telafiSiniri: 50,
     pariltiAralik: 12000, pariltiDerinlik: 20,
     yigin: { taban: 6, ek: 4, r: [14, 20], t: [50, 60] },
     igne: { alt: 0.05, aralik: 0.45 },
   },
   zor: {
-    ad: 'Zor', carpan: 3, dedektor: 3, miknatis: 1, civi: 7, yakit: 0.7,
+    ad: 'Zor', carpan: 3, dedektor: 3, miknatis: 1, civi: 7, yakit: 0.7, telafiSiniri: 25,
     pariltiAralik: 16000, pariltiDerinlik: 14,
     yigin: { taban: 8, ek: 4, r: [16, 22], t: [60, 70] },
     igne: { alt: 0.02, aralik: 0.28 },

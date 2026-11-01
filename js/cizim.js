@@ -50,7 +50,13 @@ export function cizici(tuval) {
   const actx = ara.getContext('2d');
   const resim = actx.createImageData(GENISLIK, YUKSEKLIK);
   const golgeHucre = (i) => karolar.golgeHucre(kanal, i);
-  const tabanCiz = () => ctx.drawImage(ara, 0, 0, DUNYA_EN, DUNYA_BOY);
+  // Kaba taban: uzakta keskin (hücre başına piksel); yakında atlas belirmeden önce yumuşak.
+  const tabanCiz = (yumusak) => {
+    ctx.imageSmoothingEnabled = yumusak;
+    if (yumusak) ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(ara, 0, 0, DUNYA_EN, DUNYA_BOY);
+    ctx.imageSmoothingEnabled = false;
+  };
   return function ciz(durum, zaman) {
     const bas = performance.now();
     olcekDenetle();
@@ -198,14 +204,29 @@ function yildiz(ctx, x, y, boy, alfa, eb) {
   cizgi(ctx, x - k, y + k, x + k, y - k);
 }
 
+/**
+ * Araç imleci: aracın etki dairesi. Mıknatıs seçiliyken (yürürken) daire menzil önizlemesidir:
+ * soluk, kesik çizgili, içi çok hafif dolu (iğne bu dairedeyse çekilir).
+ */
 function imleciCiz(ctx, durum) {
   if (!durum.imlec || durum.bitti) return;
   const r = durum.aracYaricap * OLCEK;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.lineWidth = 1.5;
+  const x = (durum.imlec.x + 0.5) * OLCEK;
+  const y = (durum.imlec.y + 0.5) * OLCEK;
+  const menzil = durum.arac === 'miknatis' && !durum.karakter?.makine;
   ctx.beginPath();
-  ctx.arc((durum.imlec.x + 0.5) * OLCEK, (durum.imlec.y + 0.5) * OLCEK, r, 0, Math.PI * 2);
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (menzil) {
+    ctx.fillStyle = 'rgba(214, 228, 255, 0.07)';
+    ctx.fill();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = 'rgba(236, 242, 255, 0.5)';
+  } else {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  }
+  ctx.lineWidth = 1.5;
   ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 function cizgi(ctx, x1, y1, x2, y2) {

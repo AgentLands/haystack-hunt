@@ -21,6 +21,7 @@ import { ikon } from './ikon.js';
 import { logo } from './menu-logo.js';
 import { yardimAc } from './yardim.js';
 import { yeniTarlaIzni } from './koruma.js';
+import { radyoKlavyesi } from './radyo-grubu.js';
 
 const KAPANIS_MS = 200;
 const $ = (id) => document.getElementById(id);
@@ -106,6 +107,8 @@ const zorlukDugmeleri = Object.entries(ZORLUKLAR).map(([anahtar, ayar]) => {
   d.addEventListener('click', () => zorlukSec(anahtar));
   return d;
 });
+
+radyoKlavyesi(zorluk, zorlukDugmeleri);
 
 function zorlukSec(anahtar) {
   if (anahtar === durumAl().zorluk) return;
@@ -200,7 +203,9 @@ function guncelle() {
   const d = durumAl();
   $('menu-damga').textContent = `Tarla No. ${gununEtiketi()}`;
   for (const b of zorlukDugmeleri) {
-    b.setAttribute('aria-checked', String(b.dataset.zorluk === d.zorluk));
+    const secili = b.dataset.zorluk === d.zorluk;
+    b.setAttribute('aria-checked', String(secili));
+    b.tabIndex = secili ? 0 : -1; // radyo grubunda tek Tab durağı
   }
   const suruyor = d.baslangic !== null && !d.bitti;
   const yarim = $('menu-yarim');

@@ -85,11 +85,13 @@ başına 8 bağlantı / 3 oda sınırı herkese birlikte uygulanır); sınırlar
   ekran kenarında atan bir ok gösterir.
 - **Dedektör:** hak Kolay 5, Normal 4, Zor 3. Her okuma yerde kalıcı bir halka bırakır:
   Yanıyor! (iğne 10 hücre içinde), Sıcak (25), Ilık (50), Soğuk. Bütün haklar harcanıp okumaların
-  hepsi Soğuk çıkarsa tur başına 1 telafi hakkı verilir. **Mıknatıs:** hak Kolay 2, diğerleri 1;
-  iğne 12 hücre içindeyse onu en çok 25 kat yukarı çeker ve parlatır.
-- **Kulak:** el ya da makine kazarken kazı noktası iğneye 12 hücreden yakınsa metal tını
-  (≤ 4, ≤ 8, ≤ 12 hücre: üç basamak; iğnenin derinliği uzaklığa katılır). Yön ve kesin mesafe
-  vermez; ses kapalıysa ara sıra küçük bir pırıltı gösterir.
+  hepsi Soğuk çıkarsa (Zor'da hiçbiri Sıcak ya da daha yakın çıkmazsa) tur başına 1 telafi hakkı
+  verilir. **Mıknatıs:** hak Kolay 2, diğerleri 1; iğne 12 hücre içindeyse onu en çok 25 kat
+  yukarı çeker ve parlatır (seçiliyken menzil kesik bir daireyle gösterilir). Boşa giderse kaba
+  uzaklık söyler: 24 hücre içindeyse "biraz uzakta", değilse "çok uzakta".
+- **Kulak:** el ya da makine kazarken kazı noktası iğneye 16 hücreden yakınsa metal tını ve
+  kazı noktasında küçük bir nabız halkası (≤ 4, ≤ 8, ≤ 16 hücre: üç basamak; iğnenin üstündeki
+  saman / 6 uzaklığa katılır). Yön ve kesin mesafe vermez; ses kapalıysa halka yine görünür.
 - **Makineler:** garajda tarla kenarında bekler; yakıtla başlar (Kolay %100, Normal %90, Zor
   %70). Traktör tam gazda depoyu 260 saniyede, balya makinesi 160, üfleyici çalışırken 120
   saniyede harcar; iş aygıtı saman almıyorsa iş yakıtının yalnız %10'u gider. Makine park yerinden
